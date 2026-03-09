@@ -176,7 +176,8 @@ impl Expr {
                     rhs,
                 }
             },
-            "->" |  "|" | "&" | "=" | "<=" | ">=" | "!=" | "<" | ">" | "+" | "-" | "*" | "/" | "%" =>{
+            "->" |  "|" | "&" | "=" | "<=" | ">=" | "!=" | "<" | ">" | "+" | "-" | "*" | "/" | "%" | "!" =>{
+                //unary and binary operations are in one match due to "-" acting as both depending on number of children
                 if node.children_count() == 2 {
                     let lhs = Expr::new(node.child(0))?.into();
                     let rhs =  Expr::new(node.child(1))?.into();
@@ -186,7 +187,12 @@ impl Expr {
                         })?)?;
                     ExprKind::BinaryOperations { lhs, rhs, operator }
                 } else {
-                    todo!()
+                    let operand = Expr::new(node.child(0))?.into();
+                    let operator = UnaryOperators::new(node.get_value()
+                        .ok_or_else(|| {
+                            errors::Error::ASTNodeValueInvalid(node.get_symbol().name.into())
+                        })?)?;
+                    ExprKind::UnaryOperations { operand, operator }
                 }
                 
             }

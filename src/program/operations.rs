@@ -40,4 +40,17 @@ impl BinaryOperators {
     }
 }
 #[derive(Debug)]
-pub enum UnaryOperators {}
+pub enum UnaryOperators {
+    Not,
+    Negative
+}
+
+impl UnaryOperators {
+    pub fn new(operator: &str) -> Result<Self, Box<dyn Error>> {
+        Ok(match operator {
+            "!" => Self::Not,
+            "-" => Self::Negative, 
+            _ => unreachable!()
+        })
+    }
+}

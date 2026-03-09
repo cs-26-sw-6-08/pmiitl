@@ -1,1 +1,1 @@
-always count(power) * 2 > 5 -> eventually sum(power) > 10;
+always !(4+5 = 7%3);
