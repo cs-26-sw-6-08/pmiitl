@@ -20,16 +20,15 @@ grammar cfg
 
     STRING -> [a-zA-Z]+;
     TIMEUNIT -> 's'|'m' | 'h';
-    POWERUNIT -> 'w' | 'kWh';
+    POWERUNIT -> 'W' | 'kWh';
     BOOL -> 'true' | 'false';
     TIME -> 't';
   }
   rules
   {
-    Program  -> Property;
-    Property -> (MTLStart';'!)+;
+    Program  -> (MTLStart';'!)+;
 
-    MTLStart -> ('not'? ('always' | 'eventually'))^ Interval? Expr | ('not'?'until')^Interval?'('Expr','Expr')';
+    MTLStart -> ('not'? ('always' | 'eventually'))^ Interval? Expr | ('not'?'until')^Interval?'('!Expr','!Expr')'!;
 
     Interval -> '['!ExprA','!ExprA']'!;
     ExprA  -> ExprA '+'^ ExprA1 | ExprA '-'^ ExprA1 | ExprA1^;

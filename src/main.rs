@@ -1,35 +1,30 @@
 mod grammar;// default namespace for the parser is the grammar's name
+mod program;
+mod errors;
 
 extern crate hime_redist;
 
-use hime_redist::ast::AstNode;
+use std::fs;
+
+use crate::program::Program;
 
 fn main() {
-    let result = grammar::cfg::parse_string("
-    always (t % 24h = 0) -> always[0h,24h] sumtime(active * power) <10 kWh; 
+    let program_str = match fs::read_to_string("program.txt") {
+        Ok(program_str) => program_str,
+        Err(err) => return println!("Error: {}", err)
+    };
+    /*let result = grammar::cfg::parse_string("
+    always true; eventually 7; 
 ".to_string());
     let ast = result.get_ast();
-    let root = ast.get_root();
-    print(root, Vec::<bool>::new());
-}
+    let root = ast.get_root();*/
+    let program = match Program::new(program_str.as_str()) {
+        Ok(program) => program,
+        Err(err) => return println!("Error: {}", err),
+    };
 
-fn print<'a>(node: AstNode<'_,'_,'a>, crossings: Vec<bool>) {
-    let mut i = 0;
-    if !crossings.is_empty() {
-        while i < crossings.len() - 1 {
-            print!("{:}", if crossings[i] { "|   " } else { "    " });
-            i += 1;
-        }
-        print!("+-> ");
-    }
-    println!("{:}", node);
-    i = 0;
-    let children = node.children();
-    while i < children.len() {
-        let mut child_crossings = crossings.clone();
-        child_crossings.push(i < children.len() - 1);
-        print(children.at(i), child_crossings);
-        i += 1;
-    }
+    println!("{:?}", program);
+    
+    //print(root, Vec::<bool>::new());
 }
 

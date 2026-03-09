@@ -1,0 +1,1 @@
+always count(power) * 2 > 5 -> eventually sum(power) > 10;
