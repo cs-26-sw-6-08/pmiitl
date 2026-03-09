@@ -19,7 +19,8 @@ grammar cfg
     NUMBER      -> INTEGER | REAL ;
 
     STRING -> [a-zA-Z]+;
-    UNIT -> 's'|'m' | 'h' | 'w' | 'kWh';
+    TIMEUNIT -> 's'|'m' | 'h';
+    POWERUNIT -> 'w' | 'kWh';
     BOOL -> 'true' | 'false';
     TIME -> 't';
   }
@@ -35,7 +36,7 @@ grammar cfg
     ExprA1 -> ExprA1 '*'^ ExprA2 | ExprA1 '/'^ ExprA2 | ExprA1 '%'^ ExprA2 | ExprA2^;
     ExprA2 -> '!'^ExprA3 | '-'^ExprA3 | ExprA3^;
     ExprA3 -> '(' ExprA^ ')' | ExprA4^;
-    ExprA4 -> (NUMBER UNIT)^ | NUMBER^;
+    ExprA4 -> (NUMBER TIMEUNIT)^;
 
     Expr   -> ExprV1 '->'^ Expr | ExprV1^;
     ExprV1 -> ExprV1 '|'^ ExprV2 | ExprV2^;
@@ -46,7 +47,7 @@ grammar cfg
     ExprV6 -> ExprV6 '*'^ ExprV7 | ExprV6 '/'^ ExprV7 | ExprV6 '%'^ ExprV7 | ExprV7^;
     ExprV7 -> ('not'? ('always' | 'eventually'))^ Interval? ExprV7 | '!'^ExprV7 | '-'^ExprV7 | ExprV8^;
     ExprV8 -> '(' Expr^ ')' | ExprV9^;
-    ExprV9 -> (NUMBER UNIT | NUMBER | Member | STRING | Function | BOOL | TIME)^;
+    ExprV9 -> (NUMBER (TIMEUNIT | POWERUNIT) | NUMBER | Member | STRING | Function | BOOL | TIME)^;
 
     Function  -> Aggregate^'('!Expr')'! | 'sumtime'^'('!Expr')'! | 'avgtime'^'('!Expr')'! 
                  | 'counttime'^'('!Expr')'! | 'foreach'^'('!Expr')'!;
