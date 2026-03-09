@@ -7,22 +7,22 @@ r#"Program
             |   +-> ( = (
             |   +-> % = %
             |   |   +-> TIME = t
-            |   |   +-> UNIT = h
+            |   |   +-> TIMEUNIT = h
             |   |       +-> NUMBER = 24
             |   +-> NUMBER = 0
             |   +-> ) = )
             +-> < = <
                 +-> always = always
                 |   +-> Interval
-                |   |   +-> UNIT = h
+                |   |   +-> TIMEUNIT = h
                 |   |   |   +-> NUMBER = 0
-                |   |   +-> UNIT = h
+                |   |   +-> TIMEUNIT = h
                 |   |       +-> NUMBER = 24
                 |   +-> sumtime = sumtime
                 |       +-> * = *
                 |           +-> active = active
                 |           +-> power = power
-                +-> UNIT = kWh
+                +-> POWERUNIT = kWh
                     +-> NUMBER = 10
 "#;
 
@@ -46,9 +46,9 @@ r#"Program
                 +-> active = active
                 +-> eventually = eventually
                     +-> Interval
-                    |   +-> UNIT = h
+                    |   +-> TIMEUNIT = h
                     |   |   +-> NUMBER = 0
-                    |   +-> UNIT = h
+                    |   +-> TIMEUNIT = h
                     |       +-> NUMBER = 6
                     +-> ! = !
                         +-> active = active
@@ -78,9 +78,9 @@ r#"Program
             +-> < = <
                 +-> eventually = eventually
                 |   +-> Interval
-                |   |   +-> UNIT = h
+                |   |   +-> TIMEUNIT = h
                 |   |   |   +-> NUMBER = 0
-                |   |   +-> UNIT = h
+                |   |   +-> TIMEUNIT = h
                 |   |       +-> NUMBER = 6
                 |   +-> count = count
                 |       +-> active = active
@@ -96,7 +96,7 @@ r#"Program
             |   +-> * = *
             |       +-> active = active
             |       +-> power = power
-            +-> UNIT = w
+            +-> POWERUNIT = w
                 +-> NUMBER = 100
 "#;
 
