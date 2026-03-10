@@ -6,6 +6,8 @@ use crate::{grammar::cfg, program::expressions::Expr, errors};
 mod expressions;
 mod units;
 mod operations;
+#[cfg(test)]
+mod expressions_test;
 
 #[derive(Debug)]
 pub struct Program {

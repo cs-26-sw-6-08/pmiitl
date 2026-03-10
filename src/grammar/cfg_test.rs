@@ -84,7 +84,7 @@ fn property5() {
 #[test]
 fn property6() {
     let actual: String = tree_to_str(
-        cfg::parse_str("always sum(active * power) <= 100 w;")
+        cfg::parse_str("always sum(active * power) <= 100 W;")
             .get_ast()
             .get_root(),
         Vec::<bool>::new(),
