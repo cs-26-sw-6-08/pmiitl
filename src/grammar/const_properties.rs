@@ -19,7 +19,7 @@ r#"Program
             |       +-> * = *
             |           +-> active = active
             |           +-> power = power
-            +-> POWERUNIT = kWh
+            +-> POWERUNIT = kwh
                 +-> NUMBER = 10
 "#;
 
@@ -88,7 +88,7 @@ r#"Program
         |   +-> * = *
         |       +-> active = active
         |       +-> power = power
-        +-> POWERUNIT = W
+        +-> POWERUNIT = w
             +-> NUMBER = 100
 "#;
 
