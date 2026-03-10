@@ -1,5 +1,9 @@
 use crate::program::{
-    Program, expressions::ExprKind, operations::BinaryOperators, operations::UnaryOperators,
+    Program,
+    expressions::ExprKind,
+    function_types::FunctionType,
+    member_types::MemberType,
+    operations::{BinaryOperators, UnaryOperators},
     units::Unit,
 };
 
@@ -30,7 +34,34 @@ fn always() {
 }
 
 #[test]
-fn interval() {
+fn eventually_interval() {
+    let program = Program::new("eventually[1s,3h] 1;").unwrap();
+    assert_eq!(
+        program.expressions.first().unwrap().expr,
+        ExprKind::Eventually {
+            interval: Some(
+                ExprKind::Interval {
+                    start: ExprKind::Unit {
+                        number: ExprKind::Number(1000).into(),
+                        unit: Unit::Seconds
+                    }
+                    .into(),
+                    end: ExprKind::Unit {
+                        number: ExprKind::Number(3000).into(),
+                        unit: Unit::Hours
+                    }
+                    .into()
+                }
+                .into()
+            ),
+            not: false,
+            expr: ExprKind::Number(1000).into()
+        }
+    );
+}
+
+#[test]
+fn always_interval() {
     let program = Program::new("always[1s,3h] 1;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
@@ -52,6 +83,46 @@ fn interval() {
             ),
             not: false,
             expr: ExprKind::Number(1000).into()
+        }
+    );
+}
+
+#[test]
+fn current_time() {
+    let program = Program::new("always t;").unwrap();
+    assert_eq!(
+        program.expressions.first().unwrap().expr,
+        ExprKind::Always {
+            interval: None,
+            not: false,
+            expr: ExprKind::CurrentTime.into()
+        }
+    );
+}
+
+#[test]
+fn power_unit() {
+    let program = Program::new("always 5W;").unwrap();
+    assert_eq!(
+        program.expressions.first().unwrap().expr,
+        ExprKind::Always {
+            interval: None,
+            not: false,
+            expr: ExprKind::Unit { number: ExprKind::Number(5000).into(), unit: Unit::Watt }.into()
+        }
+    );
+}
+
+#[test]
+fn until() {
+    let program = Program::new("until(1,2);").unwrap();
+    assert_eq!(
+        program.expressions.first().unwrap().expr,
+        ExprKind::Until {
+            interval: None,
+            not: false,
+            lhs: ExprKind::Number(1000).into(),
+            rhs: ExprKind::Number(2000).into()
         }
     );
 }
@@ -336,6 +407,162 @@ fn negative() {
             expr: ExprKind::UnaryOperations {
                 operand: ExprKind::Number(5000).into(),
                 operator: UnaryOperators::Negative
+            }
+            .into()
+        }
+    );
+}
+
+#[test]
+fn sum() {
+    let program = Program::new("always sum(5);").unwrap();
+    assert_eq!(
+        program.expressions.first().unwrap().expr,
+        ExprKind::Always {
+            interval: None,
+            not: false,
+            expr: ExprKind::Function {
+                aggregate_type: FunctionType::Sum,
+                expr: ExprKind::Number(5000).into()
+            }
+            .into()
+        }
+    );
+}
+
+#[test]
+fn avg() {
+    let program = Program::new("always avg(5);").unwrap();
+    assert_eq!(
+        program.expressions.first().unwrap().expr,
+        ExprKind::Always {
+            interval: None,
+            not: false,
+            expr: ExprKind::Function {
+                aggregate_type: FunctionType::Avg,
+                expr: ExprKind::Number(5000).into()
+            }
+            .into()
+        }
+    );
+}
+
+#[test]
+fn count() {
+    let program = Program::new("always count(5);").unwrap();
+    assert_eq!(
+        program.expressions.first().unwrap().expr,
+        ExprKind::Always {
+            interval: None,
+            not: false,
+            expr: ExprKind::Function {
+                aggregate_type: FunctionType::Count,
+                expr: ExprKind::Number(5000).into()
+            }
+            .into()
+        }
+    );
+}
+
+#[test]
+fn sumtime() {
+    let program = Program::new("always sumtime(5);").unwrap();
+    assert_eq!(
+        program.expressions.first().unwrap().expr,
+        ExprKind::Always {
+            interval: None,
+            not: false,
+            expr: ExprKind::Function {
+                aggregate_type: FunctionType::Sumtime,
+                expr: ExprKind::Number(5000).into()
+            }
+            .into()
+        }
+    );
+}
+
+#[test]
+fn avgtime() {
+    let program = Program::new("always avgtime(5);").unwrap();
+    assert_eq!(
+        program.expressions.first().unwrap().expr,
+        ExprKind::Always {
+            interval: None,
+            not: false,
+            expr: ExprKind::Function {
+                aggregate_type: FunctionType::Avgtime,
+                expr: ExprKind::Number(5000).into()
+            }
+            .into()
+        }
+    );
+}
+
+#[test]
+fn counttime() {
+    let program = Program::new("always counttime(5);").unwrap();
+    assert_eq!(
+        program.expressions.first().unwrap().expr,
+        ExprKind::Always {
+            interval: None,
+            not: false,
+            expr: ExprKind::Function {
+                aggregate_type: FunctionType::Counttime,
+                expr: ExprKind::Number(5000).into()
+            }
+            .into()
+        }
+    );
+}
+
+#[test]
+fn foreach() {
+    let program = Program::new("always foreach(5);").unwrap();
+    assert_eq!(
+        program.expressions.first().unwrap().expr,
+        ExprKind::Always {
+            interval: None,
+            not: false,
+            expr: ExprKind::Function {
+                aggregate_type: FunctionType::Foreach,
+                expr: ExprKind::Number(5000).into()
+            }
+            .into()
+        }
+    );
+}
+
+#[test]
+fn bool() {
+    let program = Program::new("always true;").unwrap();
+    assert_eq!(
+        program.expressions.first().unwrap().expr,
+        ExprKind::Always {
+            interval: None,
+            not: false,
+            expr: ExprKind::Boolean(true).into()
+        }
+    );
+}
+
+#[test]
+fn string() {
+    let program = Program::new("always count(name=fridge);").unwrap();
+    assert_eq!(
+        program.expressions.first().unwrap().expr,
+        ExprKind::Always {
+            interval: None,
+            not: false,
+            expr: ExprKind::Function {
+                aggregate_type: FunctionType::Count,
+                expr: ExprKind::BinaryOperations {
+                    lhs: ExprKind::Member {
+                        access_type: MemberType::Name
+                    }.into(),
+                    rhs: ExprKind::String("fridge".into()).into(),
+                    operator: BinaryOperators::Equal
+                }
+                .into()
             }
             .into()
         }

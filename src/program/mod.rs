@@ -9,7 +9,7 @@ mod operations;
 mod function_types;
 mod member_types;
 #[cfg(test)]
-mod expressions_test;
+mod program_test;
 
 #[derive(Debug)]
 pub struct Program {
@@ -19,7 +19,7 @@ pub struct Program {
 impl Program {
 
     pub fn new(programstr: &str) -> Result<Self, Box<dyn Error>>{
-        let parsed = cfg::parse_str(programstr);
+        let parsed = cfg::parse_string(programstr.to_lowercase());
         let mut exprs : Vec<SpannedExpr> = Vec::new();
         if !parsed.is_success() {
             return Err(errors::Error::HimeParseError.into())
