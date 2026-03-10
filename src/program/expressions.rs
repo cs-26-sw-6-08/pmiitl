@@ -225,7 +225,7 @@ impl ExprKind {
                 let position = node
                     .get_position()
                     .unwrap_or(hime_redist::text::TextPosition { line: 0, column: 0 });
-                return Err(errors::Error::ProgramParseError(
+                return Err(errors::Error::ProgramParse(
                     node.get_symbol().name.into(),
                     position.line,
                     position.column,

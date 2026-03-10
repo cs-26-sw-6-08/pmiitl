@@ -22,7 +22,7 @@ impl Program {
         let parsed = cfg::parse_string(programstr.to_lowercase());
         let mut exprs : Vec<SpannedExpr> = Vec::new();
         if !parsed.is_success() {
-            return Err(errors::Error::HimeParseError.into())
+            return Err(errors::Error::HimeParse.into())
         }
         let ast = parsed.get_ast();
         let root = ast.get_root();
