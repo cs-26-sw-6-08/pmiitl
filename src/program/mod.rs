@@ -6,6 +6,8 @@ use crate::{errors, grammar::cfg, program::expressions::SpannedExpr};
 mod expressions;
 mod units;
 mod operations;
+mod function_types;
+mod member_types;
 #[cfg(test)]
 mod expressions_test;
 

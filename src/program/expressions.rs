@@ -2,7 +2,15 @@ use std::error::Error;
 
 use hime_redist::{ast::AstNode, symbols::SemanticElementTrait};
 
-use crate::{errors, program::{operations::{BinaryOperators, UnaryOperators}, units::Unit}};
+use crate::{
+    errors,
+    program::{
+        function_types::FunctionType,
+        member_types::MemberType,
+        operations::{BinaryOperators, UnaryOperators},
+        units::Unit,
+    },
+};
 
 #[derive(Debug, PartialEq)]
 pub struct SpannedExpr {
@@ -15,9 +23,10 @@ pub enum ExprKind {
     Number(i64),
     String(String),
     Boolean(bool),
-    Timeunit{
+    CurrentTime,
+    Unit {
         number: Box<ExprKind>,
-        unit: Unit
+        unit: Unit,
     },
     Interval {
         start: Box<ExprKind>,
@@ -42,12 +51,19 @@ pub enum ExprKind {
     BinaryOperations {
         lhs: Box<ExprKind>,
         rhs: Box<ExprKind>,
-        operator: BinaryOperators
+        operator: BinaryOperators 
     },
     UnaryOperations {
         operand: Box<ExprKind>,
-        operator: UnaryOperators
-    }
+        operator: UnaryOperators,
+    },
+    Member {
+        access_type: MemberType,
+    },
+    Function {
+        aggregate_type: FunctionType,
+        expr: Box<ExprKind>,
+    },
 }
 
 impl SpannedExpr {
@@ -85,14 +101,14 @@ impl ExprKind {
                     })?
                     .into(),
             ),
-            "TIMEUNIT" => {
-                        let number = ExprKind::new(node.child(0))?.into();
-                        let unit = Unit::new(node.get_value()
-                    .ok_or_else(|| {
-                        errors::Error::ASTNodeValueInvalid(node.get_symbol().name.into())
-                    })?)?;
-                        ExprKind::Timeunit { number, unit }
-                    }
+            "TIME" => ExprKind::CurrentTime,
+            "TIMEUNIT" | "POWERUNIT" => {
+                let number = ExprKind::new(node.child(0))?.into();
+                let unit = Unit::new(node.get_value().ok_or_else(|| {
+                    errors::Error::ASTNodeValueInvalid(node.get_symbol().name.into())
+                })?)?;
+                ExprKind::Unit { number, unit }
+            }
 
             "Interval" => {
                 let start = ExprKind::new(node.child(0))?.into();
@@ -108,15 +124,11 @@ impl ExprKind {
                     Some(interval) => Some(ExprKind::new(interval)?.into()),
                     None => None,
                 };
-                let not = match node
+                let not = node
                     .children()
                     .iter()
-                    .find(|node| node.get_symbol().name.eq("not"))
-                {
-                    Some(_) => true,
-                    None => false,
-                };
-                let expr = ExprKind::new(node.children().iter().last().unwrap())?.into();
+                    .any(|node| node.get_symbol().name.eq("not"));
+                let expr = ExprKind::new(node.children().iter().next_back().unwrap())?.into();
 
                 ExprKind::Always {
                     interval,
@@ -133,15 +145,11 @@ impl ExprKind {
                     Some(interval) => Some(ExprKind::new(interval)?.into()),
                     None => None,
                 };
-                let not = match node
+                let not = node
                     .children()
                     .iter()
-                    .find(|node| node.get_symbol().name.eq("not"))
-                {
-                    Some(_) => true,
-                    None => false,
-                };
-                let expr = ExprKind::new(node.children().iter().last().unwrap())?.into();
+                    .any(|node| node.get_symbol().name.eq("not"));
+                let expr = ExprKind::new(node.children().iter().next_back().unwrap())?.into();
 
                 ExprKind::Eventually {
                     interval,
@@ -158,14 +166,11 @@ impl ExprKind {
                     Some(interval) => Some(ExprKind::new(interval)?.into()),
                     None => None,
                 };
-                let not = match node
+                let not = node
                     .children()
                     .iter()
-                    .find(|node| node.get_symbol().name.eq("not"))
-                {
-                    Some(_) => true,
-                    None => false,
-                };
+                    .any(|node| node.get_symbol().name.eq("not"));
+
                 let mut iter = node
                     .children()
                     .iter()
@@ -173,7 +178,7 @@ impl ExprKind {
                     .take(2)
                     .map(|node| Box::new(ExprKind::new(node).unwrap()));
 
-                let (rhs, lhs) = (iter.next().unwrap().into(), iter.next().unwrap().into());
+                let (rhs, lhs) = (iter.next().unwrap(), iter.next().unwrap());
 
                 ExprKind::Until {
                     interval,
@@ -181,32 +186,52 @@ impl ExprKind {
                     lhs,
                     rhs,
                 }
-            },
-            "->" |  "|" | "&" | "=" | "<=" | ">=" | "!=" | "<" | ">" | "+" | "-" | "*" | "/" | "%" | "!" =>{
+            }
+            "->" | "|" | "&" | "=" | "<=" | ">=" | "!=" | "<" | ">" | "+" | "-" | "*" | "/"
+            | "%" | "!" => {
                 //unary and binary operations are in one match due to "-" acting as both depending on number of children
                 if node.children_count() == 2 {
                     let lhs = ExprKind::new(node.child(0))?.into();
-                    let rhs =  ExprKind::new(node.child(1))?.into();
-                    let operator = BinaryOperators::new(node.get_value()
-                        .ok_or_else(|| {
-                            errors::Error::ASTNodeValueInvalid(node.get_symbol().name.into())
-                        })?)?;
+                    let rhs = ExprKind::new(node.child(1))?.into();
+                    let operator = BinaryOperators::new(node.get_value().ok_or_else(|| {
+                        errors::Error::ASTNodeValueInvalid(node.get_symbol().name.into())
+                    })?)?;
                     ExprKind::BinaryOperations { lhs, rhs, operator }
                 } else {
                     let operand = ExprKind::new(node.child(0))?.into();
-                    let operator = UnaryOperators::new(node.get_value()
-                        .ok_or_else(|| {
-                            errors::Error::ASTNodeValueInvalid(node.get_symbol().name.into())
-                        })?)?;
+                    let operator = UnaryOperators::new(node.get_value().ok_or_else(|| {
+                        errors::Error::ASTNodeValueInvalid(node.get_symbol().name.into())
+                    })?)?;
                     ExprKind::UnaryOperations { operand, operator }
                 }
-
             }
-
+            "active" | "power" | "name" => {
+                let access_type = MemberType::new(node.get_value().ok_or_else(|| {
+                    errors::Error::ASTNodeValueInvalid(node.get_symbol().name.into())
+                })?)?;
+                ExprKind::Member { access_type }
+            }
+            "sum" | "avg" | "count" | "sumtime" | "avgtime" | "counttime" | "foreach" => {
+                let aggregate_type = FunctionType::new(node.get_value().ok_or_else(|| {
+                    errors::Error::ASTNodeValueInvalid(node.get_symbol().name.into())
+                })?)?;
+                let expr = ExprKind::new(node.child(0))?.into();
+                ExprKind::Function {
+                    aggregate_type,
+                    expr,
+                }
+            }
             _ => {
-                let position = node.get_position().unwrap();
-                return Err(errors::Error::ProgramParseError(node.get_symbol().name.into(), position.line, position.column).into());
-            },
+                let position = node
+                    .get_position()
+                    .unwrap_or(hime_redist::text::TextPosition { line: 0, column: 0 });
+                return Err(errors::Error::ProgramParseError(
+                    node.get_symbol().name.into(),
+                    position.line,
+                    position.column,
+                )
+                .into());
+            }
         };
 
         Ok(expr)

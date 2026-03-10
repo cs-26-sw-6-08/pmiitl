@@ -37,12 +37,12 @@ fn interval() {
         ExprKind::Always {
             interval: Some(
                 ExprKind::Interval {
-                    start: ExprKind::Timeunit {
+                    start: ExprKind::Unit {
                         number: ExprKind::Number(1000).into(),
                         unit: Unit::Seconds
                     }
                     .into(),
-                    end: ExprKind::Timeunit {
+                    end: ExprKind::Unit {
                         number: ExprKind::Number(3000).into(),
                         unit: Unit::Hours
                     }
