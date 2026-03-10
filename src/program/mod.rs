@@ -2,35 +2,35 @@ use std::error::Error;
 
 use hime_redist::ast::AstNode;
 
-use crate::{grammar::cfg, program::expressions::Expr, errors};
+use crate::{errors, grammar::cfg, program::expressions::SpannedExpr};
 mod expressions;
 mod units;
 mod operations;
 mod function_types;
 mod member_types;
 #[cfg(test)]
-mod expressions_test;
+mod program_test;
 
 #[derive(Debug)]
 pub struct Program {
-    pub expressions: Vec<Expr>
+    pub expressions: Vec<SpannedExpr>
 }
 
 impl Program {
 
     pub fn new(programstr: &str) -> Result<Self, Box<dyn Error>>{
-        let parsed = cfg::parse_str(programstr);
-        let mut exprs : Vec<Expr> = Vec::new();
+        let parsed = cfg::parse_string(programstr.to_lowercase());
+        let mut exprs : Vec<SpannedExpr> = Vec::new();
         if !parsed.is_success() {
-            return Err(errors::Error::HimeParseError.into())
+            return Err(errors::Error::HimeParse.into())
         }
         let ast = parsed.get_ast();
         let root = ast.get_root();
 
         print(root, Vec::<bool>::new());
-        
+
         for node in root.children(){
-            exprs.push(Expr::new(node)?);
+            exprs.push(SpannedExpr::new(node)?);
 
         }
         Ok(Program { expressions: exprs})

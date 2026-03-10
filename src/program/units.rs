@@ -1,6 +1,6 @@
 use std::error::Error;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum Unit {
     Seconds,
     Minutes,
@@ -15,8 +15,8 @@ impl Unit {
             "s" => Self::Seconds,
             "m" => Self::Minutes,
             "h" => Self::Hours,
-            "W" => Self::Watt,
-            "kWh" => Self::KiloWattHours, 
+            "w" => Self::Watt,
+            "kwh" => Self::KiloWattHours,
             _ => unreachable!()
         })
     }

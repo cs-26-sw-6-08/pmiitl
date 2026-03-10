@@ -13,7 +13,7 @@ fn tree_to_str<'a>(node: AstNode<'_, '_, 'a>, crossings: Vec<bool>) -> String {
         }
         temp.push_str("+-> ");
     }
-    let newlinenode: String = node.to_string() + &"\n".to_owned();
+    let newlinenode: String = node.to_string() + "\n";
     temp.push_str(newlinenode.as_str());
     i = 0;
     let children = node.children();
@@ -29,7 +29,7 @@ fn tree_to_str<'a>(node: AstNode<'_, '_, 'a>, crossings: Vec<bool>) -> String {
 #[test]
 fn property1() {
     let actual: String = tree_to_str(
-        cfg::parse_str("always (t % 24h = 0) -> always[0h,24h] sumtime(active * power) <10 kWh;")
+        cfg::parse_string("always (t % 24h = 0) -> always[0h,24h] sumtime(active * power) <10 kWh;".to_lowercase())
             .get_ast()
             .get_root(),
         Vec::<bool>::new(),
@@ -40,7 +40,7 @@ fn property1() {
 #[test]
 fn property2() {
     let actual: String = tree_to_str(
-        cfg::parse_str("not eventually count(active) > 5;")
+        cfg::parse_string("not eventually count(active) > 5;".to_lowercase())
             .get_ast()
             .get_root(),
         Vec::<bool>::new(),
@@ -51,7 +51,7 @@ fn property2() {
 #[test]
 fn property3() {
     let actual: String = tree_to_str(
-        cfg::parse_str("always foreach(active -> eventually[0h,6h] !active);")
+        cfg::parse_string("always foreach(active -> eventually[0h,6h] !active);".to_lowercase())
             .get_ast()
             .get_root(),
         Vec::<bool>::new(),
@@ -62,7 +62,7 @@ fn property3() {
 #[test]
 fn property4() {
     let actual: String = tree_to_str(
-        cfg::parse_str("always count(name=fridge & active);")
+        cfg::parse_string("always count(name=fridge & active);".to_lowercase())
             .get_ast()
             .get_root(),
         Vec::<bool>::new(),
@@ -73,7 +73,7 @@ fn property4() {
 #[test]
 fn property5() {
     let actual: String = tree_to_str(
-        cfg::parse_str("always count(active) >= 5 -> eventually[0h,6h] count(active) < 5;")
+        cfg::parse_string("always count(active) >= 5 -> eventually[0h,6h] count(active) < 5;".to_lowercase())
             .get_ast()
             .get_root(),
         Vec::<bool>::new(),
@@ -84,7 +84,7 @@ fn property5() {
 #[test]
 fn property6() {
     let actual: String = tree_to_str(
-        cfg::parse_str("always sum(active * power) <= 100 W;")
+        cfg::parse_string("always sum(active * power) <= 100 W;".to_lowercase())
             .get_ast()
             .get_root(),
         Vec::<bool>::new(),
@@ -95,7 +95,7 @@ fn property6() {
 #[test]
 fn property7() {
     let actual: String = tree_to_str(
-        cfg::parse_str("always 7; eventually 7;")
+        cfg::parse_string("always 7; eventually 7;".to_lowercase())
             .get_ast()
             .get_root(),
         Vec::<bool>::new(),
@@ -106,7 +106,7 @@ fn property7() {
 #[test]
 fn property8() {
     let actual: String = tree_to_str(
-        cfg::parse_str("not until(active,10);").get_ast().get_root(),
+        cfg::parse_string("not until(active,10);".to_lowercase()).get_ast().get_root(),
         Vec::<bool>::new(),
     );
     assert_eq!(actual, const_properties::PROPERTY8.to_string());
