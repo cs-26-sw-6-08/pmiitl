@@ -2,7 +2,15 @@ use std::error::Error;
 
 use hime_redist::{ast::AstNode, symbols::SemanticElementTrait};
 
-use crate::{errors, program::{function_types::FunctionType, member_types::MemberType, operations::{BinaryOperators, UnaryOperators}, units::Unit}};
+use crate::{
+    errors,
+    program::{
+        function_types::FunctionType,
+        member_types::MemberType,
+        operations::{BinaryOperators, UnaryOperators},
+        units::Unit,
+    },
+};
 
 pub type Expr = SpannedExpr;
 
@@ -19,9 +27,9 @@ pub enum ExprKind {
     String(String),
     Boolean(bool),
     CurrentTime,
-    Unit{
+    Unit {
         number: Box<Expr>,
-        unit : Unit
+        unit: Unit,
     },
     Interval {
         start: Box<Expr>,
@@ -46,19 +54,19 @@ pub enum ExprKind {
     BinaryOperations {
         lhs: Box<Expr>,
         rhs: Box<Expr>,
-        operator: BinaryOperators 
+        operator: BinaryOperators,
     },
     UnaryOperations {
         operand: Box<Expr>,
-        operator: UnaryOperators 
+        operator: UnaryOperators,
     },
     Member {
-       access_type: MemberType,
+        access_type: MemberType,
     },
     Function {
         aggregate_type: FunctionType,
         expr: Box<Expr>,
-    }
+    },
 }
 
 impl Expr {
@@ -89,13 +97,12 @@ impl Expr {
             ),
             "TIME" => ExprKind::CurrentTime,
             "TIMEUNIT" | "POWERUNIT" => {
-                        let number = Expr::new(node.child(0))?.into();
-                        let unit = Unit::new(node.get_value()
-                    .ok_or_else(|| {
-                        errors::Error::ASTNodeValueInvalid(node.get_symbol().name.into())
-                    })?)?;
-                        ExprKind::Unit { number, unit }
-                    }
+                let number = Expr::new(node.child(0))?.into();
+                let unit = Unit::new(node.get_value().ok_or_else(|| {
+                    errors::Error::ASTNodeValueInvalid(node.get_symbol().name.into())
+                })?)?;
+                ExprKind::Unit { number, unit }
+            }
 
             "Interval" => {
                 let start = Expr::new(node.child(0))?.into();
@@ -111,15 +118,11 @@ impl Expr {
                     Some(interval) => Some(Expr::new(interval)?.into()),
                     None => None,
                 };
-                let not = match node
+                let not = node
                     .children()
                     .iter()
-                    .find(|node| node.get_symbol().name.eq("not"))
-                {
-                    Some(_) => true,
-                    None => false,
-                };
-                let expr = Expr::new(node.children().iter().last().unwrap())?.into();
+                    .any(|node| node.get_symbol().name.eq("not"));
+                let expr = Expr::new(node.children().iter().next_back().unwrap())?.into();
 
                 ExprKind::Always {
                     interval,
@@ -136,15 +139,11 @@ impl Expr {
                     Some(interval) => Some(Expr::new(interval)?.into()),
                     None => None,
                 };
-                let not = match node
+                let not = node
                     .children()
                     .iter()
-                    .find(|node| node.get_symbol().name.eq("not"))
-                {
-                    Some(_) => true,
-                    None => false,
-                };
-                let expr = Expr::new(node.children().iter().last().unwrap())?.into();
+                    .any(|node| node.get_symbol().name.eq("not"));
+                let expr = Expr::new(node.children().iter().next_back().unwrap())?.into();
 
                 ExprKind::Eventually {
                     interval,
@@ -161,14 +160,11 @@ impl Expr {
                     Some(interval) => Some(Expr::new(interval)?.into()),
                     None => None,
                 };
-                let not = match node
+                let not = node
                     .children()
                     .iter()
-                    .find(|node| node.get_symbol().name.eq("not"))
-                {
-                    Some(_) => true,
-                    None => false,
-                };
+                    .any(|node| node.get_symbol().name.eq("not"));
+
                 let mut iter = node
                     .children()
                     .iter()
@@ -176,7 +172,7 @@ impl Expr {
                     .take(2)
                     .map(|node| Box::new(Expr::new(node).unwrap()));
 
-                let (rhs, lhs) = (iter.next().unwrap().into(), iter.next().unwrap().into());
+                let (rhs, lhs) = (iter.next().unwrap(), iter.next().unwrap());
 
                 ExprKind::Until {
                     interval,
@@ -184,48 +180,64 @@ impl Expr {
                     lhs,
                     rhs,
                 }
-            },
-            "->" |  "|" | "&" | "=" | "<=" | ">=" | "!=" | "<" | ">" | "+" | "-" | "*" | "/" | "%" | "!" =>{
+            }
+            "->" | "|" | "&" | "=" | "<=" | ">=" | "!=" | "<" | ">" | "+" | "-" | "*" | "/"
+            | "%" | "!" => {
                 //unary and binary operations are in one match due to "-" acting as both depending on number of children
                 if node.children_count() == 2 {
                     let lhs = Expr::new(node.child(0))?.into();
-                    let rhs =  Expr::new(node.child(1))?.into();
-                    let operator = BinaryOperators::new(node.get_value()
-                        .ok_or_else(|| {
-                            errors::Error::ASTNodeValueInvalid(node.get_symbol().name.into())
-                        })?)?;
+                    let rhs = Expr::new(node.child(1))?.into();
+                    let operator = BinaryOperators::new(node.get_value().ok_or_else(|| {
+                        errors::Error::ASTNodeValueInvalid(node.get_symbol().name.into())
+                    })?)?;
                     ExprKind::BinaryOperations { lhs, rhs, operator }
                 } else {
                     let operand = Expr::new(node.child(0))?.into();
-                    let operator = UnaryOperators::new(node.get_value()
-                        .ok_or_else(|| {
-                            errors::Error::ASTNodeValueInvalid(node.get_symbol().name.into())
-                        })?)?;
+                    let operator = UnaryOperators::new(node.get_value().ok_or_else(|| {
+                        errors::Error::ASTNodeValueInvalid(node.get_symbol().name.into())
+                    })?)?;
                     ExprKind::UnaryOperations { operand, operator }
                 }
-                
-            },
+            }
             "active" | "power" | "name" => {
-                let access_type = MemberType::new(node.get_value()
-                        .ok_or_else(|| {
-                            errors::Error::ASTNodeValueInvalid(node.get_symbol().name.into())
-                        })?)?;
+                let access_type = MemberType::new(node.get_value().ok_or_else(|| {
+                    errors::Error::ASTNodeValueInvalid(node.get_symbol().name.into())
+                })?)?;
                 ExprKind::Member { access_type }
-            },
+            }
             "sum" | "avg" | "count" | "sumtime" | "avgtime" | "counttime" | "foreach" => {
-                let aggregate_type = FunctionType::new(node.get_value()
-                        .ok_or_else(|| {
-                            errors::Error::ASTNodeValueInvalid(node.get_symbol().name.into())
-                        })?)?;
+                let aggregate_type = FunctionType::new(node.get_value().ok_or_else(|| {
+                    errors::Error::ASTNodeValueInvalid(node.get_symbol().name.into())
+                })?)?;
                 let expr = Expr::new(node.child(0))?.into();
-                ExprKind::Function { aggregate_type, expr }
-            },
+                ExprKind::Function {
+                    aggregate_type,
+                    expr,
+                }
+            }
             _ => {
-                let position = node.get_position().unwrap_or(hime_redist::text::TextPosition { line: 0, column: 0 });
-                return Err(errors::Error::ProgramParseError(node.get_symbol().name.into(), position.line, position.column).into());
-            },
+                let position = node
+                    .get_position()
+                    .unwrap_or(hime_redist::text::TextPosition { line: 0, column: 0 });
+                return Err(errors::Error::ProgramParseError(
+                    node.get_symbol().name.into(),
+                    position.line,
+                    position.column,
+                )
+                .into());
+            }
         };
 
-        Ok(SpannedExpr { expr, line: node.get_position().unwrap_or(hime_redist::text::TextPosition { line: 0, column: 0 }).line, column: node.get_position().unwrap_or(hime_redist::text::TextPosition { line: 0, column: 0 }).column })
+        Ok(SpannedExpr {
+            expr,
+            line: node
+                .get_position()
+                .unwrap_or(hime_redist::text::TextPosition { line: 0, column: 0 })
+                .line,
+            column: node
+                .get_position()
+                .unwrap_or(hime_redist::text::TextPosition { line: 0, column: 0 })
+                .column,
+        })
     }
 }
