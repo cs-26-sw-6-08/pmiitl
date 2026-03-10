@@ -2,7 +2,7 @@ use std::error::Error;
 
 use hime_redist::{ast::AstNode, symbols::SemanticElementTrait};
 
-use crate::{errors, program::{operations::{BinaryOperators, UnaryOperators}, units::Unit}};
+use crate::{errors, program::{function_types::FunctionType, member_types::MemberType, operations::{BinaryOperators, UnaryOperators}, units::Unit}};
 
 pub type Expr = SpannedExpr;
 
@@ -18,7 +18,8 @@ pub enum ExprKind {
     Number(i64),
     String(String),
     Boolean(bool),
-    Timeunit{
+    CurrentTime,
+    Unit{
         number: Box<Expr>,
         unit : Unit
     },
@@ -50,6 +51,13 @@ pub enum ExprKind {
     UnaryOperations {
         operand: Box<Expr>,
         operator: UnaryOperators 
+    },
+    Member {
+       access_type: MemberType,
+    },
+    Function {
+        aggregate_type: FunctionType,
+        expr: Box<Expr>,
     }
 }
 
@@ -79,13 +87,14 @@ impl Expr {
                     })?
                     .into(),
             ),
-            "TIMEUNIT" => {
+            "TIME" => ExprKind::CurrentTime,
+            "TIMEUNIT" | "POWERUNIT" => {
                         let number = Expr::new(node.child(0))?.into();
                         let unit = Unit::new(node.get_value()
                     .ok_or_else(|| {
                         errors::Error::ASTNodeValueInvalid(node.get_symbol().name.into())
                     })?)?;
-                        ExprKind::Timeunit { number, unit }
+                        ExprKind::Unit { number, unit }
                     }
 
             "Interval" => {
@@ -195,14 +204,28 @@ impl Expr {
                     ExprKind::UnaryOperations { operand, operator }
                 }
                 
-            }
-
+            },
+            "active" | "power" | "name" => {
+                let access_type = MemberType::new(node.get_value()
+                        .ok_or_else(|| {
+                            errors::Error::ASTNodeValueInvalid(node.get_symbol().name.into())
+                        })?)?;
+                ExprKind::Member { access_type }
+            },
+            "sum" | "avg" | "count" | "sumtime" | "avgtime" | "counttime" | "foreach" => {
+                let aggregate_type = FunctionType::new(node.get_value()
+                        .ok_or_else(|| {
+                            errors::Error::ASTNodeValueInvalid(node.get_symbol().name.into())
+                        })?)?;
+                let expr = Expr::new(node.child(0))?.into();
+                ExprKind::Function { aggregate_type, expr }
+            },
             _ => {
-                let position = node.get_position().unwrap();
+                let position = node.get_position().unwrap_or(hime_redist::text::TextPosition { line: 0, column: 0 });
                 return Err(errors::Error::ProgramParseError(node.get_symbol().name.into(), position.line, position.column).into());
             },
         };
 
-        Ok(SpannedExpr { expr, line: node.get_position().unwrap().line, column: node.get_position().unwrap().column })
+        Ok(SpannedExpr { expr, line: node.get_position().unwrap_or(hime_redist::text::TextPosition { line: 0, column: 0 }).line, column: node.get_position().unwrap_or(hime_redist::text::TextPosition { line: 0, column: 0 }).column })
     }
 }

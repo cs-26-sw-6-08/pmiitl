@@ -1,1 +1,8 @@
-always !(4+5 = 7%3);
+always (t % 24h = 0) -> always[0h,24h] sumtime(active * power) <10 kWh;
+not eventually count(active) > 5;
+always foreach(active -> eventually[0h,6h] !active);
+always count(name=fridge & active);
+always count(active) >= 5 -> eventually[0h,6h] count(active) < 5;
+always sum(active * power) <= 100 W;
+always 7; eventually 7;
+not until(active,10);
