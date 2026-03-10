@@ -26,7 +26,7 @@ impl Program {
         let root = ast.get_root();
 
         print(root, Vec::<bool>::new());
-        
+
         for node in root.children(){
             exprs.push(Expr::new(node)?);
 

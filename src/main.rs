@@ -1,5 +1,5 @@
 mod grammar;// default namespace for the parser is the grammar's name
-mod program;
+pub mod program;
 mod errors;
 
 extern crate hime_redist;
@@ -14,7 +14,7 @@ fn main() {
         Err(err) => return println!("Error: {}", err)
     };
     /*let result = grammar::cfg::parse_string("
-    always true; eventually 7; 
+    always true; eventually 7;
 ".to_string());
     let ast = result.get_ast();
     let root = ast.get_root();*/
@@ -24,7 +24,6 @@ fn main() {
     };
 
     println!("{:?}", program);
-    
+
     //print(root, Vec::<bool>::new());
 }
-

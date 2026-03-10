@@ -1,6 +1,6 @@
 use std::error::Error;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum BinaryOperators {
     Equal,
     Less,
@@ -25,7 +25,7 @@ impl BinaryOperators {
             "<" => Self::Less,
             ">" => Self::Greater,
             "<=" => Self::LessEqual,
-            ">=" => Self::GreaterEqual, 
+            ">=" => Self::GreaterEqual,
             "!=" => Self::NotEqual,
             "+" => Self::Plus,
             "-" => Self::Minus,
@@ -34,12 +34,12 @@ impl BinaryOperators {
             "%" => Self::Mod,
             "&" => Self::And,
             "|" => Self::Or,
-            "->" => Self::Implies, 
+            "->" => Self::Implies,
             _ => unreachable!()
         })
     }
 }
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum UnaryOperators {
     Not,
     Negative
@@ -49,7 +49,7 @@ impl UnaryOperators {
     pub fn new(operator: &str) -> Result<Self, Box<dyn Error>> {
         Ok(match operator {
             "!" => Self::Not,
-            "-" => Self::Negative, 
+            "-" => Self::Negative,
             _ => unreachable!()
         })
     }

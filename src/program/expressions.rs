@@ -6,21 +6,21 @@ use crate::{errors, program::{operations::{BinaryOperators, UnaryOperators}, uni
 
 pub type Expr = SpannedExpr;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct SpannedExpr {
-    expr: ExprKind,
-    line: usize,
-    column: usize,
+    pub expr: ExprKind,
+    pub line: usize,
+    pub column: usize,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum ExprKind {
     Number(i64),
     String(String),
     Boolean(bool),
     Timeunit{
         number: Box<Expr>,
-        unit : Unit
+        unit: Unit
     },
     Interval {
         start: Box<Expr>,
@@ -45,11 +45,11 @@ pub enum ExprKind {
     BinaryOperations {
         lhs: Box<Expr>,
         rhs: Box<Expr>,
-        operator: BinaryOperators 
+        operator: BinaryOperators
     },
     UnaryOperations {
         operand: Box<Expr>,
-        operator: UnaryOperators 
+        operator: UnaryOperators
     }
 }
 
@@ -194,7 +194,7 @@ impl Expr {
                         })?)?;
                     ExprKind::UnaryOperations { operand, operator }
                 }
-                
+
             }
 
             _ => {
