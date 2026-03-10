@@ -1,6 +1,6 @@
 use std::error::Error;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum BinaryOperators {
     Equal,
     Less,
@@ -39,7 +39,7 @@ impl BinaryOperators {
         })
     }
 }
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum UnaryOperators {
     Not,
     Negative

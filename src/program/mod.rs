@@ -10,6 +10,8 @@ mod function_types;
 mod member_types;
 #[cfg(test)]
 mod program_test;
+#[cfg(test)]
+mod conversion_test;
 
 #[derive(Debug)]
 pub struct Program {
@@ -34,6 +36,12 @@ impl Program {
 
         }
         Ok(Program { expressions: exprs})
+    }
+
+    fn convert(&mut self) {
+        self.expressions.iter_mut().for_each(|spanned_expr| {
+            spanned_expr.expr = spanned_expr.expr.convert()
+        });
     }
 
 }

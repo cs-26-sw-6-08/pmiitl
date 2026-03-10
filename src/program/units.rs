@@ -1,6 +1,6 @@
 use std::error::Error;
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum Unit {
     Seconds,
     Minutes,

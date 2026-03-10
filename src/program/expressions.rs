@@ -18,7 +18,7 @@ pub struct SpannedExpr {
     pub line: usize,
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum ExprKind {
     Number(i64),
     String(String),
@@ -51,7 +51,7 @@ pub enum ExprKind {
     BinaryOperations {
         lhs: Box<ExprKind>,
         rhs: Box<ExprKind>,
-        operator: BinaryOperators 
+        operator: BinaryOperators,
     },
     UnaryOperations {
         operand: Box<ExprKind>,
@@ -67,11 +67,16 @@ pub enum ExprKind {
 }
 
 impl SpannedExpr {
-    pub fn new(node: AstNode) -> Result<Self, Box<dyn Error>>{
-        let position = node.get_position().unwrap_or(hime_redist::text::TextPosition { line: 0, column: 0 });
+    pub fn new(node: AstNode) -> Result<Self, Box<dyn Error>> {
+        let position = node
+            .get_position()
+            .unwrap_or(hime_redist::text::TextPosition { line: 0, column: 0 });
         let expr = ExprKind::new(node)?;
 
-        Ok(SpannedExpr { expr, line : position.line })
+        Ok(SpannedExpr {
+            expr,
+            line: position.line,
+        })
     }
 }
 
@@ -235,5 +240,80 @@ impl ExprKind {
         };
 
         Ok(expr)
+    }
+
+    pub fn convert(&self) -> Result<ExprKind, Box<dyn Error>> {
+        match self {
+            ExprKind::BinaryOperations { lhs, rhs, operator } => {
+                let lhs = lhs.convert()?;
+                let rhs = rhs.convert()?;
+
+                let _ = match (lhs, rhs) {
+                    (ExprKind::Unit { number: _, unit: _ }, ExprKind::Unit { number: _, unit: _ }) => "s",
+                    (_, ExprKind::Unit { number: _, unit: _ }) => return Err(errors::Error::ProgramParse("s".into(), 0, 0).into()),
+                    (ExprKind::Unit { number: _, unit: _ }, _) => return Err(errors::Error::ProgramParse("s".into(), 0, 0).into()),
+                    (_, _) => "s",
+                };
+                
+                let expr = match operator {
+                    /* p && q => !(!p || !q) */
+                    BinaryOperators::And => ExprKind::UnaryOperations {
+                        operand: ExprKind::BinaryOperations {
+                            lhs: ExprKind::UnaryOperations {
+                                operand: lhs.convert_bool()?.into(),
+                                operator: UnaryOperators::Not,
+                            }
+                            .into(),
+                            rhs: ExprKind::UnaryOperations {
+                                operand: rhs.convert_bool()?.into(),
+                                operator: UnaryOperators::Not,
+                            }
+                            .into(),
+                            operator: BinaryOperators::Or,
+                        }
+                        .into(),
+                        operator: UnaryOperators::Not,
+                    },
+                    /* p -> q => !p || q */
+                    BinaryOperators::Implies => ExprKind::BinaryOperations {
+                        lhs: ExprKind::UnaryOperations {
+                            operand: lhs.convert()?.into(),
+                            operator: UnaryOperators::Not,
+                        }
+                        .into(),
+                        rhs: rhs.convert()?.into(),
+                        operator: BinaryOperators::Or,
+                    },
+                    _ => self.clone(),
+                };
+                Ok(expr)
+            },
+            /*ExprKind::Function { aggregate_type, expr } => match aggregate_type {
+                FunctionType::Count => {
+                }
+                _ => self.clone(),
+            },*/
+            _ => Ok(self.clone()),
+        }
+    }
+
+    fn convert_bool(&self) -> Result<ExprKind, Box<dyn Error>> {
+        Ok(match self.convert()? {
+            ExprKind::Number(n) => match n {
+                0 => ExprKind::Boolean(false),
+                _ => ExprKind::Boolean(true),
+            },
+            c => c,
+        })
+    }
+
+    fn convert_num(&self) ->  Result<ExprKind, Box<dyn Error>> {
+        Ok(match self.convert()? {
+            ExprKind::Boolean(b) => match b {
+                true => ExprKind::Number(1),
+                false => ExprKind::Number(0),
+            },
+            c => c,
+        })
     }
 }
