@@ -252,6 +252,9 @@ impl ExprKind {
 
                 Ok(temp)
 
+            },
+            ExprKind::Always { interval, not, expr } => {
+                Ok(ExprKind::Always { interval: interval.map_or(None, |e| Some(e.convert()?.into())), not: *not, expr: expr.convert()?.into() })
             }
                 /*
                 let expr = match operator {
