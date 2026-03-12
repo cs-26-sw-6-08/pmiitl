@@ -5,10 +5,7 @@ use hime_redist::{ast::AstNode, symbols::SemanticElementTrait};
 use crate::{
     errors,
     program::{
-        function_types::FunctionType,
-        member_types::MemberType,
-        operations::{BinaryOperators, UnaryOperators},
-        units::Unit,
+        conversion_binary_operator::conversion_binary_operations, conversion_units, function_types::FunctionType, member_types::MemberType, operations::{BinaryOperators, UnaryOperators}, units::Unit
     },
 };
 
@@ -245,16 +242,18 @@ impl ExprKind {
     pub fn convert(&self) -> Result<ExprKind, Box<dyn Error>> {
         match self {
             ExprKind::BinaryOperations { lhs, rhs, operator } => {
-                let lhs = lhs.convert()?;
-                let rhs = rhs.convert()?;
+                let lhs = lhs.convert_units().convert()?;
+                let rhs = rhs.convert_units().convert()?;
 
-                let _ = match (lhs, rhs) {
-                    (ExprKind::Unit { number: _, unit: _ }, ExprKind::Unit { number: _, unit: _ }) => "s",
-                    (_, ExprKind::Unit { number: _, unit: _ }) => return Err(errors::Error::ProgramParse("s".into(), 0, 0).into()),
-                    (ExprKind::Unit { number: _, unit: _ }, _) => return Err(errors::Error::ProgramParse("s".into(), 0, 0).into()),
-                    (_, _) => "s",
+                let temp = match conversion_binary_operations(lhs, rhs, operator) {
+                    Some(expr_kind) => expr_kind,
+                    None => return Err(errors::Error::Conversion.into())
                 };
-                
+
+                Ok(temp)
+
+            }
+                /*
                 let expr = match operator {
                     /* p && q => !(!p || !q) */
                     BinaryOperators::And => ExprKind::UnaryOperations {
@@ -288,7 +287,7 @@ impl ExprKind {
                 };
                 Ok(expr)
             },
-            /*ExprKind::Function { aggregate_type, expr } => match aggregate_type {
+            ExprKind::Function { aggregate_type, expr } => match aggregate_type {
                 FunctionType::Count => {
                 }
                 _ => self.clone(),
@@ -297,23 +296,9 @@ impl ExprKind {
         }
     }
 
-    fn convert_bool(&self) -> Result<ExprKind, Box<dyn Error>> {
-        Ok(match self.convert()? {
-            ExprKind::Number(n) => match n {
-                0 => ExprKind::Boolean(false),
-                _ => ExprKind::Boolean(true),
-            },
-            c => c,
-        })
+    fn convert_units(&self) -> ExprKind {
+        conversion_units::conversion_unit(self)
     }
 
-    fn convert_num(&self) ->  Result<ExprKind, Box<dyn Error>> {
-        Ok(match self.convert()? {
-            ExprKind::Boolean(b) => match b {
-                true => ExprKind::Number(1),
-                false => ExprKind::Number(0),
-            },
-            c => c,
-        })
-    }
+    
 }

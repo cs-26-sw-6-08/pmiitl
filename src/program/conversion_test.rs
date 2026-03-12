@@ -13,7 +13,7 @@ fn binary_and() {
         rhs: ExprKind::Number(6).into(),
         operator: BinaryOperators::And,
     }
-    .convert();
+    .convert().unwrap();
     let expected = ExprKind::UnaryOperations {
         operand: ExprKind::BinaryOperations {
             lhs: ExprKind::UnaryOperations {
@@ -41,7 +41,7 @@ fn binary_implies() {
         rhs: ExprKind::Number(6).into(),
         operator: BinaryOperators::Implies,
     }
-    .convert();
+    .convert().unwrap();
     let expected = ExprKind::BinaryOperations {
         lhs: ExprKind::UnaryOperations {
             operand: ExprKind::Number(5).into(),

@@ -1,3 +1,0 @@
-not eventually count(active) > 5;
-always count(active) > 5;
-

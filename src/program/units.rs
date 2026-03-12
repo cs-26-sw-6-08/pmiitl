@@ -6,7 +6,11 @@ pub enum Unit {
     Minutes,
     Hours,
     Watt,
+    KiloWatts,
     KiloWattHours,
+    WattHours,
+    WattMinutes,
+    WattSeconds,
 }
 
 impl Unit {
@@ -16,7 +20,11 @@ impl Unit {
             "m" => Self::Minutes,
             "h" => Self::Hours,
             "w" => Self::Watt,
+            "kw" => Self::KiloWatts,
             "kwh" => Self::KiloWattHours,
+            "wh" => Self::WattHours,
+            "wm" => Self::WattMinutes,
+            "ws" => Self::WattSeconds,
             _ => unreachable!()
         })
     }

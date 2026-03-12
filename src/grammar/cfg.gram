@@ -20,7 +20,7 @@ grammar cfg
 
     STRING -> [a-zA-Z]+;
     TIMEUNIT -> 's'|'m' | 'h';
-    POWERUNIT -> 'w' | 'kwh';
+    POWERUNIT -> 'w' | 'kwh' | 'wh' | 'wm' | 'ws' | 'kw';
     BOOL -> 'true' | 'false';
     TIME -> 't';
   }

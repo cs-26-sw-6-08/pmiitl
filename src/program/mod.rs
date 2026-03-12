@@ -12,6 +12,8 @@ mod member_types;
 mod program_test;
 #[cfg(test)]
 mod conversion_test;
+mod conversion_binary_operator;
+mod conversion_units;
 
 #[derive(Debug)]
 pub struct Program {
@@ -35,13 +37,17 @@ impl Program {
             exprs.push(SpannedExpr::new(node)?);
 
         }
-        Ok(Program { expressions: exprs})
+
+        let mut program = Program { expressions: exprs};
+        program.convert()?;
+        Ok(program)
     }
 
-    fn convert(&mut self) {
-        self.expressions.iter_mut().for_each(|spanned_expr| {
-            spanned_expr.expr = spanned_expr.expr.convert()
-        });
+    fn convert(&mut self) -> Result<(), Box<dyn Error>> {
+        for spanned_expr in self.expressions.iter_mut() {
+            spanned_expr.expr = spanned_expr.expr.convert()?;
+        }
+        Ok(())
     }
 
 }
