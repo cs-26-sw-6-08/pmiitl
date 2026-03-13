@@ -105,6 +105,8 @@ pub fn conversion_binary_operations(
             },
             /* n * m */
             (ExprKind::Number(n), ExprKind::Number(m)) => Ok(ExprKind::Number(n * m)),
+            /* b * b */
+            (ExprKind::Boolean(p), ExprKind::Boolean(q)) => Ok(ExprKind::Number((if *p { 1 } else { 0 }) * (if *q { 1 } else { 0 }))),
             /* n * b | b * n */
             (ExprKind::Number(n), ExprKind::Boolean(b))
             | (ExprKind::Boolean(b), ExprKind::Number(n)) => {
@@ -191,6 +193,8 @@ pub fn conversion_binary_operations(
             },
             /* n / m */
             (ExprKind::Number(n), ExprKind::Number(m)) => Ok(ExprKind::Number(n / m)),
+            /* b / b */
+            (ExprKind::Boolean(p), ExprKind::Boolean(q)) => Ok(ExprKind::Number((if *p { 1 } else { 0 }) / (if *q { 1 } else { 0 }))),
             /* n / b */
             (ExprKind::Number(n), ExprKind::Boolean(b)) => {
                 Ok(ExprKind::Number(n / if *b { 1 } else { 0 }))
@@ -255,6 +259,8 @@ pub fn conversion_binary_operations(
             },
             /* n + m */
             (ExprKind::Number(n), ExprKind::Number(m)) => Ok(ExprKind::Number(n + m)),
+            /* b + b */
+            (ExprKind::Boolean(p), ExprKind::Boolean(q)) => Ok(ExprKind::Number((if *p { 1 } else { 0 }) + (if *q { 1 } else { 0 }))),
             /* n + b | b + n*/
             (ExprKind::Number(n), ExprKind::Boolean(b))
             | (ExprKind::Boolean(b), ExprKind::Number(n)) => {
@@ -316,6 +322,8 @@ pub fn conversion_binary_operations(
             },
             /* n - m */
             (ExprKind::Number(n), ExprKind::Number(m)) => Ok(ExprKind::Number(n - m)),
+            /* b - b */
+            (ExprKind::Boolean(p), ExprKind::Boolean(q)) => Ok(ExprKind::Number((if *p { 1 } else { 0 }) - (if *q { 1 } else { 0 }))),
             /* n - b */
             (ExprKind::Number(n), ExprKind::Boolean(b)) => {
                 Ok(ExprKind::Number(n - if *b { 1 } else { 0 }))
@@ -380,6 +388,8 @@ pub fn conversion_binary_operations(
             },
             /* n % m */
             (ExprKind::Number(n), ExprKind::Number(m)) => Ok(ExprKind::Number(n % m)),
+            /* b % b */
+            (ExprKind::Boolean(p), ExprKind::Boolean(q)) => Ok(ExprKind::Number((if *p { 1 } else { 0 }) % (if *q { 1 } else { 0 }))),
             /* n % b */
             (ExprKind::Number(n), ExprKind::Boolean(b)) => {
                 Ok(ExprKind::Number(n % if *b { 1 } else { 0 }))
@@ -397,6 +407,8 @@ pub fn conversion_binary_operations(
             (ExprKind::Number(n), ExprKind::Boolean(b)) => Ok(ExprKind::Boolean(n != 0 && b)),
             /* p & q */
             (ExprKind::Boolean(p), ExprKind::Boolean(q)) => Ok(ExprKind::Boolean(p && q)),
+            /* n & m */
+            (ExprKind::Number(n), ExprKind::Number(m)) => Ok(ExprKind::Boolean(n != 0 && m != 0)),
 
             /* p & q => !(!p || !q) */
             (lhs, rhs) => Ok(ExprKind::UnaryOperations {
@@ -424,6 +436,8 @@ pub fn conversion_binary_operations(
             (ExprKind::Boolean(b), ExprKind::Number(n)) => Ok(ExprKind::Boolean(*b || *n != 0)),
             /* n | b */
             (ExprKind::Number(n), ExprKind::Boolean(b)) => Ok(ExprKind::Boolean(*n != 0 || *b)),
+            /* n | m */
+            (ExprKind::Number(n), ExprKind::Number(m)) => Ok(ExprKind::Boolean(*n != 0 || *m != 0)),
             _ => Err(errors::Error::ConversionBinaryOperation(BinaryOperators::Or, lhs, rhs).into()),
         },
         BinaryOperators::Equal => match (&lhs, &rhs) {
@@ -457,6 +471,8 @@ pub fn conversion_binary_operations(
             /* b > n */
             #[allow(clippy::bool_comparison)]
             (ExprKind::Boolean(b), ExprKind::Number(n)) => Ok(ExprKind::Boolean(*b > (*n != 0))),
+            /* b > b */
+            (ExprKind::Boolean(p), ExprKind::Boolean(q)) => Ok(ExprKind::Boolean(p > q)),
             _ => Err(errors::Error::ConversionBinaryOperation(BinaryOperators::Greater, lhs, rhs).into()),
         },
         BinaryOperators::GreaterEqual => match (&lhs, &rhs) {
@@ -466,6 +482,8 @@ pub fn conversion_binary_operations(
             (ExprKind::Number(n), ExprKind::Boolean(b)) => Ok(ExprKind::Boolean((*n != 0) >= *b)),
             /* b >= n */
             (ExprKind::Boolean(b), ExprKind::Number(n)) => Ok(ExprKind::Boolean(*b >= (*n != 0))),
+            /* b >= b */
+            (ExprKind::Boolean(p), ExprKind::Boolean(q)) => Ok(ExprKind::Boolean(p >= q)),
             _ => Err(errors::Error::ConversionBinaryOperation(BinaryOperators::GreaterEqual, lhs, rhs).into()),
         },
         BinaryOperators::Less => match (&lhs, &rhs) {
@@ -477,6 +495,8 @@ pub fn conversion_binary_operations(
             /* b < n */
             #[allow(clippy::bool_comparison)]
             (ExprKind::Boolean(b), ExprKind::Number(n)) => Ok(ExprKind::Boolean(*b < (*n != 0))),
+            /* b < b */
+            (ExprKind::Boolean(p), ExprKind::Boolean(q)) => Ok(ExprKind::Boolean(p < q)),
             _ => Err(errors::Error::ConversionBinaryOperation(BinaryOperators::Less, lhs, rhs).into()),
         },
         BinaryOperators::LessEqual => match (&lhs, &rhs) {
@@ -486,6 +506,8 @@ pub fn conversion_binary_operations(
             (ExprKind::Boolean(b), ExprKind::Number(n)) => Ok(ExprKind::Boolean(*b <= (*n != 0))),
             /* n <= b */
             (ExprKind::Number(n), ExprKind::Boolean(b)) => Ok(ExprKind::Boolean((*n != 0) <= *b)),
+            /* b <= b */
+            (ExprKind::Boolean(p), ExprKind::Boolean(q)) => Ok(ExprKind::Boolean(p <= q)),
             _ => Err(errors::Error::ConversionBinaryOperation(BinaryOperators::LessEqual, lhs, rhs).into()),
         },
         BinaryOperators::Implies => match (lhs, rhs) {
@@ -495,8 +517,11 @@ pub fn conversion_binary_operations(
             (ExprKind::Boolean(b), ExprKind::Number(n)) => Ok(ExprKind::Boolean(!b || (n != 0))),
             /* n -> b */
             (ExprKind::Number(n), ExprKind::Boolean(b)) => Ok(ExprKind::Boolean(n == 0 || b)),
+            /* n -> n */
+            (ExprKind::Number(n), ExprKind::Number(m)) => Ok(ExprKind::Boolean(n == 0 || (m != 0))),
              /* p -> q => !p || q */
             (lhs, rhs) => Ok(ExprKind::BinaryOperations { lhs: ExprKind::UnaryOperations { operand: lhs.into(), operator: UnaryOperators::Not }.into(), rhs: rhs.into(), operator: BinaryOperators::Or }),
         },
     }
 }
+

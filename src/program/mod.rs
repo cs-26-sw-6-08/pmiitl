@@ -11,7 +11,7 @@ pub mod member_types;
 #[cfg(test)]
 mod program_test;
 #[cfg(test)]
-mod conversion_test;
+mod conversion_binary_operator_test;
 mod conversion_binary_operator;
 mod conversion_units;
 
