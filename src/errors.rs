@@ -1,3 +1,4 @@
+use crate::program::{expressions::ExprKind, operations::BinaryOperators};
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -8,6 +9,6 @@ pub enum Error {
     ASTNodeValueInvalid(String),
     #[error("program parse error line {1} column {2}: {0}")]
     ProgramParse(String, usize, usize),
-    #[error("conversion error")]
-    Conversion,
+    #[error("could not convert operation {0:?} lhs: {1:?} rhs: {2:?}")]
+    ConversionBinaryOperation(BinaryOperators, ExprKind, ExprKind),
 }

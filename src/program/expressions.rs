@@ -245,38 +245,17 @@ impl ExprKind {
                 let lhs = lhs.convert_units().convert()?;
                 let rhs = rhs.convert_units().convert()?;
 
-                let temp = match conversion_binary_operations(lhs, rhs, operator) {
-                    Some(expr_kind) => expr_kind,
-                    None => return Err(errors::Error::Conversion.into())
-                };
-
-                Ok(temp)
-
+                Ok(conversion_binary_operations(lhs, rhs, operator)?)
             },
             ExprKind::Always { interval, not, expr } => {
-                Ok(ExprKind::Always { interval: interval.map_or(None, |e| Some(e.convert()?.into())), not: *not, expr: expr.convert()?.into() })
+                Ok(ExprKind::Always { interval: interval.clone().and_then(|e| Some(e.convert().ok()?.into())), not: *not, expr: expr.convert()?.into() })
             }
+
                 /*
                 let expr = match operator {
                     /* p && q => !(!p || !q) */
-                    BinaryOperators::And => ExprKind::UnaryOperations {
-                        operand: ExprKind::BinaryOperations {
-                            lhs: ExprKind::UnaryOperations {
-                                operand: lhs.convert_bool()?.into(),
-                                operator: UnaryOperators::Not,
-                            }
-                            .into(),
-                            rhs: ExprKind::UnaryOperations {
-                                operand: rhs.convert_bool()?.into(),
-                                operator: UnaryOperators::Not,
-                            }
-                            .into(),
-                            operator: BinaryOperators::Or,
-                        }
-                        .into(),
-                        operator: UnaryOperators::Not,
-                    },
-                    /* p -> q => !p || q */
+                    
+                   
                     BinaryOperators::Implies => ExprKind::BinaryOperations {
                         lhs: ExprKind::UnaryOperations {
                             operand: lhs.convert()?.into(),

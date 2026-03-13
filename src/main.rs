@@ -18,9 +18,13 @@ fn main() {
 ".to_string());
     let ast = result.get_ast();
     let root = ast.get_root();*/
-    let program = match Program::new(program_str.as_str()) {
+    let mut program = match Program::new(program_str.as_str()) {
         Ok(program) => program,
         Err(err) => return println!("Error: {}", err),
+    };
+
+    if let Err(err) = program.convert() {
+        return println!("Error: {}", err);
     };
 
     println!("{:?}", program);

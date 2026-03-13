@@ -3,11 +3,11 @@ use std::error::Error;
 use hime_redist::ast::AstNode;
 
 use crate::{errors, grammar::cfg, program::expressions::SpannedExpr};
-mod expressions;
-mod units;
-mod operations;
-mod function_types;
-mod member_types;
+pub mod expressions;
+pub mod units;
+pub mod operations;
+pub mod function_types;
+pub mod member_types;
 #[cfg(test)]
 mod program_test;
 #[cfg(test)]
@@ -38,12 +38,11 @@ impl Program {
 
         }
 
-        let mut program = Program { expressions: exprs};
-        program.convert()?;
+        let program = Program { expressions: exprs};
         Ok(program)
     }
 
-    fn convert(&mut self) -> Result<(), Box<dyn Error>> {
+    pub fn convert(&mut self) -> Result<(), Box<dyn Error>> {
         for spanned_expr in self.expressions.iter_mut() {
             spanned_expr.expr = spanned_expr.expr.convert()?;
         }

@@ -1,2 +1,2 @@
-always 2 + 2 +  false;
+always name=fridge & power > 10;
 

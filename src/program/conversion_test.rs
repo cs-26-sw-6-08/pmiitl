@@ -9,20 +9,20 @@ use crate::program::{
 #[test]
 fn binary_and() {
     let actual = ExprKind::BinaryOperations {
-        lhs: ExprKind::Number(5).into(),
-        rhs: ExprKind::Number(6).into(),
+        lhs: ExprKind::Number(5000).into(),
+        rhs: ExprKind::Number(6000).into(),
         operator: BinaryOperators::And,
     }
     .convert().unwrap();
     let expected = ExprKind::UnaryOperations {
         operand: ExprKind::BinaryOperations {
             lhs: ExprKind::UnaryOperations {
-                operand: ExprKind::Number(5).into(),
+                operand: ExprKind::Number(5000).into(),
                 operator: UnaryOperators::Not,
             }
             .into(),
             rhs: ExprKind::UnaryOperations {
-                operand: ExprKind::Number(6).into(),
+                operand: ExprKind::Number(6000).into(),
                 operator: UnaryOperators::Not,
             }
             .into(),
@@ -37,18 +37,18 @@ fn binary_and() {
 #[test]
 fn binary_implies() {
     let actual = ExprKind::BinaryOperations {
-        lhs: ExprKind::Number(5).into(),
-        rhs: ExprKind::Number(6).into(),
+        lhs: ExprKind::Number(5000).into(),
+        rhs: ExprKind::Number(6000).into(),
         operator: BinaryOperators::Implies,
     }
     .convert().unwrap();
     let expected = ExprKind::BinaryOperations {
         lhs: ExprKind::UnaryOperations {
-            operand: ExprKind::Number(5).into(),
+            operand: ExprKind::Number(5000).into(),
             operator: UnaryOperators::Not,
         }
         .into(),
-        rhs: ExprKind::Number(6).into(),
+        rhs: ExprKind::Number(6000).into(),
         operator: BinaryOperators::Or,
     };
     assert_eq!(actual, expected);
