@@ -1,2 +1,2 @@
-always name=fridge & power > 10;
+always 5 kWh = 5 kWh;
 

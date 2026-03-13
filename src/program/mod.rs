@@ -10,10 +10,6 @@ pub mod function_types;
 pub mod member_types;
 #[cfg(test)]
 mod program_test;
-#[cfg(test)]
-mod conversion_binary_operator_test;
-mod conversion_binary_operator;
-mod conversion_units;
 
 #[derive(Debug)]
 pub struct Program {
@@ -40,13 +36,6 @@ impl Program {
 
         let program = Program { expressions: exprs};
         Ok(program)
-    }
-
-    pub fn convert(&mut self) -> Result<(), Box<dyn Error>> {
-        for spanned_expr in self.expressions.iter_mut() {
-            spanned_expr.expr = spanned_expr.expr.convert()?;
-        }
-        Ok(())
     }
 
 }

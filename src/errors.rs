@@ -11,4 +11,6 @@ pub enum Error {
     ProgramParse(String, usize, usize),
     #[error("could not convert operation {0:?} lhs: {1:?} rhs: {2:?}")]
     ConversionBinaryOperation(BinaryOperators, ExprKind, ExprKind),
+    #[error("type error")]
+    Typechecking,
 }

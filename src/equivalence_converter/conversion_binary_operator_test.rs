@@ -1,9 +1,6 @@
 use crate::program::{
     expressions::ExprKind,
-    function_types::FunctionType,
-    member_types::MemberType,
     operations::{BinaryOperators, UnaryOperators},
-    units::Unit,
 };
 
 #[test]
@@ -57,6 +54,12 @@ fn binary_implies() {
 
 /*
 
-
+5 test for hver operation:
+- 1. lovlig unit conversion
+- 2. ulovlig unit conversion
+- 3. boolean boolean
+- 4. number number
+- 5. boolean number / number boolean
+- eqv. hvis der er det. 
 
 */

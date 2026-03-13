@@ -1,11 +1,11 @@
-use std::error::Error;
+use std::{error::Error, ops::Add};
 
 use hime_redist::{ast::AstNode, symbols::SemanticElementTrait};
 
 use crate::{
     errors,
     program::{
-        conversion_binary_operator::conversion_binary_operations, conversion_units, function_types::FunctionType, member_types::MemberType, operations::{BinaryOperators, UnaryOperators}, units::Unit
+        function_types::FunctionType, member_types::MemberType, operations::{BinaryOperators, UnaryOperators}, units::Unit
     },
 };
 
@@ -237,49 +237,6 @@ impl ExprKind {
         };
 
         Ok(expr)
-    }
-
-    pub fn convert(&self) -> Result<ExprKind, Box<dyn Error>> {
-        match self {
-            ExprKind::BinaryOperations { lhs, rhs, operator } => {
-                let lhs = lhs.convert_units().convert()?;
-                let rhs = rhs.convert_units().convert()?;
-
-                Ok(conversion_binary_operations(lhs, rhs, operator)?)
-            },
-            ExprKind::Always { interval, not, expr } => {
-                Ok(ExprKind::Always { interval: interval.clone().and_then(|e| Some(e.convert().ok()?.into())), not: *not, expr: expr.convert()?.into() })
-            }
-
-                /*
-                let expr = match operator {
-                    /* p && q => !(!p || !q) */
-                    
-                   
-                    BinaryOperators::Implies => ExprKind::BinaryOperations {
-                        lhs: ExprKind::UnaryOperations {
-                            operand: lhs.convert()?.into(),
-                            operator: UnaryOperators::Not,
-                        }
-                        .into(),
-                        rhs: rhs.convert()?.into(),
-                        operator: BinaryOperators::Or,
-                    },
-                    _ => self.clone(),
-                };
-                Ok(expr)
-            },
-            ExprKind::Function { aggregate_type, expr } => match aggregate_type {
-                FunctionType::Count => {
-                }
-                _ => self.clone(),
-            },*/
-            _ => Ok(self.clone()),
-        }
-    }
-
-    fn convert_units(&self) -> ExprKind {
-        conversion_units::conversion_unit(self)
     }
 
     
