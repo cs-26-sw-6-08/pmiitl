@@ -11,10 +11,7 @@ impl ExprKind {
             ExprKind::UnaryOperations { operand, operator } => ExprKind::UnaryOperations { operand: operand.unit_converter().into(), operator: operator.clone() },
             ExprKind::Function { aggregate_type, expr } => ExprKind::Function { aggregate_type: aggregate_type.clone(), expr: expr.unit_converter().into() },
             ExprKind::Unit { number, unit } => {
-                let n = match number.as_ref() {
-                    ExprKind::Number(n) => *n,
-                    _ => unreachable!()
-                };
+                let ExprKind::Number(n) = *number.as_ref() else { unreachable!() };
                 match unit {
                     Unit::Minutes => ExprKind::Unit { number: ExprKind::Number(n * 60).into(), unit: Unit::Seconds },
                     Unit::Hours => ExprKind::Unit { number: ExprKind::Number(n * 60 * 60).into(), unit: Unit::Seconds },

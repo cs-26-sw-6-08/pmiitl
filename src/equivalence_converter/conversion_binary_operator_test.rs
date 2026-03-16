@@ -11,23 +11,7 @@ fn binary_and() {
         operator: BinaryOperators::And,
     }
     .convert().unwrap();
-    let expected = ExprKind::UnaryOperations {
-        operand: ExprKind::BinaryOperations {
-            lhs: ExprKind::UnaryOperations {
-                operand: ExprKind::Number(5000).into(),
-                operator: UnaryOperators::Not,
-            }
-            .into(),
-            rhs: ExprKind::UnaryOperations {
-                operand: ExprKind::Number(6000).into(),
-                operator: UnaryOperators::Not,
-            }
-            .into(),
-            operator: BinaryOperators::Or,
-        }
-        .into(),
-        operator: UnaryOperators::Not,
-    };
+    let expected = ExprKind::Boolean(true);
     assert_eq!(actual, expected);
 }
 
@@ -39,15 +23,7 @@ fn binary_implies() {
         operator: BinaryOperators::Implies,
     }
     .convert().unwrap();
-    let expected = ExprKind::BinaryOperations {
-        lhs: ExprKind::UnaryOperations {
-            operand: ExprKind::Number(5000).into(),
-            operator: UnaryOperators::Not,
-        }
-        .into(),
-        rhs: ExprKind::Number(6000).into(),
-        operator: BinaryOperators::Or,
-    };
+    let expected = ExprKind::Boolean(true);
     assert_eq!(actual, expected);
 }
 

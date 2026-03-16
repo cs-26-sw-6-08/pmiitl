@@ -40,7 +40,21 @@ fn interval() {
 #[test]
 fn always() {
     let expr = ExprKind::Always {
-        interval: None,
+        interval: Some(
+            ExprKind::Interval {
+                start: ExprKind::Unit {
+                    number: ExprKind::Number(5000).into(),
+                    unit: Unit::Minutes,
+                }
+                .into(),
+                end: ExprKind::Unit {
+                    number: ExprKind::Number(10000).into(),
+                    unit: Unit::Hours,
+                }
+                .into(),
+            }
+            .into(),
+        ),
         not: false,
         expr: ExprKind::Unit {
             number: ExprKind::Number(5000).into(),
@@ -52,7 +66,19 @@ fn always() {
     assert_eq!(
         expr,
         ExprKind::Always {
-            interval: None,
+            interval: Some(ExprKind::Interval {
+                start: ExprKind::Unit {
+                    number: ExprKind::Number(5000 * 60).into(),
+                    unit: Unit::Seconds,
+                }
+                .into(),
+                end: ExprKind::Unit {
+                    number: ExprKind::Number(10000 * 60 * 60).into(),
+                    unit: Unit::Seconds,
+                }
+                .into(),
+            }
+            .into()),
             not: false,
             expr: ExprKind::Unit {
                 number: ExprKind::Number(5000 * 60 * 60).into(),
@@ -181,6 +207,12 @@ fn unaryoperations() {
             operator: UnaryOperators::Negative
         }
     )
+}
+
+#[test]
+fn number() {
+    let expr = ExprKind::Number(5000).unit_converter();
+    assert_eq!(expr, ExprKind::Number(5000))
 }
 
 #[test]

@@ -116,17 +116,13 @@ impl ExprKind {
                         | (Type::Bool, Type::Number)
                         | (Type::Number, Type::Bool)
                         | (Type::Bool, Type::Bool) => Ok(Type::Number),
-                        (Type::Watt, Type::Number) | (Type::Number, Type::Watt) => Ok(Type::Watt),
-                        (Type::Seconds, Type::Number) | (Type::Number, Type::Seconds) => {
-                            Ok(Type::Seconds)
-                        }
+                        (Type::Watt, Type::Number) | (Type::Number, Type::Watt) | (Type::Bool, Type::Watt) | (Type::Watt, Type::Bool) => Ok(Type::Watt),
+                        (Type::Seconds, Type::Number) | (Type::Number, Type::Seconds) | (Type::Bool, Type::Seconds) | (Type::Seconds, Type::Bool) => Ok(Type::Seconds),                        
                         (Type::WattSeconds, Type::Number)
                         | (Type::Number, Type::WattSeconds)
                         | (Type::Seconds, Type::Watt)
-                        | (Type::Watt, Type::Seconds) => Ok(Type::WattSeconds),
-                        (Type::Hertz, Type::Number) | (Type::Number, Type::Hertz) => {
-                            Ok(Type::Hertz)
-                        }
+                        | (Type::Watt, Type::Seconds) | (Type::Bool, Type::WattSeconds) | (Type::WattSeconds, Type::Bool) => Ok(Type::WattSeconds),
+                        (Type::Hertz, Type::Number) | (Type::Number, Type::Hertz) | (Type::Bool, Type::Hertz) | (Type::Hertz, Type::Bool) => Ok(Type::Hertz),                        
                         _ => Err(errors::Error::Typechecking.into()),
                     },
                     BinaryOperators::Divide => match (lhs_type, rhs_type) {
@@ -138,14 +134,10 @@ impl ExprKind {
                         | (Type::Seconds, Type::Seconds)
                         | (Type::WattSeconds, Type::WattSeconds)
                         | (Type::Hertz, Type::Hertz) => Ok(Type::Number),
-                        (Type::Watt, Type::Number) | (Type::WattSeconds, Type::Seconds) => {
-                            Ok(Type::Watt)
-                        }
-                        (Type::Seconds, Type::Number) | (Type::WattSeconds, Type::Watt) => {
-                            Ok(Type::Seconds)
-                        }
-                        (Type::WattSeconds, Type::Number) => Ok(Type::WattSeconds),
-                        (Type::Hertz, Type::Number) => Ok(Type::Hertz),
+                        (Type::Watt, Type::Number) | (Type::WattSeconds, Type::Seconds) | (Type::Watt, Type::Bool) => Ok(Type::Watt),                        
+                        (Type::Seconds, Type::Number) | (Type::WattSeconds, Type::Watt) | (Type::Seconds, Type::Bool) => Ok(Type::Seconds),
+                        (Type::WattSeconds, Type::Number) | (Type::WattSeconds, Type::Bool) => Ok(Type::WattSeconds),
+                        (Type::Hertz, Type::Number) | (Type::Hertz, Type::Bool) => Ok(Type::Hertz),
                         _ => Err(errors::Error::Typechecking.into()),
                     },
                     BinaryOperators::And | BinaryOperators::Or | BinaryOperators::Implies => {
@@ -195,15 +187,19 @@ impl ExprKind {
                         _ => Ok(expr_type),
                     },
                     FunctionType::Count => match expr_type {
-                        Type::Number => Ok(Type::Number),
+                        Type::Bool => Ok(Type::Number),
                         _ => Err(errors::Error::Typechecking.into()),
                     },
-                    FunctionType::Sumtime | FunctionType::Avgtime => match expr_type {
+                    FunctionType::Sumtime => match expr_type {
                         Type::Watt => Ok(Type::WattSeconds),
                         Type::Number => Ok(Type::Seconds),
                         Type::Hertz => Ok(Type::Number),
                         _ => Err(errors::Error::Typechecking.into()),
                     },
+                    FunctionType::Avgtime => match expr_type {
+                        Type::String => Err(errors::Error::Typechecking.into()),
+                        _ => Ok(expr_type),
+                    }
                     FunctionType::Counttime => match expr_type {
                         Type::Number => Ok(Type::Seconds),
                         _ => Err(errors::Error::Typechecking.into()),
@@ -216,7 +212,7 @@ impl ExprKind {
 }
 
 /*
-
+TODO: slette hertz? Find Typer af input/output for FunctionType
 
 
 */

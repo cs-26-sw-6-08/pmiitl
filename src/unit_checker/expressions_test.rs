@@ -1,0 +1,779 @@
+use crate::{
+    program::{expressions::ExprKind, function_types::FunctionType, member_types::MemberType, operations::{BinaryOperators, UnaryOperators}, units::Unit},
+    unit_checker::types::Type,
+};
+
+fn binary_expr(lhs: ExprKind, rhs: ExprKind, operator: BinaryOperators) -> ExprKind {
+    ExprKind::BinaryOperations {
+        lhs: lhs.into(),
+        rhs: rhs.into(),
+        operator,
+    }
+}
+
+fn unary_expr(operand: ExprKind, operator: UnaryOperators) -> ExprKind {
+    ExprKind::UnaryOperations { operand: operand.into(), operator }
+}
+
+fn number_expr() -> ExprKind {
+    ExprKind::Number(5000)
+}
+
+fn string_expr() -> ExprKind {
+    ExprKind::String("christian".into())
+}
+
+fn bool_expr() -> ExprKind {
+    ExprKind::Boolean(true)
+}
+
+fn current_time() -> ExprKind {
+    ExprKind::CurrentTime
+}
+
+fn unit_expr(unit: Unit) -> ExprKind {
+    ExprKind::Unit {
+        number: number_expr().into(),
+        unit,
+    }
+}
+
+fn member_expr(access_type: MemberType) -> ExprKind {
+    ExprKind::Member { access_type }
+}
+
+fn function_expr(aggregate_type: FunctionType, expr: ExprKind) -> ExprKind {
+    ExprKind::Function { aggregate_type, expr: expr.into() }
+}
+
+fn interval_expr(unit1: ExprKind, unit2: ExprKind) -> ExprKind {
+    ExprKind::Interval { start: unit1.into(), end: unit2.into() }
+}
+
+fn always_expr(expr: ExprKind) -> ExprKind {
+    ExprKind::Always { interval: None, not: false, expr: expr.into() }
+}
+
+fn eventually_expr(expr: ExprKind) -> ExprKind {
+    ExprKind::Eventually { interval: Some(interval_expr(unit_expr(Unit::Seconds), unit_expr(Unit::Seconds)).into()), not: false, expr: expr.into() }
+}
+
+fn until_expr(expr1: ExprKind, expr2: ExprKind ) -> ExprKind {
+    ExprKind::Until { interval: Some(interval_expr(unit_expr(Unit::Seconds), unit_expr(Unit::Seconds)).into()), not: false, lhs: expr1.into(), rhs: expr2.into() }
+}
+
+#[test]
+fn plus_minus_mod_operations() {
+    for operator in [
+        BinaryOperators::Plus,
+        BinaryOperators::Minus,
+        BinaryOperators::Mod,
+    ] {
+        assert_eq!(
+            binary_expr(number_expr(), number_expr(), operator.clone())
+                .unit_check()
+                .unwrap(),
+            Type::Number
+        );
+        assert_eq!(
+            binary_expr(bool_expr(), number_expr(), operator.clone())
+                .unit_check()
+                .unwrap(),
+            Type::Number
+        );
+        assert_eq!(
+            binary_expr(number_expr(), bool_expr(), operator.clone())
+                .unit_check()
+                .unwrap(),
+            Type::Number
+        );
+        assert_eq!(
+            binary_expr(bool_expr(), bool_expr(), operator.clone())
+                .unit_check()
+                .unwrap(),
+            Type::Number
+        );
+        assert_eq!(
+            binary_expr(
+                unit_expr(Unit::Watt),
+                unit_expr(Unit::Watt),
+                operator.clone()
+            )
+            .unit_check()
+            .unwrap(),
+            Type::Watt
+        );
+        assert_eq!(
+            binary_expr(
+                unit_expr(Unit::Seconds),
+                unit_expr(Unit::Seconds),
+                operator.clone()
+            )
+            .unit_check()
+            .unwrap(),
+            Type::Seconds,
+        );
+        assert_eq!(
+            binary_expr(
+                unit_expr(Unit::WattSeconds),
+                unit_expr(Unit::WattSeconds),
+                operator.clone(),
+            )
+            .unit_check()
+            .unwrap(),
+            Type::WattSeconds,
+        );
+
+        assert!(binary_expr(string_expr(), string_expr(), operator.clone())
+            .unit_check().is_err());
+        assert!(binary_expr(
+            unit_expr(Unit::Watt),
+            unit_expr(Unit::Seconds),
+            operator.clone(),
+        )
+        .unit_check().is_err());
+        assert!(binary_expr(
+            number_expr(),
+            unit_expr(Unit::Watt),
+            operator,
+        )
+        .unit_check().is_err());
+    }
+}
+
+#[test]
+fn less_lessequal_greater_greaterequal_operations() {
+    for operator in [
+        BinaryOperators::Less,
+        BinaryOperators::LessEqual,
+        BinaryOperators::Greater,
+        BinaryOperators::GreaterEqual,
+    ] {
+        assert_eq!(
+            binary_expr(number_expr(), number_expr(), operator.clone())
+                .unit_check()
+                .unwrap(),
+            Type::Bool
+        );
+        assert_eq!(
+            binary_expr(bool_expr(), number_expr(), operator.clone())
+                .unit_check()
+                .unwrap(),
+            Type::Bool
+        );
+        assert_eq!(
+            binary_expr(number_expr(), bool_expr(), operator.clone())
+                .unit_check()
+                .unwrap(),
+            Type::Bool
+        );
+        assert_eq!(
+            binary_expr(bool_expr(), bool_expr(), operator.clone())
+                .unit_check()
+                .unwrap(),
+            Type::Bool
+        );
+        assert_eq!(
+            binary_expr(
+                unit_expr(Unit::Watt),
+                unit_expr(Unit::Watt),
+                operator.clone()
+            )
+            .unit_check()
+            .unwrap(),
+            Type::Bool
+        );
+        assert_eq!(
+            binary_expr(
+                unit_expr(Unit::Seconds),
+                unit_expr(Unit::Seconds),
+                operator.clone()
+            )
+            .unit_check()
+            .unwrap(),
+            Type::Bool,
+        );
+        assert_eq!(
+            binary_expr(
+                unit_expr(Unit::WattSeconds),
+                unit_expr(Unit::WattSeconds),
+                operator.clone(),
+            )
+            .unit_check()
+            .unwrap(),
+            Type::Bool,
+        );
+
+        assert!( binary_expr(string_expr(), string_expr(), operator.clone())
+            .unit_check().is_err());
+        assert!(binary_expr(
+            unit_expr(Unit::Watt),
+            unit_expr(Unit::Seconds),
+            operator.clone(),
+        )
+        .unit_check().is_err());
+        assert!(binary_expr(
+            number_expr(),
+            unit_expr(Unit::Watt),
+            operator,
+        )
+        .unit_check().is_err());
+    }
+}
+
+#[test]
+fn equal_notequal_operations() {
+    for operator in [BinaryOperators::Equal, BinaryOperators::NotEqual] {
+        assert_eq!(
+            binary_expr(number_expr(), number_expr(), operator.clone())
+                .unit_check()
+                .unwrap(),
+            Type::Bool
+        );
+        assert_eq!(
+            binary_expr(bool_expr(), number_expr(), operator.clone())
+                .unit_check()
+                .unwrap(),
+            Type::Bool
+        );
+        assert_eq!(
+            binary_expr(number_expr(), bool_expr(), operator.clone())
+                .unit_check()
+                .unwrap(),
+            Type::Bool
+        );
+        assert_eq!(
+            binary_expr(bool_expr(), bool_expr(), operator.clone())
+                .unit_check()
+                .unwrap(),
+            Type::Bool
+        );
+        assert_eq!(
+            binary_expr(string_expr(), string_expr(), operator.clone())
+                .unit_check()
+                .unwrap(),
+            Type::Bool
+        );
+        assert_eq!(
+            binary_expr(
+                unit_expr(Unit::Watt),
+                unit_expr(Unit::Watt),
+                operator.clone()
+            )
+            .unit_check()
+            .unwrap(),
+            Type::Bool
+        );
+        assert_eq!(
+            binary_expr(
+                unit_expr(Unit::Seconds),
+                unit_expr(Unit::Seconds),
+                operator.clone()
+            )
+            .unit_check()
+            .unwrap(),
+            Type::Bool,
+        );
+        assert_eq!(
+            binary_expr(
+                unit_expr(Unit::WattSeconds),
+                unit_expr(Unit::WattSeconds),
+                operator.clone(),
+            )
+            .unit_check()
+            .unwrap(),
+            Type::Bool,
+        );
+
+        assert!(binary_expr(
+            unit_expr(Unit::Watt),
+            unit_expr(Unit::Seconds),
+            operator.clone(),
+        )
+        .unit_check().is_err());
+        assert!(binary_expr(
+            number_expr(),
+            unit_expr(Unit::Watt),
+            operator,
+        )
+        .unit_check().is_err());
+    }
+}
+
+#[test]
+fn time_operations() {
+    assert_eq!(
+        binary_expr(number_expr(), number_expr(), BinaryOperators::Times)
+            .unit_check()
+            .unwrap(),
+        Type::Number
+    );
+    assert_eq!(
+        binary_expr(bool_expr(), number_expr(), BinaryOperators::Times)
+            .unit_check()
+            .unwrap(),
+        Type::Number
+    );
+    assert_eq!(
+        binary_expr(number_expr(), bool_expr(), BinaryOperators::Times)
+            .unit_check()
+            .unwrap(),
+        Type::Number
+    );
+    assert_eq!(
+        binary_expr(bool_expr(), bool_expr(), BinaryOperators::Times)
+            .unit_check()
+            .unwrap(),
+        Type::Number
+    );
+    assert_eq!(
+        binary_expr(unit_expr(Unit::Watt), number_expr(), BinaryOperators::Times)
+            .unit_check()
+            .unwrap(),
+        Type::Watt
+    );
+    assert_eq!(
+        binary_expr(number_expr(), unit_expr(Unit::Watt), BinaryOperators::Times)
+            .unit_check()
+            .unwrap(),
+        Type::Watt
+    );
+    assert_eq!(
+        binary_expr(unit_expr(Unit::Watt), bool_expr(), BinaryOperators::Times)
+            .unit_check()
+            .unwrap(),
+        Type::Watt
+    );
+    assert_eq!(
+        binary_expr(bool_expr(), unit_expr(Unit::Watt), BinaryOperators::Times)
+            .unit_check()
+            .unwrap(),
+        Type::Watt
+    );
+    assert_eq!(
+        binary_expr(
+            unit_expr(Unit::Seconds),
+            number_expr(),
+            BinaryOperators::Times
+        )
+        .unit_check()
+        .unwrap(),
+        Type::Seconds
+    );
+    assert_eq!(
+        binary_expr(
+            number_expr(),
+            unit_expr(Unit::Seconds),
+            BinaryOperators::Times
+        )
+        .unit_check()
+        .unwrap(),
+        Type::Seconds
+    );
+    assert_eq!(
+        binary_expr(
+            unit_expr(Unit::Seconds),
+            bool_expr(),
+            BinaryOperators::Times
+        )
+        .unit_check()
+        .unwrap(),
+        Type::Seconds
+    );
+    assert_eq!(
+        binary_expr(
+            bool_expr(),
+            unit_expr(Unit::Seconds),
+            BinaryOperators::Times
+        )
+        .unit_check()
+        .unwrap(),
+        Type::Seconds
+    );
+    assert_eq!(
+        binary_expr(
+            unit_expr(Unit::WattSeconds),
+            number_expr(),
+            BinaryOperators::Times
+        )
+        .unit_check()
+        .unwrap(),
+        Type::WattSeconds
+    );
+    assert_eq!(
+        binary_expr(
+            number_expr(),
+            unit_expr(Unit::WattSeconds),
+            BinaryOperators::Times
+        )
+        .unit_check()
+        .unwrap(),
+        Type::WattSeconds
+    );
+    assert_eq!(
+        binary_expr(
+            unit_expr(Unit::WattSeconds),
+            bool_expr(),
+            BinaryOperators::Times
+        )
+        .unit_check()
+        .unwrap(),
+        Type::WattSeconds
+    );
+    assert_eq!(
+        binary_expr(
+            bool_expr(),
+            unit_expr(Unit::WattSeconds),
+            BinaryOperators::Times
+        )
+        .unit_check()
+        .unwrap(),
+        Type::WattSeconds
+    );
+    assert_eq!(
+        binary_expr(
+            unit_expr(Unit::Watt),
+            unit_expr(Unit::Seconds),
+            BinaryOperators::Times
+        )
+        .unit_check()
+        .unwrap(),
+        Type::WattSeconds
+    );
+    assert_eq!(
+        binary_expr(
+            unit_expr(Unit::Seconds),
+            unit_expr(Unit::Watt),
+            BinaryOperators::Times
+        )
+        .unit_check()
+        .unwrap(),
+        Type::WattSeconds
+    );
+    
+    assert!(binary_expr(string_expr(), string_expr(), BinaryOperators::Times)
+            .unit_check().is_err());
+    assert!(binary_expr(
+            unit_expr(Unit::Seconds),
+            unit_expr(Unit::Seconds),
+            BinaryOperators::Times,
+        )
+        .unit_check().is_err());
+    assert!(binary_expr(
+            unit_expr(Unit::WattSeconds),
+            unit_expr(Unit::Watt),
+            BinaryOperators::Times,
+        )
+        .unit_check().is_err());
+}
+
+#[test]
+fn divide_operations() {
+    assert_eq!(
+        binary_expr(number_expr(), number_expr(), BinaryOperators::Divide)
+            .unit_check()
+            .unwrap(),
+        Type::Number
+    );
+    assert_eq!(
+        binary_expr(bool_expr(), number_expr(), BinaryOperators::Divide)
+            .unit_check()
+            .unwrap(),
+        Type::Number
+    );
+    assert_eq!(
+        binary_expr(number_expr(), bool_expr(), BinaryOperators::Divide)
+            .unit_check()
+            .unwrap(),
+        Type::Number
+    );
+    assert_eq!(
+        binary_expr(bool_expr(), bool_expr(), BinaryOperators::Divide)
+            .unit_check()
+            .unwrap(),
+        Type::Number
+    );
+    assert_eq!(
+        binary_expr(
+            unit_expr(Unit::Watt),
+            number_expr(),
+            BinaryOperators::Divide
+        )
+        .unit_check()
+        .unwrap(),
+        Type::Watt
+    );
+    assert_eq!(
+        binary_expr(unit_expr(Unit::Watt), bool_expr(), BinaryOperators::Divide)
+            .unit_check()
+            .unwrap(),
+        Type::Watt
+    );
+    assert_eq!(
+        binary_expr(
+            unit_expr(Unit::WattSeconds),
+            unit_expr(Unit::Seconds),
+            BinaryOperators::Divide
+        )
+        .unit_check()
+        .unwrap(),
+        Type::Watt
+    );
+    assert_eq!(
+        binary_expr(
+            unit_expr(Unit::Watt),
+            unit_expr(Unit::Watt),
+            BinaryOperators::Divide
+        )
+        .unit_check()
+        .unwrap(),
+        Type::Number
+    );
+    assert_eq!(
+        binary_expr(
+            unit_expr(Unit::Seconds),
+            number_expr(),
+            BinaryOperators::Divide
+        )
+        .unit_check()
+        .unwrap(),
+        Type::Seconds
+    );
+    assert_eq!(
+        binary_expr(
+            unit_expr(Unit::Seconds),
+            bool_expr(),
+            BinaryOperators::Divide
+        )
+        .unit_check()
+        .unwrap(),
+        Type::Seconds
+    );
+    assert_eq!(
+        binary_expr(
+            unit_expr(Unit::WattSeconds),
+            unit_expr(Unit::Watt),
+            BinaryOperators::Divide
+        )
+        .unit_check()
+        .unwrap(),
+        Type::Seconds
+    );
+    assert_eq!(
+        binary_expr(
+            unit_expr(Unit::Seconds),
+            unit_expr(Unit::Seconds),
+            BinaryOperators::Divide
+        )
+        .unit_check()
+        .unwrap(),
+        Type::Number
+    );
+    assert_eq!(
+        binary_expr(
+            unit_expr(Unit::WattSeconds),
+            number_expr(),
+            BinaryOperators::Divide
+        )
+        .unit_check()
+        .unwrap(),
+        Type::WattSeconds
+    );
+    assert_eq!(
+        binary_expr(
+            unit_expr(Unit::WattSeconds),
+            bool_expr(),
+            BinaryOperators::Divide
+        )
+        .unit_check()
+        .unwrap(),
+        Type::WattSeconds
+    );
+    assert_eq!(
+        binary_expr(
+            unit_expr(Unit::WattSeconds),
+            unit_expr(Unit::WattSeconds),
+            BinaryOperators::Divide
+        )
+        .unit_check()
+        .unwrap(),
+        Type::Number
+    );
+
+    assert!(binary_expr(string_expr(), string_expr(), BinaryOperators::Divide)
+            .unit_check()
+            .is_err());
+    assert!(binary_expr(
+            unit_expr(Unit::Watt),
+            unit_expr(Unit::Seconds),
+            BinaryOperators::Divide,
+        )
+        .unit_check()
+        .is_err());
+    assert!(binary_expr(
+            unit_expr(Unit::Seconds),
+            unit_expr(Unit::Watt),
+            BinaryOperators::Divide,
+        )
+        .unit_check()
+        .is_err());
+    assert!(binary_expr(
+            number_expr(),
+            unit_expr(Unit::Watt),
+            BinaryOperators::Divide,
+        )
+        .unit_check().is_err());
+    assert!(binary_expr(
+            bool_expr(),
+            unit_expr(Unit::Watt),
+            BinaryOperators::Divide,
+        )
+        .unit_check().is_err());
+}
+
+#[test]
+fn and_or_implies_operations() {
+	for operator in [
+		BinaryOperators::And,
+		BinaryOperators::Or,
+		BinaryOperators::Implies,
+	] {
+		assert_eq!(binary_expr(number_expr(), number_expr(), operator.clone()).unit_check().unwrap(), Type::Bool);
+		assert_eq!(binary_expr(bool_expr(), number_expr(), operator.clone()).unit_check().unwrap(), Type::Bool);
+		assert_eq!(binary_expr(number_expr(), bool_expr(), operator.clone()).unit_check().unwrap(), Type::Bool);
+		assert_eq!(binary_expr(bool_expr(), bool_expr(), operator.clone()).unit_check().unwrap(), Type::Bool);	
+	
+
+    assert!(binary_expr(string_expr(), string_expr(), operator.clone())
+            .unit_check()
+            .is_err());
+    assert!(binary_expr(
+            unit_expr(Unit::Watt),
+            unit_expr(Unit::Seconds),
+            operator.clone(),
+        )
+        .unit_check()
+        .is_err());
+    assert!(binary_expr(
+            unit_expr(Unit::WattSeconds),
+            unit_expr(Unit::Watt),
+            operator.clone(),
+        )
+        .unit_check()
+        .is_err());
+    }
+}
+
+
+#[test]
+fn not_operation() {
+    assert_eq!(unary_expr(number_expr(), UnaryOperators::Not).unit_check().unwrap(), Type::Bool);
+    assert_eq!(unary_expr(bool_expr(), UnaryOperators::Not).unit_check().unwrap(), Type::Bool);
+
+    assert!(unary_expr(string_expr(), UnaryOperators::Not).unit_check().is_err());
+    assert!(unary_expr(unit_expr(Unit::Seconds), UnaryOperators::Not).unit_check().is_err());
+}
+
+
+#[test]
+fn negative_operation() {
+    assert_eq!(unary_expr(number_expr(), UnaryOperators::Negative).unit_check().unwrap(), Type::Number);
+    assert_eq!(unary_expr(bool_expr(), UnaryOperators::Negative).unit_check().unwrap(), Type::Number);
+    assert_eq!(unary_expr(unit_expr(Unit::Seconds), UnaryOperators::Negative).unit_check().unwrap(), Type::Seconds);
+    assert_eq!(unary_expr(unit_expr(Unit::Watt), UnaryOperators::Negative).unit_check().unwrap(), Type::Watt);
+    assert_eq!(unary_expr(unit_expr(Unit::WattSeconds), UnaryOperators::Negative).unit_check().unwrap(), Type::WattSeconds);
+
+    assert!(unary_expr(string_expr(), UnaryOperators::Negative).unit_check().is_err());
+}
+
+#[test]
+fn member() {
+    assert_eq!(member_expr(MemberType::Active).unit_check().unwrap(), Type::Bool);
+    assert_eq!(member_expr(MemberType::Name).unit_check().unwrap(), Type::String);
+    assert_eq!(member_expr(MemberType::Power).unit_check().unwrap(), Type::Watt);
+}
+
+#[test]
+fn current_time_type() {
+    assert_eq!(current_time().unit_check().unwrap(), Type::Seconds);
+}
+
+#[test]
+fn interval() {
+    assert_eq!(interval_expr(unit_expr(Unit::Seconds), unit_expr(Unit::Seconds) ).unit_check().unwrap(), Type::Seconds);
+    assert_eq!(interval_expr(binary_expr(unit_expr(Unit::Seconds), unit_expr(Unit::Seconds), BinaryOperators::Plus), unit_expr(Unit::Seconds) ).unit_check().unwrap(), Type::Seconds);
+
+    assert!(interval_expr(bool_expr(), unit_expr(Unit::Seconds) ).unit_check().is_err());
+    assert!(interval_expr(unit_expr(Unit::Watt), unit_expr(Unit::Seconds) ).unit_check().is_err());
+    assert!(interval_expr(number_expr(), unit_expr(Unit::Seconds) ).unit_check().is_err());
+}
+
+#[test]
+fn function_sum_avg() {
+    assert_eq!(function_expr(FunctionType::Sum, number_expr()).unit_check().unwrap(), Type::Number);
+    assert_eq!(function_expr(FunctionType::Avg, number_expr()).unit_check().unwrap(), Type::Number);
+    assert_eq!(function_expr(FunctionType::Sum, unit_expr(Unit::Watt)).unit_check().unwrap(), Type::Watt);
+    assert_eq!(function_expr(FunctionType::Avg, unit_expr(Unit::Seconds)).unit_check().unwrap(), Type::Seconds);
+
+    assert!(function_expr(FunctionType::Sum, string_expr()).unit_check().is_err());
+    assert!(function_expr(FunctionType::Avg, string_expr()).unit_check().is_err());
+}
+
+#[test]
+fn function_count() {
+    assert_eq!(function_expr(FunctionType::Count, number_expr()).unit_check().unwrap(), Type::Number);
+    
+    assert!(function_expr(FunctionType::Count, string_expr()).unit_check().is_err());
+    assert!(function_expr(FunctionType::Count, bool_expr()).unit_check().is_err());
+    assert!(function_expr(FunctionType::Count, unit_expr(Unit::Seconds)).unit_check().is_err());
+}
+
+#[test]
+fn function_sumtime_avgtime() {
+    assert_eq!(function_expr(FunctionType::Sumtime, unit_expr(Unit::Watt)).unit_check().unwrap(), Type::WattSeconds);
+    assert_eq!(function_expr(FunctionType::Avgtime, unit_expr(Unit::Watt)).unit_check().unwrap(), Type::WattSeconds);
+    assert_eq!(function_expr(FunctionType::Sumtime, number_expr()).unit_check().unwrap(), Type::Seconds);
+    assert_eq!(function_expr(FunctionType::Avgtime, number_expr()).unit_check().unwrap(), Type::Seconds);
+
+    assert!(function_expr(FunctionType::Sumtime, string_expr()).unit_check().is_err());
+    assert!(function_expr(FunctionType::Avgtime, string_expr()).unit_check().is_err());
+    assert!(function_expr(FunctionType::Sumtime, bool_expr()).unit_check().is_err());
+    assert!(function_expr(FunctionType::Avgtime, bool_expr()).unit_check().is_err());
+    assert!(function_expr(FunctionType::Sumtime, unit_expr(Unit::WattSeconds)).unit_check().is_err());
+    assert!(function_expr(FunctionType::Avgtime, unit_expr(Unit::WattSeconds)).unit_check().is_err());
+}
+
+#[test]
+fn function_counttime() {
+    assert_eq!(function_expr(FunctionType::Counttime, number_expr()).unit_check().unwrap(), Type::Seconds);
+    
+    assert!(function_expr(FunctionType::Counttime, string_expr()).unit_check().is_err());
+    assert!(function_expr(FunctionType::Counttime, bool_expr()).unit_check().is_err());
+    assert!(function_expr(FunctionType::Counttime, unit_expr(Unit::Seconds)).unit_check().is_err());
+}
+
+#[test]
+fn always(){
+    assert_eq!(always_expr(binary_expr(number_expr(), number_expr(), BinaryOperators::And)).unit_check().unwrap(), Type::Bool);
+    
+    assert!(always_expr(number_expr()).unit_check().is_err());
+}
+
+#[test]
+fn eventually(){
+    assert_eq!(eventually_expr(binary_expr(number_expr(), number_expr(), BinaryOperators::And)).unit_check().unwrap(), Type::Bool);
+    
+    assert!(eventually_expr(number_expr()).unit_check().is_err());
+}
+
+#[test]
+fn until(){
+    assert_eq!(until_expr(binary_expr(number_expr(), number_expr(), BinaryOperators::And), binary_expr(number_expr(), number_expr(), BinaryOperators::And)).unit_check().unwrap(), Type::Bool);
+    
+    assert!(until_expr(number_expr(), number_expr()).unit_check().is_err());
+}
+
+#[test]
+fn unit_fail(){    
+    assert!(ExprKind::Unit { number: bool_expr().into(), unit: Unit::Seconds }.unit_check().is_err());
+}

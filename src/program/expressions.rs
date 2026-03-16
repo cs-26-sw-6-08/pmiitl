@@ -17,7 +17,7 @@ pub struct SpannedExpr {
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum ExprKind {
-    Number(i64),
+    Number(i128),
     String(String),
     Boolean(bool),
     CurrentTime,
@@ -87,7 +87,7 @@ impl ExprKind {
                         errors::Error::ASTNodeValueInvalid(node.get_symbol().name.into())
                     })?
                     .parse::<f64>()?
-                    * 1000f64) as i64, // Numbers are stored as integers, decimals is represented as last 3 digits.
+                    * 1000.0).round() as i128, // Numbers are stored as integers, decimals is represented as last 3 digits.
             ),
             "BOOL" => ExprKind::Boolean(
                 node.get_value()

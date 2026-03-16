@@ -1,2 +1,2 @@
-always 5 kWh = 5 kWh;
+always 5 kWh + 5 kWh > 2 kWh;
 
