@@ -2,6 +2,8 @@ use std::error::Error;
 
 use crate::program::Program;
 mod expressions;
+#[cfg(test)]
+mod expressions_test;
 
 impl Program {
     pub fn unit_converter(&mut self) -> Result<(), Box<dyn Error>> {

@@ -4,7 +4,7 @@ use crate::{
     errors,
     program::{
         expressions::ExprKind, function_types::FunctionType, member_types::MemberType,
-        operations::BinaryOperators, operations::UnaryOperators, units::Unit,
+        operations::BinaryOperators, operations::UnaryOperators,
     },
     unit_checker::types::Type,
 };
