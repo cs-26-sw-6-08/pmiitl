@@ -4,7 +4,7 @@ use crate::program::{
     expressions::Expr,
     operations::BinaryOperators,
 };
-use crate::utils::test_helper_func::{always_expr, binary_expr, bool_expr, current_time, eventually_expr, function_expr, interval_expr, member_expr, number_expr, custom_number_expr, string_expr, unary_expr, unit_expr, custom_unit_expr, until_expr};
+use crate::utils::test_helper_func::{binary_expr, bool_expr, member_expr, number_expr, unary_expr};
 
 #[test]
 fn times() {
@@ -68,10 +68,10 @@ fn and_equivalence_conversion() {
 #[test]
 fn notequal_greater_less() {
     for operator in [BinaryOperators::NotEqual, BinaryOperators::Greater, BinaryOperators::Less] {
-        assert_eq!(binary_expr(number_expr(), number_expr(), BinaryOperators::NotEqual).convert().unwrap(), Expr::Boolean(false));
-        assert_eq!(binary_expr(number_expr(), bool_expr(), BinaryOperators::NotEqual).convert().unwrap(), Expr::Boolean(false));
-        assert_eq!(binary_expr(bool_expr(), number_expr(), BinaryOperators::NotEqual).convert().unwrap(), Expr::Boolean(false));
-        assert_eq!(binary_expr(bool_expr(), bool_expr(), BinaryOperators::NotEqual).convert().unwrap(), Expr::Boolean(false));
+        assert_eq!(binary_expr(number_expr(), number_expr(), operator.clone()).convert().unwrap(), Expr::Boolean(false));
+        assert_eq!(binary_expr(number_expr(), bool_expr(), operator.clone()).convert().unwrap(), Expr::Boolean(false));
+        assert_eq!(binary_expr(bool_expr(), number_expr(), operator.clone()).convert().unwrap(), Expr::Boolean(false));
+        assert_eq!(binary_expr(bool_expr(), bool_expr(), operator.clone()).convert().unwrap(), Expr::Boolean(false));
     }
 }
 

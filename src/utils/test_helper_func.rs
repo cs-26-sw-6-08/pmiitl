@@ -28,6 +28,10 @@ pub fn bool_expr() -> Expr {
     Expr::Boolean(true)
 }
 
+pub fn custom_bool_expr(bool: bool) -> Expr {
+    Expr::Boolean(bool)
+}
+
 pub fn current_time() -> Expr {
     Expr::CurrentTime
 }
@@ -62,10 +66,22 @@ pub fn always_expr(expr: Expr) -> Expr {
     Expr::Always { interval: None, not: false, expr: expr.into() }
 }
 
+pub fn always_interval_expr(interval: Expr, expr: Expr) -> Expr {
+    Expr::Always { interval: Some(interval.into()), not: false, expr: expr.into() }
+}
+
 pub fn eventually_expr(expr: Expr) -> Expr {
-    Expr::Eventually { interval: Some(interval_expr(unit_expr(Unit::Seconds), unit_expr(Unit::Seconds)).into()), not: false, expr: expr.into() }
+    Expr::Eventually { interval: None, not: false, expr: expr.into() }
+}
+
+pub fn eventually_interval_expr(interval: Expr, expr: Expr) -> Expr {
+    Expr::Eventually { interval: Some(interval.into()), not: false, expr: expr.into() }
 }
 
 pub fn until_expr(expr1: Expr, expr2: Expr ) -> Expr {
-    Expr::Until { interval: Some(interval_expr(unit_expr(Unit::Seconds), unit_expr(Unit::Seconds)).into()), not: false, lhs: expr1.into(), rhs: expr2.into() }
+    Expr::Until { interval: None, not: false, lhs: expr1.into(), rhs: expr2.into() }
+}
+
+pub fn until_interval_expr(interval: Expr, expr1: Expr, expr2: Expr) -> Expr {
+    Expr::Until { interval: Some(interval.into()), not: false, lhs: expr1.into(), rhs: expr2.into() }
 }
