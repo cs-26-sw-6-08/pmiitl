@@ -22,20 +22,20 @@ fn eventually() {
 
 #[test]
 fn always() {
-    let program = Program::new("always 1;").unwrap();
+    let program = Program::new("always -1;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
         ExprKind::Always {
             interval: None,
             not: false,
-            expr: ExprKind::Number(1000).into()
+            expr: ExprKind::UnaryOperations { operand: ExprKind::Number(1000).into(), operator: UnaryOperators::Negative }.into()
         }
     );
 }
 
 #[test]
 fn eventually_interval() {
-    let program = Program::new("eventually[1s,3h] 1;").unwrap();
+    let program = Program::new("eventually[1s,3h] -1;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
         ExprKind::Eventually {
@@ -55,14 +55,14 @@ fn eventually_interval() {
                 .into()
             ),
             not: false,
-            expr: ExprKind::Number(1000).into()
+            expr: ExprKind::UnaryOperations { operand: ExprKind::Number(1000).into(), operator: UnaryOperators::Negative }.into()
         }
     );
 }
 
 #[test]
 fn always_interval() {
-    let program = Program::new("always[1s,3h] 1;").unwrap();
+    let program = Program::new("always[1s,3h] -1;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
         ExprKind::Always {
@@ -82,7 +82,7 @@ fn always_interval() {
                 .into()
             ),
             not: false,
-            expr: ExprKind::Number(1000).into()
+            expr: ExprKind::UnaryOperations { operand: ExprKind::Number(1000).into(), operator: UnaryOperators::Negative }.into()
         }
     );
 }

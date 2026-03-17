@@ -5,7 +5,6 @@ pub enum Type {
     Seconds,
     WattSeconds,
     Watt,
-    Hertz,
     Number,
     String,
     Bool

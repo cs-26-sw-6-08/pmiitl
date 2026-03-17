@@ -40,7 +40,7 @@ fn property1() {
 #[test]
 fn property2() {
     let actual: String = tree_to_str(
-        cfg::parse_string("not eventually count(active) > 5;".to_lowercase())
+        cfg::parse_string("! eventually count(active) > 5;".to_lowercase())
             .get_ast()
             .get_root(),
         Vec::<bool>::new(),
@@ -106,7 +106,7 @@ fn property7() {
 #[test]
 fn property8() {
     let actual: String = tree_to_str(
-        cfg::parse_string("not until(active,10);".to_lowercase()).get_ast().get_root(),
+        cfg::parse_string("! until(active,10);".to_lowercase()).get_ast().get_root(),
         Vec::<bool>::new(),
     );
     assert_eq!(actual, const_properties::PROPERTY8.to_string());

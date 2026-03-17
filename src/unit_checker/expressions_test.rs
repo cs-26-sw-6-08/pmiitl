@@ -714,6 +714,8 @@ fn function_sum_avg() {
     assert_eq!(function_expr(FunctionType::Avg, number_expr()).unit_check().unwrap(), Type::Number);
     assert_eq!(function_expr(FunctionType::Sum, unit_expr(Unit::Watt)).unit_check().unwrap(), Type::Watt);
     assert_eq!(function_expr(FunctionType::Avg, unit_expr(Unit::Seconds)).unit_check().unwrap(), Type::Seconds);
+    assert_eq!(function_expr(FunctionType::Sum, bool_expr()).unit_check().unwrap(), Type::Number);
+    assert_eq!(function_expr(FunctionType::Avg, bool_expr()).unit_check().unwrap(), Type::Number);
 
     assert!(function_expr(FunctionType::Sum, string_expr()).unit_check().is_err());
     assert!(function_expr(FunctionType::Avg, string_expr()).unit_check().is_err());
@@ -722,34 +724,44 @@ fn function_sum_avg() {
 #[test]
 fn function_count() {
     assert_eq!(function_expr(FunctionType::Count, number_expr()).unit_check().unwrap(), Type::Number);
+    assert_eq!(function_expr(FunctionType::Count, bool_expr()).unit_check().unwrap(), Type::Number);
+    assert_eq!(function_expr(FunctionType::Count, unit_expr(Unit::Watt)).unit_check().unwrap(), Type::Number);
     
     assert!(function_expr(FunctionType::Count, string_expr()).unit_check().is_err());
-    assert!(function_expr(FunctionType::Count, bool_expr()).unit_check().is_err());
-    assert!(function_expr(FunctionType::Count, unit_expr(Unit::Seconds)).unit_check().is_err());
 }
 
 #[test]
-fn function_sumtime_avgtime() {
+fn function_sumtime() {
     assert_eq!(function_expr(FunctionType::Sumtime, unit_expr(Unit::Watt)).unit_check().unwrap(), Type::WattSeconds);
-    assert_eq!(function_expr(FunctionType::Avgtime, unit_expr(Unit::Watt)).unit_check().unwrap(), Type::WattSeconds);
     assert_eq!(function_expr(FunctionType::Sumtime, number_expr()).unit_check().unwrap(), Type::Seconds);
-    assert_eq!(function_expr(FunctionType::Avgtime, number_expr()).unit_check().unwrap(), Type::Seconds);
-
+    assert_eq!(function_expr(FunctionType::Sumtime, bool_expr()).unit_check().unwrap(), Type::Seconds);
+    
     assert!(function_expr(FunctionType::Sumtime, string_expr()).unit_check().is_err());
-    assert!(function_expr(FunctionType::Avgtime, string_expr()).unit_check().is_err());
-    assert!(function_expr(FunctionType::Sumtime, bool_expr()).unit_check().is_err());
-    assert!(function_expr(FunctionType::Avgtime, bool_expr()).unit_check().is_err());
     assert!(function_expr(FunctionType::Sumtime, unit_expr(Unit::WattSeconds)).unit_check().is_err());
-    assert!(function_expr(FunctionType::Avgtime, unit_expr(Unit::WattSeconds)).unit_check().is_err());
+    assert!(function_expr(FunctionType::Sumtime, unit_expr(Unit::Seconds)).unit_check().is_err());
 }
 
 #[test]
-fn function_counttime() {
+fn function_counttime(){
+    assert_eq!(function_expr(FunctionType::Counttime, unit_expr(Unit::Watt)).unit_check().unwrap(), Type::Seconds);
     assert_eq!(function_expr(FunctionType::Counttime, number_expr()).unit_check().unwrap(), Type::Seconds);
+    assert_eq!(function_expr(FunctionType::Counttime, bool_expr()).unit_check().unwrap(), Type::Seconds);
+
+    assert!(function_expr(FunctionType::Counttime, string_expr()).unit_check().is_err());
+    assert!(function_expr(FunctionType::Counttime, unit_expr(Unit::WattSeconds)).unit_check().is_err());
+    assert!(function_expr(FunctionType::Counttime, unit_expr(Unit::Seconds)).unit_check().is_err());
+}
+
+#[test]
+fn function_avgtime() {
+    
+    assert_eq!(function_expr(FunctionType::Avgtime, number_expr()).unit_check().unwrap(), Type::Number);
+    assert_eq!(function_expr(FunctionType::Avgtime, bool_expr()).unit_check().unwrap(), Type::Number);
+    assert_eq!(function_expr(FunctionType::Avgtime, unit_expr(Unit::Watt)).unit_check().unwrap(), Type::Watt);
+    assert_eq!(function_expr(FunctionType::Avgtime, unit_expr(Unit::Seconds)).unit_check().unwrap(), Type::Seconds);
+    assert_eq!(function_expr(FunctionType::Avgtime, unit_expr(Unit::WattSeconds)).unit_check().unwrap(), Type::WattSeconds);
     
     assert!(function_expr(FunctionType::Counttime, string_expr()).unit_check().is_err());
-    assert!(function_expr(FunctionType::Counttime, bool_expr()).unit_check().is_err());
-    assert!(function_expr(FunctionType::Counttime, unit_expr(Unit::Seconds)).unit_check().is_err());
 }
 
 #[test]

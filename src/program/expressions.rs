@@ -129,7 +129,7 @@ impl ExprKind {
                 let not = node
                     .children()
                     .iter()
-                    .any(|node| node.get_symbol().name.eq("not"));
+                    .any(|node| node.get_symbol().name.eq("!") && node.children_count()==0);
                 let expr = ExprKind::new(node.children().iter().next_back().unwrap())?.into();
 
                 ExprKind::Always {
@@ -148,9 +148,11 @@ impl ExprKind {
                     None => None,
                 };
                 let not = node
-                    .children()
-                    .iter()
-                    .any(|node| node.get_symbol().name.eq("not"));
+                .children()
+                .iter()
+                .any(|node| node.get_symbol().name.eq("!") && node.children_count()==0);
+                
+    
                 let expr = ExprKind::new(node.children().iter().next_back().unwrap())?.into();
 
                 ExprKind::Eventually {
@@ -171,7 +173,7 @@ impl ExprKind {
                 let not = node
                     .children()
                     .iter()
-                    .any(|node| node.get_symbol().name.eq("not"));
+                    .any(|node| node.get_symbol().name.eq("!") && node.children_count()==0);
 
                 let mut iter = node
                     .children()

@@ -26,7 +26,7 @@ r#"Program
 pub const PROPERTY2: &str =
 r#"Program
 +-> eventually = eventually
-    +-> not = not
+    +-> ! = !
     +-> > = >
         +-> count = count
         |   +-> active = active
@@ -103,7 +103,7 @@ r#"Program
 pub const PROPERTY8: &str =
 r#"Program
 +-> until = until
-    +-> not = not
+    +-> ! = !
     +-> active = active
     +-> NUMBER = 10
 "#;

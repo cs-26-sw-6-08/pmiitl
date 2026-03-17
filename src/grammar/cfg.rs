@@ -84,7 +84,7 @@ pub const TERMINALS: &[Symbol] = &[
     },
     Symbol {
         id: 0x0024,
-        name: "not"
+        name: "!"
     },
     Symbol {
         id: 0x0025,
@@ -140,82 +140,78 @@ pub const TERMINALS: &[Symbol] = &[
     },
     Symbol {
         id: 0x0032,
-        name: "!"
-    },
-    Symbol {
-        id: 0x0033,
         name: "->"
     },
     Symbol {
-        id: 0x0034,
+        id: 0x0033,
         name: "|"
     },
     Symbol {
-        id: 0x0035,
+        id: 0x0034,
         name: "&"
     },
     Symbol {
-        id: 0x0036,
+        id: 0x0035,
         name: "="
     },
     Symbol {
-        id: 0x0037,
+        id: 0x0036,
         name: "<="
     },
     Symbol {
-        id: 0x0038,
+        id: 0x0037,
         name: ">="
     },
     Symbol {
-        id: 0x0039,
+        id: 0x0038,
         name: "!="
     },
     Symbol {
-        id: 0x003A,
+        id: 0x0039,
         name: "<"
     },
     Symbol {
-        id: 0x003B,
+        id: 0x003A,
         name: ">"
     },
     Symbol {
-        id: 0x003C,
+        id: 0x003B,
         name: "sumtime"
     },
     Symbol {
-        id: 0x003D,
+        id: 0x003C,
         name: "avgtime"
     },
     Symbol {
-        id: 0x003E,
+        id: 0x003D,
         name: "counttime"
     },
     Symbol {
-        id: 0x003F,
+        id: 0x003E,
         name: "foreach"
     },
     Symbol {
-        id: 0x0040,
+        id: 0x003F,
         name: "sum"
     },
     Symbol {
-        id: 0x0041,
+        id: 0x0040,
         name: "avg"
     },
     Symbol {
-        id: 0x0042,
+        id: 0x0041,
         name: "count"
     },
     Symbol {
-        id: 0x0043,
+        id: 0x0042,
         name: "active"
     },
     Symbol {
-        id: 0x0044,
+        id: 0x0043,
         name: "power"
     },
     Symbol {
-        id: 0x0045,
+        id: 0x0044,
         name: "name"
     }
 ];
@@ -369,7 +365,7 @@ pub const VARIABLES: &[Symbol] = &[
         name: "__V35"
     },
     Symbol {
-        id: 0x0046,
+        id: 0x0045,
         name: "__VAxiom"
     }
 ];
