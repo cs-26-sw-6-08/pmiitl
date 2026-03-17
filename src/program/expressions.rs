@@ -39,12 +39,6 @@ pub enum Expr {
         not: bool,
         expr: Box<Expr>,
     },
-    Until {
-        interval: Option<Box<Expr>>,
-        not: bool,
-        lhs: Box<Expr>,
-        rhs: Box<Expr>,
-    },
     BinaryOperations {
         lhs: Box<Expr>,
         rhs: Box<Expr>,
@@ -160,37 +154,7 @@ impl Expr {
                     not,
                     expr,
                 }
-            }
-            "until" => {
-                let interval = match node
-                    .children()
-                    .iter()
-                    .find(|node| node.get_symbol().name.eq("Interval"))
-                {
-                    Some(interval) => Some(Expr::new(interval)?.into()),
-                    None => None,
-                };
-                let not = node
-                    .children()
-                    .iter()
-                    .any(|node| node.get_symbol().name.eq("!") && node.children_count()==0);
-
-                let mut iter = node
-                    .children()
-                    .iter()
-                    .rev()
-                    .take(2)
-                    .map(|node| Box::new(Expr::new(node).unwrap()));
-
-                let (rhs, lhs) = (iter.next().unwrap(), iter.next().unwrap());
-
-                Expr::Until {
-                    interval,
-                    not,
-                    lhs,
-                    rhs,
-                }
-            }
+            },
             "->" | "|" | "&" | "=" | "<=" | ">=" | "!=" | "<" | ">" | "+" | "-" | "*" | "/"
             | "%" | "!" => {
                 //unary and binary operations are in one match due to "-" acting as both depending on number of children

@@ -5,7 +5,7 @@ use crate::{program::{
     member_types::MemberType,
     operations::{BinaryOperators, UnaryOperators},
     units::Unit,
-}, utils::test_helper_func::{ always_expr, binary_expr, bool_expr, custom_number_expr, custom_bool_expr, custom_unit_expr, eventually_expr, eventually_interval_expr, always_interval_expr, function_expr, interval_expr, member_expr, number_expr, unary_expr, unit_expr, until_expr}
+}, utils::test_helper_func::{ always_expr, binary_expr, bool_expr, custom_number_expr, custom_bool_expr, custom_unit_expr, eventually_expr, eventually_interval_expr, always_interval_expr, function_expr, interval_expr, member_expr, number_expr, unary_expr, unit_expr}
 };
 
 #[test]
@@ -59,15 +59,6 @@ fn power_unit() {
     assert_eq!(
         program.expressions.first().unwrap().expr,
         always_expr(binary_expr(unit_expr(Unit::Watt), unit_expr(Unit::Watt), BinaryOperators::Equal))
-    );
-}
-
-#[test]
-fn until() {
-    let program = Program::new("until(true,false);").unwrap();
-    assert_eq!(
-        program.expressions.first().unwrap().expr,
-        until_expr(bool_expr(), custom_bool_expr(false))
     );
 }
 

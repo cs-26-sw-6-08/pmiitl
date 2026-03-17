@@ -1,6 +1,6 @@
 use crate::{
     program::{expressions::Expr, function_types::FunctionType, member_types::MemberType, operations::{BinaryOperators, UnaryOperators}, units::Unit},
-    unit_checker::types::Type, utils::test_helper_func::{always_expr, binary_expr, bool_expr, current_time, eventually_expr, function_expr, interval_expr, member_expr, number_expr, string_expr, unary_expr, unit_expr, until_expr},
+    unit_checker::types::Type, utils::test_helper_func::{always_expr, binary_expr, bool_expr, current_time, eventually_expr, function_expr, interval_expr, member_expr, number_expr, string_expr, unary_expr, unit_expr},
 };
 
 #[test]
@@ -717,13 +717,6 @@ fn eventually(){
     assert_eq!(eventually_expr(binary_expr(number_expr(), number_expr(), BinaryOperators::And)).unit_check().unwrap(), Type::Bool);
     
     assert!(eventually_expr(number_expr()).unit_check().is_err());
-}
-
-#[test]
-fn until(){
-    assert_eq!(until_expr(binary_expr(number_expr(), number_expr(), BinaryOperators::And), binary_expr(number_expr(), number_expr(), BinaryOperators::And)).unit_check().unwrap(), Type::Bool);
-    
-    assert!(until_expr(number_expr(), number_expr()).unit_check().is_err());
 }
 
 #[test]

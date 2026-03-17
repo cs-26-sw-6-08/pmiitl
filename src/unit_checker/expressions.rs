@@ -50,22 +50,6 @@ impl Expr {
                     _ => Err(errors::Error::Typechecking.into()),
                 }
             },
-            Expr::Until {
-                interval,
-                not: _,
-                lhs,
-                rhs,
-            } => {if let Some(interval) = interval {
-                    interval.unit_check()?;
-                }
-
-                let lhs_type = lhs.unit_check()?;
-                let rhs_type = rhs.unit_check()?;
-                
-                match (lhs_type, rhs_type) {
-                    (Type::Bool, Type::Bool) => Ok(Type::Bool),
-                    _ => Err(errors::Error::Typechecking.into()),
-                }},
             Expr::BinaryOperations { lhs, rhs, operator } => {
                 let lhs_type = lhs.unit_check()?;
                 let rhs_type = rhs.unit_check()?;

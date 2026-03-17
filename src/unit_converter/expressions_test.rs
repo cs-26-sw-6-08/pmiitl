@@ -6,7 +6,7 @@ use crate::program::{
 use crate::utils::test_helper_func::{
     always_expr, binary_expr, custom_unit_expr,
     eventually_expr, function_expr, interval_expr, number_expr,
-    unary_expr, unit_expr, until_expr,
+    unary_expr, unit_expr,
 };
 
 #[test]
@@ -44,22 +44,6 @@ fn eventually() {
         eventually_expr(custom_unit_expr(5000 * 1000,
             Unit::Watt
         ))
-    );
-}
-
-#[test]
-fn until() {
-    let expr = until_expr(
-        unit_expr(Unit::KiloWattHours),
-        custom_unit_expr(7000, Unit::KiloWattHours),
-    )
-    .unit_converter();
-    assert_eq!(
-        expr,
-        until_expr(
-            custom_unit_expr(5000 * 1000 * 60 * 60, Unit::WattSeconds),
-            custom_unit_expr(7000 * 1000 * 60 * 60, Unit::WattSeconds)
-        )
     );
 }
 

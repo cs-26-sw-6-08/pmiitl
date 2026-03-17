@@ -103,11 +103,3 @@ fn property7() {
     assert_eq!(actual, const_properties::PROPERTY7.to_string());
 }
 
-#[test]
-fn property8() {
-    let actual: String = tree_to_str(
-        cfg::parse_string("! until(active,10);".to_lowercase()).get_ast().get_root(),
-        Vec::<bool>::new(),
-    );
-    assert_eq!(actual, const_properties::PROPERTY8.to_string());
-}

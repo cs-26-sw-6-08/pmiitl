@@ -100,10 +100,3 @@ r#"Program
     +-> NUMBER = 7
 "#;
 
-pub const PROPERTY8: &str =
-r#"Program
-+-> until = until
-    +-> ! = !
-    +-> active = active
-    +-> NUMBER = 10
-"#;

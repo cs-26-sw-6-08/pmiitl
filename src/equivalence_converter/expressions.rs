@@ -1,6 +1,6 @@
 use std::error::Error;
 
-use crate::{equivalence_converter::conversion_binary_operator::conversion_binary_operations, program::expressions::Expr};
+use crate::{equivalence_converter::conversion_binary_operator::conversion_binary_operations, program::{expressions::Expr, function_types::FunctionType}};
 
 impl Expr {
     pub fn convert(&self) -> Result<Expr, Box<dyn Error>> {
@@ -17,30 +17,14 @@ impl Expr {
             Expr::Unit { number, unit: _ } => {
                 Ok(number.convert()?)
             }
-
-                /*
-                let expr = match operator {
-                    /* p && q => !(!p || !q) */
-                    
-                   
-                    BinaryOperators::Implies => ExprKind::BinaryOperations {
-                        lhs: ExprKind::UnaryOperations {
-                            operand: lhs.convert()?.into(),
-                            operator: UnaryOperators::Not,
-                        }
-                        .into(),
-                        rhs: rhs.convert()?.into(),
-                        operator: BinaryOperators::Or,
-                    },
-                    _ => self.clone(),
-                };
-                Ok(expr)
-            },
-            ExprKind::Function { aggregate_type, expr } => match aggregate_type {
+            Expr::Function { aggregate_type, expr } => match aggregate_type {
                 FunctionType::Count => {
-                }
-                _ => self.clone(),
-            },*/
+                    let expr = expr.convert()?;
+                    Ok(Expr::Function { aggregate_type: FunctionType::Sum, expr: expr.into() })
+                },
+                _ => Ok(self.clone())
+            }
+
             _ => Ok(self.clone()),
         }
     }

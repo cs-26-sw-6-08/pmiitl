@@ -77,11 +77,3 @@ pub fn eventually_expr(expr: Expr) -> Expr {
 pub fn eventually_interval_expr(interval: Expr, expr: Expr) -> Expr {
     Expr::Eventually { interval: Some(interval.into()), not: false, expr: expr.into() }
 }
-
-pub fn until_expr(expr1: Expr, expr2: Expr ) -> Expr {
-    Expr::Until { interval: None, not: false, lhs: expr1.into(), rhs: expr2.into() }
-}
-
-pub fn until_interval_expr(interval: Expr, expr1: Expr, expr2: Expr) -> Expr {
-    Expr::Until { interval: Some(interval.into()), not: false, lhs: expr1.into(), rhs: expr2.into() }
-}
