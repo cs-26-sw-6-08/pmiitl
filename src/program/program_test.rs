@@ -1,6 +1,6 @@
 use crate::program::{
     Program,
-    expressions::ExprKind,
+    expressions::Expr,
     function_types::FunctionType,
     member_types::MemberType,
     operations::{BinaryOperators, UnaryOperators},
@@ -12,10 +12,10 @@ fn eventually() {
     let program = Program::new("eventually 1;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        ExprKind::Eventually {
+        Expr::Eventually {
             interval: None,
             not: false,
-            expr: ExprKind::Number(1000).into()
+            expr: Expr::Number(1000).into()
         }
     );
 }
@@ -25,10 +25,10 @@ fn always() {
     let program = Program::new("always -1;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        ExprKind::Always {
+        Expr::Always {
             interval: None,
             not: false,
-            expr: ExprKind::UnaryOperations { operand: ExprKind::Number(1000).into(), operator: UnaryOperators::Negative }.into()
+            expr: Expr::UnaryOperations { operand: Expr::Number(1000).into(), operator: UnaryOperators::Negative }.into()
         }
     );
 }
@@ -38,16 +38,16 @@ fn eventually_interval() {
     let program = Program::new("eventually[1s,3h] -1;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        ExprKind::Eventually {
+        Expr::Eventually {
             interval: Some(
-                ExprKind::Interval {
-                    start: ExprKind::Unit {
-                        number: ExprKind::Number(1000).into(),
+                Expr::Interval {
+                    start: Expr::Unit {
+                        number: Expr::Number(1000).into(),
                         unit: Unit::Seconds
                     }
                     .into(),
-                    end: ExprKind::Unit {
-                        number: ExprKind::Number(3000).into(),
+                    end: Expr::Unit {
+                        number: Expr::Number(3000).into(),
                         unit: Unit::Hours
                     }
                     .into()
@@ -55,7 +55,7 @@ fn eventually_interval() {
                 .into()
             ),
             not: false,
-            expr: ExprKind::UnaryOperations { operand: ExprKind::Number(1000).into(), operator: UnaryOperators::Negative }.into()
+            expr: Expr::UnaryOperations { operand: Expr::Number(1000).into(), operator: UnaryOperators::Negative }.into()
         }
     );
 }
@@ -65,16 +65,16 @@ fn always_interval() {
     let program = Program::new("always[1s,3h] -1;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        ExprKind::Always {
+        Expr::Always {
             interval: Some(
-                ExprKind::Interval {
-                    start: ExprKind::Unit {
-                        number: ExprKind::Number(1000).into(),
+                Expr::Interval {
+                    start: Expr::Unit {
+                        number: Expr::Number(1000).into(),
                         unit: Unit::Seconds
                     }
                     .into(),
-                    end: ExprKind::Unit {
-                        number: ExprKind::Number(3000).into(),
+                    end: Expr::Unit {
+                        number: Expr::Number(3000).into(),
                         unit: Unit::Hours
                     }
                     .into()
@@ -82,7 +82,7 @@ fn always_interval() {
                 .into()
             ),
             not: false,
-            expr: ExprKind::UnaryOperations { operand: ExprKind::Number(1000).into(), operator: UnaryOperators::Negative }.into()
+            expr: Expr::UnaryOperations { operand: Expr::Number(1000).into(), operator: UnaryOperators::Negative }.into()
         }
     );
 }
@@ -92,10 +92,10 @@ fn current_time() {
     let program = Program::new("always t;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        ExprKind::Always {
+        Expr::Always {
             interval: None,
             not: false,
-            expr: ExprKind::CurrentTime.into()
+            expr: Expr::CurrentTime.into()
         }
     );
 }
@@ -105,10 +105,10 @@ fn power_unit() {
     let program = Program::new("always 5W;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        ExprKind::Always {
+        Expr::Always {
             interval: None,
             not: false,
-            expr: ExprKind::Unit { number: ExprKind::Number(5000).into(), unit: Unit::Watt }.into()
+            expr: Expr::Unit { number: Expr::Number(5000).into(), unit: Unit::Watt }.into()
         }
     );
 }
@@ -118,11 +118,11 @@ fn until() {
     let program = Program::new("until(1,2);").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        ExprKind::Until {
+        Expr::Until {
             interval: None,
             not: false,
-            lhs: ExprKind::Number(1000).into(),
-            rhs: ExprKind::Number(2000).into()
+            lhs: Expr::Number(1000).into(),
+            rhs: Expr::Number(2000).into()
         }
     );
 }
@@ -132,12 +132,12 @@ fn greater() {
     let program = Program::new("always 1 > 5;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        ExprKind::Always {
+        Expr::Always {
             interval: None,
             not: false,
-            expr: ExprKind::BinaryOperations {
-                lhs: ExprKind::Number(1000).into(),
-                rhs: ExprKind::Number(5000).into(),
+            expr: Expr::BinaryOperations {
+                lhs: Expr::Number(1000).into(),
+                rhs: Expr::Number(5000).into(),
                 operator: BinaryOperators::Greater
             }
             .into()
@@ -150,12 +150,12 @@ fn less() {
     let program = Program::new("always 1 < 5;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        ExprKind::Always {
+        Expr::Always {
             interval: None,
             not: false,
-            expr: ExprKind::BinaryOperations {
-                lhs: ExprKind::Number(1000).into(),
-                rhs: ExprKind::Number(5000).into(),
+            expr: Expr::BinaryOperations {
+                lhs: Expr::Number(1000).into(),
+                rhs: Expr::Number(5000).into(),
                 operator: BinaryOperators::Less
             }
             .into()
@@ -168,12 +168,12 @@ fn greater_equal() {
     let program = Program::new("always 1 >= 5;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        ExprKind::Always {
+        Expr::Always {
             interval: None,
             not: false,
-            expr: ExprKind::BinaryOperations {
-                lhs: ExprKind::Number(1000).into(),
-                rhs: ExprKind::Number(5000).into(),
+            expr: Expr::BinaryOperations {
+                lhs: Expr::Number(1000).into(),
+                rhs: Expr::Number(5000).into(),
                 operator: BinaryOperators::GreaterEqual
             }
             .into()
@@ -186,12 +186,12 @@ fn less_equal() {
     let program = Program::new("always 1 <= 5;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        ExprKind::Always {
+        Expr::Always {
             interval: None,
             not: false,
-            expr: ExprKind::BinaryOperations {
-                lhs: ExprKind::Number(1000).into(),
-                rhs: ExprKind::Number(5000).into(),
+            expr: Expr::BinaryOperations {
+                lhs: Expr::Number(1000).into(),
+                rhs: Expr::Number(5000).into(),
                 operator: BinaryOperators::LessEqual
             }
             .into()
@@ -204,12 +204,12 @@ fn equal() {
     let program = Program::new("always 1 = 5;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        ExprKind::Always {
+        Expr::Always {
             interval: None,
             not: false,
-            expr: ExprKind::BinaryOperations {
-                lhs: ExprKind::Number(1000).into(),
-                rhs: ExprKind::Number(5000).into(),
+            expr: Expr::BinaryOperations {
+                lhs: Expr::Number(1000).into(),
+                rhs: Expr::Number(5000).into(),
                 operator: BinaryOperators::Equal
             }
             .into()
@@ -222,12 +222,12 @@ fn not_equal() {
     let program = Program::new("always 1 != 5;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        ExprKind::Always {
+        Expr::Always {
             interval: None,
             not: false,
-            expr: ExprKind::BinaryOperations {
-                lhs: ExprKind::Number(1000).into(),
-                rhs: ExprKind::Number(5000).into(),
+            expr: Expr::BinaryOperations {
+                lhs: Expr::Number(1000).into(),
+                rhs: Expr::Number(5000).into(),
                 operator: BinaryOperators::NotEqual
             }
             .into()
@@ -240,12 +240,12 @@ fn or() {
     let program = Program::new("always 1 | 5;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        ExprKind::Always {
+        Expr::Always {
             interval: None,
             not: false,
-            expr: ExprKind::BinaryOperations {
-                lhs: ExprKind::Number(1000).into(),
-                rhs: ExprKind::Number(5000).into(),
+            expr: Expr::BinaryOperations {
+                lhs: Expr::Number(1000).into(),
+                rhs: Expr::Number(5000).into(),
                 operator: BinaryOperators::Or
             }
             .into()
@@ -258,12 +258,12 @@ fn implies() {
     let program = Program::new("always 1 -> 5;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        ExprKind::Always {
+        Expr::Always {
             interval: None,
             not: false,
-            expr: ExprKind::BinaryOperations {
-                lhs: ExprKind::Number(1000).into(),
-                rhs: ExprKind::Number(5000).into(),
+            expr: Expr::BinaryOperations {
+                lhs: Expr::Number(1000).into(),
+                rhs: Expr::Number(5000).into(),
                 operator: BinaryOperators::Implies
             }
             .into()
@@ -276,12 +276,12 @@ fn and() {
     let program = Program::new("always 1 & 5;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        ExprKind::Always {
+        Expr::Always {
             interval: None,
             not: false,
-            expr: ExprKind::BinaryOperations {
-                lhs: ExprKind::Number(1000).into(),
-                rhs: ExprKind::Number(5000).into(),
+            expr: Expr::BinaryOperations {
+                lhs: Expr::Number(1000).into(),
+                rhs: Expr::Number(5000).into(),
                 operator: BinaryOperators::And
             }
             .into()
@@ -294,12 +294,12 @@ fn add() {
     let program = Program::new("always 1 + 5;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        ExprKind::Always {
+        Expr::Always {
             interval: None,
             not: false,
-            expr: ExprKind::BinaryOperations {
-                lhs: ExprKind::Number(1000).into(),
-                rhs: ExprKind::Number(5000).into(),
+            expr: Expr::BinaryOperations {
+                lhs: Expr::Number(1000).into(),
+                rhs: Expr::Number(5000).into(),
                 operator: BinaryOperators::Plus
             }
             .into()
@@ -312,12 +312,12 @@ fn minus() {
     let program = Program::new("always 1 - 5;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        ExprKind::Always {
+        Expr::Always {
             interval: None,
             not: false,
-            expr: ExprKind::BinaryOperations {
-                lhs: ExprKind::Number(1000).into(),
-                rhs: ExprKind::Number(5000).into(),
+            expr: Expr::BinaryOperations {
+                lhs: Expr::Number(1000).into(),
+                rhs: Expr::Number(5000).into(),
                 operator: BinaryOperators::Minus
             }
             .into()
@@ -330,12 +330,12 @@ fn times() {
     let program = Program::new("always 1 * 5;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        ExprKind::Always {
+        Expr::Always {
             interval: None,
             not: false,
-            expr: ExprKind::BinaryOperations {
-                lhs: ExprKind::Number(1000).into(),
-                rhs: ExprKind::Number(5000).into(),
+            expr: Expr::BinaryOperations {
+                lhs: Expr::Number(1000).into(),
+                rhs: Expr::Number(5000).into(),
                 operator: BinaryOperators::Times
             }
             .into()
@@ -348,12 +348,12 @@ fn devide() {
     let program = Program::new("always 1 / 5;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        ExprKind::Always {
+        Expr::Always {
             interval: None,
             not: false,
-            expr: ExprKind::BinaryOperations {
-                lhs: ExprKind::Number(1000).into(),
-                rhs: ExprKind::Number(5000).into(),
+            expr: Expr::BinaryOperations {
+                lhs: Expr::Number(1000).into(),
+                rhs: Expr::Number(5000).into(),
                 operator: BinaryOperators::Divide
             }
             .into()
@@ -366,12 +366,12 @@ fn modulo() {
     let program = Program::new("always 1 % 5;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        ExprKind::Always {
+        Expr::Always {
             interval: None,
             not: false,
-            expr: ExprKind::BinaryOperations {
-                lhs: ExprKind::Number(1000).into(),
-                rhs: ExprKind::Number(5000).into(),
+            expr: Expr::BinaryOperations {
+                lhs: Expr::Number(1000).into(),
+                rhs: Expr::Number(5000).into(),
                 operator: BinaryOperators::Mod
             }
             .into()
@@ -384,11 +384,11 @@ fn not() {
     let program = Program::new("always !5;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        ExprKind::Always {
+        Expr::Always {
             interval: None,
             not: false,
-            expr: ExprKind::UnaryOperations {
-                operand: ExprKind::Number(5000).into(),
+            expr: Expr::UnaryOperations {
+                operand: Expr::Number(5000).into(),
                 operator: UnaryOperators::Not
             }
             .into()
@@ -401,11 +401,11 @@ fn negative() {
     let program = Program::new("always -5;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        ExprKind::Always {
+        Expr::Always {
             interval: None,
             not: false,
-            expr: ExprKind::UnaryOperations {
-                operand: ExprKind::Number(5000).into(),
+            expr: Expr::UnaryOperations {
+                operand: Expr::Number(5000).into(),
                 operator: UnaryOperators::Negative
             }
             .into()
@@ -418,12 +418,12 @@ fn sum() {
     let program = Program::new("always sum(5);").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        ExprKind::Always {
+        Expr::Always {
             interval: None,
             not: false,
-            expr: ExprKind::Function {
+            expr: Expr::Function {
                 aggregate_type: FunctionType::Sum,
-                expr: ExprKind::Number(5000).into()
+                expr: Expr::Number(5000).into()
             }
             .into()
         }
@@ -435,12 +435,12 @@ fn avg() {
     let program = Program::new("always avg(5);").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        ExprKind::Always {
+        Expr::Always {
             interval: None,
             not: false,
-            expr: ExprKind::Function {
+            expr: Expr::Function {
                 aggregate_type: FunctionType::Avg,
-                expr: ExprKind::Number(5000).into()
+                expr: Expr::Number(5000).into()
             }
             .into()
         }
@@ -452,12 +452,12 @@ fn count() {
     let program = Program::new("always count(5);").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        ExprKind::Always {
+        Expr::Always {
             interval: None,
             not: false,
-            expr: ExprKind::Function {
+            expr: Expr::Function {
                 aggregate_type: FunctionType::Count,
-                expr: ExprKind::Number(5000).into()
+                expr: Expr::Number(5000).into()
             }
             .into()
         }
@@ -469,12 +469,12 @@ fn sumtime() {
     let program = Program::new("always sumtime(5);").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        ExprKind::Always {
+        Expr::Always {
             interval: None,
             not: false,
-            expr: ExprKind::Function {
+            expr: Expr::Function {
                 aggregate_type: FunctionType::Sumtime,
-                expr: ExprKind::Number(5000).into()
+                expr: Expr::Number(5000).into()
             }
             .into()
         }
@@ -486,12 +486,12 @@ fn avgtime() {
     let program = Program::new("always avgtime(5);").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        ExprKind::Always {
+        Expr::Always {
             interval: None,
             not: false,
-            expr: ExprKind::Function {
+            expr: Expr::Function {
                 aggregate_type: FunctionType::Avgtime,
-                expr: ExprKind::Number(5000).into()
+                expr: Expr::Number(5000).into()
             }
             .into()
         }
@@ -503,12 +503,12 @@ fn counttime() {
     let program = Program::new("always counttime(5);").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        ExprKind::Always {
+        Expr::Always {
             interval: None,
             not: false,
-            expr: ExprKind::Function {
+            expr: Expr::Function {
                 aggregate_type: FunctionType::Counttime,
-                expr: ExprKind::Number(5000).into()
+                expr: Expr::Number(5000).into()
             }
             .into()
         }
@@ -520,12 +520,12 @@ fn foreach() {
     let program = Program::new("always foreach(5);").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        ExprKind::Always {
+        Expr::Always {
             interval: None,
             not: false,
-            expr: ExprKind::Function {
+            expr: Expr::Function {
                 aggregate_type: FunctionType::Foreach,
-                expr: ExprKind::Number(5000).into()
+                expr: Expr::Number(5000).into()
             }
             .into()
         }
@@ -537,10 +537,10 @@ fn bool() {
     let program = Program::new("always true;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        ExprKind::Always {
+        Expr::Always {
             interval: None,
             not: false,
-            expr: ExprKind::Boolean(true).into()
+            expr: Expr::Boolean(true).into()
         }
     );
 }
@@ -550,16 +550,16 @@ fn string() {
     let program = Program::new("always count(name=fridge);").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        ExprKind::Always {
+        Expr::Always {
             interval: None,
             not: false,
-            expr: ExprKind::Function {
+            expr: Expr::Function {
                 aggregate_type: FunctionType::Count,
-                expr: ExprKind::BinaryOperations {
-                    lhs: ExprKind::Member {
+                expr: Expr::BinaryOperations {
+                    lhs: Expr::Member {
                         access_type: MemberType::Name
                     }.into(),
-                    rhs: ExprKind::String("fridge".into()).into(),
+                    rhs: Expr::String("fridge".into()).into(),
                     operator: BinaryOperators::Equal
                 }
                 .into()

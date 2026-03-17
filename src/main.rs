@@ -3,6 +3,7 @@ pub mod program;
 pub mod unit_checker;
 pub mod equivalence_converter;
 pub mod unit_converter;
+pub mod utils;
 mod errors;
 
 extern crate hime_redist;

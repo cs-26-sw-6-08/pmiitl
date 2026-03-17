@@ -1,66 +1,7 @@
 use crate::{
-    program::{expressions::ExprKind, function_types::FunctionType, member_types::MemberType, operations::{BinaryOperators, UnaryOperators}, units::Unit},
-    unit_checker::types::Type,
+    program::{expressions::Expr, function_types::FunctionType, member_types::MemberType, operations::{BinaryOperators, UnaryOperators}, units::Unit},
+    unit_checker::types::Type, utils::test_helper_func::{always_expr, binary_expr, bool_expr, current_time, eventually_expr, function_expr, interval_expr, member_expr, number_expr, string_expr, unary_expr, unit_expr, until_expr},
 };
-
-fn binary_expr(lhs: ExprKind, rhs: ExprKind, operator: BinaryOperators) -> ExprKind {
-    ExprKind::BinaryOperations {
-        lhs: lhs.into(),
-        rhs: rhs.into(),
-        operator,
-    }
-}
-
-fn unary_expr(operand: ExprKind, operator: UnaryOperators) -> ExprKind {
-    ExprKind::UnaryOperations { operand: operand.into(), operator }
-}
-
-fn number_expr() -> ExprKind {
-    ExprKind::Number(5000)
-}
-
-fn string_expr() -> ExprKind {
-    ExprKind::String("christian".into())
-}
-
-fn bool_expr() -> ExprKind {
-    ExprKind::Boolean(true)
-}
-
-fn current_time() -> ExprKind {
-    ExprKind::CurrentTime
-}
-
-fn unit_expr(unit: Unit) -> ExprKind {
-    ExprKind::Unit {
-        number: number_expr().into(),
-        unit,
-    }
-}
-
-fn member_expr(access_type: MemberType) -> ExprKind {
-    ExprKind::Member { access_type }
-}
-
-fn function_expr(aggregate_type: FunctionType, expr: ExprKind) -> ExprKind {
-    ExprKind::Function { aggregate_type, expr: expr.into() }
-}
-
-fn interval_expr(unit1: ExprKind, unit2: ExprKind) -> ExprKind {
-    ExprKind::Interval { start: unit1.into(), end: unit2.into() }
-}
-
-fn always_expr(expr: ExprKind) -> ExprKind {
-    ExprKind::Always { interval: None, not: false, expr: expr.into() }
-}
-
-fn eventually_expr(expr: ExprKind) -> ExprKind {
-    ExprKind::Eventually { interval: Some(interval_expr(unit_expr(Unit::Seconds), unit_expr(Unit::Seconds)).into()), not: false, expr: expr.into() }
-}
-
-fn until_expr(expr1: ExprKind, expr2: ExprKind ) -> ExprKind {
-    ExprKind::Until { interval: Some(interval_expr(unit_expr(Unit::Seconds), unit_expr(Unit::Seconds)).into()), not: false, lhs: expr1.into(), rhs: expr2.into() }
-}
 
 #[test]
 fn plus_minus_mod_operations() {
@@ -787,5 +728,5 @@ fn until(){
 
 #[test]
 fn unit_fail(){    
-    assert!(ExprKind::Unit { number: bool_expr().into(), unit: Unit::Seconds }.unit_check().is_err());
+    assert!(Expr::Unit { number: bool_expr().into(), unit: Unit::Seconds }.unit_check().is_err());
 }

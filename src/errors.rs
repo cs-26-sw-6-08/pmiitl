@@ -1,4 +1,4 @@
-use crate::program::{expressions::ExprKind, operations::BinaryOperators};
+use crate::program::{expressions::Expr, operations::BinaryOperators};
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -10,7 +10,7 @@ pub enum Error {
     #[error("program parse error line {1} column {2}: {0}")]
     ProgramParse(String, usize, usize),
     #[error("could not convert operation {0:?} lhs: {1:?} rhs: {2:?}")]
-    ConversionBinaryOperation(BinaryOperators, ExprKind, ExprKind),
+    ConversionBinaryOperation(BinaryOperators, Expr, Expr),
     #[error("type error")]
     Typechecking,
 }

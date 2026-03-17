@@ -3,27 +3,27 @@ use std::error::Error;
 use crate::{
     errors,
     program::{
-        expressions::ExprKind, function_types::FunctionType, member_types::MemberType,
+        expressions::Expr, function_types::FunctionType, member_types::MemberType,
         operations::BinaryOperators, operations::UnaryOperators,
     },
     unit_checker::types::Type,
 };
 
-impl ExprKind {
+impl Expr {
     pub fn unit_check(&self) -> Result<Type, Box<dyn Error>> {
         match self {
-            ExprKind::Number(_) => Ok(Type::Number),
-            ExprKind::String(_) => Ok(Type::String),
-            ExprKind::Boolean(_) => Ok(Type::Bool),
-            ExprKind::CurrentTime => Ok(Type::Seconds),
-            ExprKind::Unit { number, unit } => {
+            Expr::Number(_) => Ok(Type::Number),
+            Expr::String(_) => Ok(Type::String),
+            Expr::Boolean(_) => Ok(Type::Bool),
+            Expr::CurrentTime => Ok(Type::Seconds),
+            Expr::Unit { number, unit } => {
                 let unit_type = Type::unit_type(unit);
                 if number.unit_check()? == Type::Number {
                     return Ok(unit_type);
                 }
                 Err(errors::Error::Typechecking.into())
             }
-            ExprKind::Interval { start, end } => {
+            Expr::Interval { start, end } => {
                 let start_type = start.unit_check()?;
                 let end_type = end.unit_check()?;
                 if start_type == Type::Seconds && end_type == Type::Seconds {
@@ -31,11 +31,11 @@ impl ExprKind {
                 }
                 Err(errors::Error::Typechecking.into())
             }
-            ExprKind::Always {
+            Expr::Always {
                 interval,
                 not: _,
                 expr,
-            } | ExprKind::Eventually {
+            } | Expr::Eventually {
                 interval,
                 not: _,
                 expr,
@@ -50,7 +50,7 @@ impl ExprKind {
                     _ => Err(errors::Error::Typechecking.into()),
                 }
             },
-            ExprKind::Until {
+            Expr::Until {
                 interval,
                 not: _,
                 lhs,
@@ -66,7 +66,7 @@ impl ExprKind {
                     (Type::Bool, Type::Bool) => Ok(Type::Bool),
                     _ => Err(errors::Error::Typechecking.into()),
                 }},
-            ExprKind::BinaryOperations { lhs, rhs, operator } => {
+            Expr::BinaryOperations { lhs, rhs, operator } => {
                 let lhs_type = lhs.unit_check()?;
                 let rhs_type = rhs.unit_check()?;
                 match operator {
@@ -145,7 +145,7 @@ impl ExprKind {
                     }
                 }
             }
-            ExprKind::UnaryOperations { operand, operator } => {
+            Expr::UnaryOperations { operand, operator } => {
                 let operand_type = operand.unit_check()?;
 
                 match operator {
@@ -164,12 +164,12 @@ impl ExprKind {
                     },
                 }
             }
-            ExprKind::Member { access_type } => match access_type {
+            Expr::Member { access_type } => match access_type {
                 MemberType::Active => Ok(Type::Bool),
                 MemberType::Power => Ok(Type::Watt),
                 MemberType::Name => Ok(Type::String),
             },
-            ExprKind::Function {
+            Expr::Function {
                 aggregate_type,
                 expr,
             } => {

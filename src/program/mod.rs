@@ -27,6 +27,7 @@ impl Program {
         let ast = parsed.get_ast();
         let root = ast.get_root();
 
+        /* TODO: Slet */
         print(root, Vec::<bool>::new());
 
         for node in root.children(){
