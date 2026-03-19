@@ -1,6 +1,6 @@
 use crate::{
     program::{expressions::Expr, function_types::FunctionType, member_types::MemberType, operations::{BinaryOperators, UnaryOperators}, units::Unit},
-    unit_checker::types::Type, utils::test_helper_func::{always_expr, binary_expr, bool_expr, current_time, eventually_expr, function_expr, interval_expr, member_expr, number_expr, string_expr, unary_expr, unit_expr},
+    unit_check::types::Type, utils::test_helper_func::{always_expr, binary_expr, bool_expr, current_time, eventually_expr, function_expr, interval_expr, member_expr, number_expr, string_expr, unary_expr, unit_expr},
 };
 
 #[test]

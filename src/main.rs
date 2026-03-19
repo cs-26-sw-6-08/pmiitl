@@ -1,8 +1,8 @@
 mod grammar;// default namespace for the parser is the grammar's name
 pub mod program;
-pub mod unit_checker;
-pub mod equivalence_converter;
-pub mod unit_converter;
+pub mod unit_check;
+pub mod equiv_convert;
+pub mod unit_convert;
 pub mod utils;
 mod errors;
 
@@ -27,7 +27,7 @@ fn main() {
         Err(err) => return println!("Error: {}", err),
     };
 
-    if let Err(err) = program.unit_converter() {
+    if let Err(err) = program.unit_convert() {
         return println!("Error: {}", err);
     };
 
@@ -35,7 +35,7 @@ fn main() {
         return println!("Error: {}", err);
     }
 
-    if let Err(err) = program.convert() {
+    if let Err(err) = program.equiv_convert() {
         return println!("Error: {}", err);
     };
 

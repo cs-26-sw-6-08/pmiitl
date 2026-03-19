@@ -1,2 +1,2 @@
-always 5 kWh + 5 kWh > 2 kWh;
+always power + sum(power*2) > 4;
 

@@ -45,11 +45,22 @@ grammar cfg
     ExprV5 -> ExprV5 '*'^ ExprV6 | ExprV5 '/'^ ExprV6 | ExprV5 '%'^ ExprV6 | ExprV6^;
     ExprV6 -> (('always' | 'eventually'))^ Interval? ExprV6 | '!'^ExprV6 | '-'^ExprV6 | ExprV7^;
     ExprV7 -> '('! Expr^ ')'! | ExprV8^;
-    ExprV8 -> (NUMBER (TIMEUNIT | POWERUNIT) | NUMBER | Member | STRING | Function | BOOL | TIME)^;
+    ExprV8 -> (NUMBER (TIMEUNIT | POWERUNIT) | NUMBER | STRING | Function | BOOL | TIME)^;
 
-    Function  -> Aggregate^'('!Expr')'! | 'sumtime'^'('!Expr')'! | 'avgtime'^'('!Expr')'! 
-                 | 'counttime'^'('!Expr')'! | 'foreach'^'('!Expr')'!;
+    Function  -> Aggregate^'('!FunctionExpr')'! | 'sumtime'^'('!FunctionExpr')'! | 'avgtime'^'('!FunctionExpr')'! 
+                 | 'counttime'^'('!FunctionExpr')'! | 'foreach'^'('!FunctionExpr')'!;
     Aggregate -> 'sum'^ | 'avg'^ | 'count'^;
+  
+    //Member is only allowed inside a Function, however all other types of expressions should also be available.
+    FunctionExpr   -> FunctionExprV1 '->'^ FunctionExpr | FunctionExprV1^;
+    FunctionExprV1 -> FunctionExprV1 '|'^ FunctionExprV2 | FunctionExprV2^;
+    FunctionExprV2 -> FunctionExprV2 '&'^ FunctionExprV3 | FunctionExprV3^;
+    FunctionExprV3 -> FunctionExprV4 ('=' | '<=' | '>=' | '!=' | '<' | '>')^ FunctionExprV4 | FunctionExprV4^;
+    FunctionExprV4 -> FunctionExprV4 '+'^ FunctionExprV5 | FunctionExprV4 '-'^ FunctionExprV5 | FunctionExprV5^;
+    FunctionExprV5 -> FunctionExprV5 '*'^ FunctionExprV6 | FunctionExprV5 '/'^ FunctionExprV6 | FunctionExprV5 '%'^ FunctionExprV6 | FunctionExprV6^;
+    FunctionExprV6 -> (('always' | 'eventually'))^ Interval? FunctionExprV6 | '!'^FunctionExprV6 | '-'^FunctionExprV6 | FunctionExprV7^;
+    FunctionExprV7 -> '('! FunctionExpr^ ')'! | FunctionExprV8^;
+    FunctionExprV8 -> (NUMBER (TIMEUNIT | POWERUNIT) | NUMBER | Member | STRING | Function | BOOL | TIME)^;
 
     Member -> 'active'^ | 'power'^ | 'name'^;
     

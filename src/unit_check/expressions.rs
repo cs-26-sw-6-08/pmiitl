@@ -6,7 +6,7 @@ use crate::{
         expressions::Expr, function_types::FunctionType, member_types::MemberType,
         operations::BinaryOperators, operations::UnaryOperators,
     },
-    unit_checker::types::Type,
+    unit_check::types::Type,
 };
 
 impl Expr {

@@ -15,7 +15,7 @@ fn interval() {
         custom_unit_expr(5000, Unit::Minutes),
         custom_unit_expr(10000, Unit::Minutes),
     )
-    .unit_converter();
+    .unit_convert();
     assert_eq!(
         expr,
         interval_expr(
@@ -27,7 +27,7 @@ fn interval() {
 
 #[test]
 fn always() {
-    let expr = always_expr(unit_expr(Unit::Hours)).unit_converter();
+    let expr = always_expr(unit_expr(Unit::Hours)).unit_convert();
     assert_eq!(
         expr,
         always_expr(custom_unit_expr(5000 * 60 * 60,
@@ -38,7 +38,7 @@ fn always() {
 
 #[test]
 fn eventually() {
-    let expr = eventually_expr(unit_expr(Unit::KiloWatts)).unit_converter();
+    let expr = eventually_expr(unit_expr(Unit::KiloWatts)).unit_convert();
     assert_eq!(
         expr,
         eventually_expr(custom_unit_expr(5000 * 1000,
@@ -49,7 +49,7 @@ fn eventually() {
 
 #[test]
 fn binaryoperations() {
-    let expr = binary_expr(unit_expr(Unit::WattHours), unit_expr(Unit::WattHours), BinaryOperators::Plus).unit_converter();
+    let expr = binary_expr(unit_expr(Unit::WattHours), unit_expr(Unit::WattHours), BinaryOperators::Plus).unit_convert();
     assert_eq!(
         expr,
         binary_expr(custom_unit_expr(5000 * 60 * 60, Unit::WattSeconds), custom_unit_expr(5000 * 60 * 60, Unit::WattSeconds), BinaryOperators::Plus)
@@ -58,7 +58,7 @@ fn binaryoperations() {
 
 #[test]
 fn unaryoperations() {
-    let expr = unary_expr(unit_expr(Unit::WattMinutes), UnaryOperators::Negative).unit_converter();
+    let expr = unary_expr(unit_expr(Unit::WattMinutes), UnaryOperators::Negative).unit_convert();
     assert_eq!(
         expr,
         unary_expr(custom_unit_expr(5000 * 60, Unit::WattSeconds), UnaryOperators::Negative)
@@ -67,13 +67,13 @@ fn unaryoperations() {
 
 #[test]
 fn number() {
-    let expr = number_expr().unit_converter();
+    let expr = number_expr().unit_convert();
     assert_eq!(expr, number_expr())
 }
 
 #[test]
 fn function() {
-    let expr = function_expr(FunctionType::Sum, unit_expr(Unit::Minutes)).unit_converter();
+    let expr = function_expr(FunctionType::Sum, unit_expr(Unit::Minutes)).unit_convert();
     assert_eq!(
         expr,
         function_expr(FunctionType::Sum, custom_unit_expr(5000 * 60, Unit::Seconds))
@@ -82,7 +82,7 @@ fn function() {
 
 #[test]
 fn unit_minutes() {
-    let expr = unit_expr(Unit::Minutes).unit_converter();
+    let expr = unit_expr(Unit::Minutes).unit_convert();
     assert_eq!(
         expr,
         custom_unit_expr(5000 * 60, Unit::Seconds)
@@ -91,7 +91,7 @@ fn unit_minutes() {
 
 #[test]
 fn unit_hours() {
-    let expr = unit_expr(Unit::Hours).unit_converter();
+    let expr = unit_expr(Unit::Hours).unit_convert();
     assert_eq!(
         expr,
         custom_unit_expr(5000 * 60 * 60, Unit::Seconds)
@@ -100,7 +100,7 @@ fn unit_hours() {
 
 #[test]
 fn unit_kilowatts() {
-    let expr = unit_expr(Unit::KiloWatts).unit_converter();
+    let expr = unit_expr(Unit::KiloWatts).unit_convert();
     assert_eq!(
         expr,
         custom_unit_expr(5000 * 1000, Unit::Watt)
@@ -109,7 +109,7 @@ fn unit_kilowatts() {
 
 #[test]
 fn unit_kilowatthours() {
-    let expr = unit_expr(Unit::KiloWattHours).unit_converter();
+    let expr = unit_expr(Unit::KiloWattHours).unit_convert();
     assert_eq!(
         expr,
         custom_unit_expr(5000 * 1000 * 60 * 60, Unit::WattSeconds)
@@ -118,7 +118,7 @@ fn unit_kilowatthours() {
 
 #[test]
 fn unit_watthours() {
-    let expr = unit_expr(Unit::WattHours).unit_converter();
+    let expr = unit_expr(Unit::WattHours).unit_convert();
     assert_eq!(
         expr,
         custom_unit_expr(5000 * 60 * 60, Unit::WattSeconds)
@@ -127,7 +127,7 @@ fn unit_watthours() {
 
 #[test]
 fn unit_wattminutes() {
-    let expr = unit_expr(Unit::WattMinutes).unit_converter();
+    let expr = unit_expr(Unit::WattMinutes).unit_convert();
     assert_eq!(
         expr,
         custom_unit_expr(5000 * 60, Unit::WattSeconds)
@@ -136,7 +136,7 @@ fn unit_wattminutes() {
 
 #[test]
 fn unit_seconds() {
-    let expr = unit_expr(Unit::Seconds).unit_converter();
+    let expr = unit_expr(Unit::Seconds).unit_convert();
     assert_eq!(
         expr,
         unit_expr(Unit::Seconds)
@@ -145,7 +145,7 @@ fn unit_seconds() {
 
 #[test]
 fn unit_wattseconds() {
-    let expr = unit_expr(Unit::WattSeconds).unit_converter();
+    let expr = unit_expr(Unit::WattSeconds).unit_convert();
     assert_eq!(
         expr,
         unit_expr(Unit::WattSeconds)
@@ -154,7 +154,7 @@ fn unit_wattseconds() {
 
 #[test]
 fn unit_watt() {
-    let expr = unit_expr(Unit::Watt).unit_converter();
+    let expr = unit_expr(Unit::Watt).unit_convert();
     assert_eq!(
         expr,
         unit_expr(Unit::Watt)

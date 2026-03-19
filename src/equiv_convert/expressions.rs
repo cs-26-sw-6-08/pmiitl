@@ -1,17 +1,17 @@
 use std::error::Error;
 
 use crate::{
-    equivalence_converter::conversion_binary_operator::conversion_binary_operations,
+    equiv_convert::conversion_binary_operator::conversion_binary_operations,
     program::{expressions::Expr, function_types::FunctionType},
 };
 
 impl Expr {
-    //minimize tree by calculating simple arithmetic and boolean expressions and making cartain equivalence conversions
-    pub fn convert(&self) -> Result<Expr, Box<dyn Error>> {
+    //minimize tree by calculating simple arithmetic and boolean expressions and making certain equivalence conversions
+    pub fn equiv_convert(&self) -> Result<Expr, Box<dyn Error>> {
         match self {
             Expr::BinaryOperations { lhs, rhs, operator } => {
-                let lhs = lhs.convert()?;
-                let rhs = rhs.convert()?;
+                let lhs = lhs.equiv_convert()?;
+                let rhs = rhs.equiv_convert()?;
 
                 Ok(conversion_binary_operations(lhs, rhs, operator)?)
             }
@@ -22,17 +22,17 @@ impl Expr {
             } => Ok(Expr::Always {
                 interval: interval
                     .clone()
-                    .and_then(|e| Some(e.convert().ok()?.into())),
+                    .and_then(|e| Some(e.equiv_convert().ok()?.into())),
                 not: *not,
-                expr: expr.convert()?.into(),
+                expr: expr.equiv_convert()?.into(),
             }),
-            Expr::Unit { number, unit: _ } => Ok(number.convert()?),
+            Expr::Unit { number, unit: _ } => Ok(number.equiv_convert()?),
             Expr::Function {
                 aggregate_type,
                 expr,
             } => match aggregate_type {
                 FunctionType::Count => {
-                    let expr = expr.convert()?;
+                    let expr = expr.equiv_convert()?;
                     Ok(Expr::Function {
                         aggregate_type: FunctionType::Sum,
                         expr: match expr {
@@ -43,7 +43,7 @@ impl Expr {
                     })
                 }
                 FunctionType::Counttime => {
-                    let expr = expr.convert()?;
+                    let expr = expr.equiv_convert()?;
                     Ok(Expr::Function {
                         aggregate_type: FunctionType::Sumtime,
                         expr: match expr {
@@ -55,12 +55,12 @@ impl Expr {
                 }
                 _ => Ok(Expr::Function {
                     aggregate_type: aggregate_type.clone(),
-                    expr: expr.convert()?.into(),
+                    expr: expr.equiv_convert()?.into(),
                 }),
             },
             Expr::Interval { start, end } => Ok(Expr::Interval {
-                start: start.convert()?.into(),
-                end: end.convert()?.into(),
+                start: start.equiv_convert()?.into(),
+                end: end.equiv_convert()?.into(),
             }),
             Expr::Eventually {
                 interval,
@@ -69,12 +69,12 @@ impl Expr {
             } => Ok(Expr::Eventually {
                 interval: interval
                     .clone()
-                    .and_then(|e| Some(e.convert().ok()?.into())),
+                    .and_then(|e| Some(e.equiv_convert().ok()?.into())),
                 not: *not,
-                expr: expr.convert()?.into(),
+                expr: expr.equiv_convert()?.into(),
             }),
             Expr::UnaryOperations { operand, operator } => Ok(Expr::UnaryOperations {
-                operand: operand.convert()?.into(),
+                operand: operand.equiv_convert()?.into(),
                 operator: operator.clone(),
             }),
             _ => Ok(self.clone()),

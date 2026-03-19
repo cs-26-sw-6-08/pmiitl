@@ -1,14 +1,14 @@
 use crate::program::{expressions::Expr, units::Unit};
 
 impl Expr {
-    pub fn unit_converter(&self) -> Expr {
+    pub fn unit_convert(&self) -> Expr {
         match self {
-            Expr::Interval { start, end } => Expr::Interval { start: start.unit_converter().into(), end: end.unit_converter().into() },
-            Expr::Always { interval, not, expr } => Expr::Always { interval: interval.clone().map(|interval| interval.unit_converter().into()), not: *not, expr: expr.unit_converter().into() },
-            Expr::Eventually { interval, not, expr } => Expr::Eventually { interval: interval.clone().map(|interval| interval.unit_converter().into()), not: *not, expr: expr.unit_converter().into() },
-            Expr::BinaryOperations { lhs, rhs, operator } => Expr::BinaryOperations { lhs: lhs.unit_converter().into(), rhs: rhs.unit_converter().into(), operator: operator.clone() },
-            Expr::UnaryOperations { operand, operator } => Expr::UnaryOperations { operand: operand.unit_converter().into(), operator: operator.clone() },
-            Expr::Function { aggregate_type, expr } => Expr::Function { aggregate_type: aggregate_type.clone(), expr: expr.unit_converter().into() },
+            Expr::Interval { start, end } => Expr::Interval { start: start.unit_convert().into(), end: end.unit_convert().into() },
+            Expr::Always { interval, not, expr } => Expr::Always { interval: interval.clone().map(|interval| interval.unit_convert().into()), not: *not, expr: expr.unit_convert().into() },
+            Expr::Eventually { interval, not, expr } => Expr::Eventually { interval: interval.clone().map(|interval| interval.unit_convert().into()), not: *not, expr: expr.unit_convert().into() },
+            Expr::BinaryOperations { lhs, rhs, operator } => Expr::BinaryOperations { lhs: lhs.unit_convert().into(), rhs: rhs.unit_convert().into(), operator: operator.clone() },
+            Expr::UnaryOperations { operand, operator } => Expr::UnaryOperations { operand: operand.unit_convert().into(), operator: operator.clone() },
+            Expr::Function { aggregate_type, expr } => Expr::Function { aggregate_type: aggregate_type.clone(), expr: expr.unit_convert().into() },
             Expr::Unit { number, unit } => {
                 let Expr::Number(n) = *number.as_ref() else { unreachable!() };
                 match unit {

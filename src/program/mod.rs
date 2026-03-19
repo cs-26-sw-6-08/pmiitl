@@ -1,6 +1,6 @@
 use std::error::Error;
 
-use hime_redist::ast::AstNode;
+use hime_redist::{ast::AstNode, errors::ParseErrorDataTrait};
 
 use crate::{errors, grammar::cfg, program::expressions::SpannedExpr};
 pub mod expressions;
@@ -22,6 +22,9 @@ impl Program {
         let parsed = cfg::parse_string(programstr.to_lowercase());
         let mut exprs : Vec<SpannedExpr> = Vec::new();
         if !parsed.is_success() {
+            for error in parsed.errors.errors {
+                println!("{} at line: {} column: {}", error, error.get_position().line, error.get_position().column);
+            }
             return Err(errors::Error::HimeParse.into())
         }
         let ast = parsed.get_ast();
