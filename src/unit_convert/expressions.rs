@@ -1,27 +1,74 @@
 use crate::program::{expressions::Expr, units::Unit};
 
 impl Expr {
-    pub fn unit_convert(&self) -> Expr {
+    pub fn unit_convert(&mut self) {
         match self {
-            Expr::Interval { start, end } => Expr::Interval { start: start.unit_convert().into(), end: end.unit_convert().into() },
-            Expr::Always { interval, not, expr } => Expr::Always { interval: interval.clone().map(|interval| interval.unit_convert().into()), not: *not, expr: expr.unit_convert().into() },
-            Expr::Eventually { interval, not, expr } => Expr::Eventually { interval: interval.clone().map(|interval| interval.unit_convert().into()), not: *not, expr: expr.unit_convert().into() },
-            Expr::BinaryOperations { lhs, rhs, operator } => Expr::BinaryOperations { lhs: lhs.unit_convert().into(), rhs: rhs.unit_convert().into(), operator: operator.clone() },
-            Expr::UnaryOperations { operand, operator } => Expr::UnaryOperations { operand: operand.unit_convert().into(), operator: operator.clone() },
-            Expr::Function { aggregate_type, expr } => Expr::Function { aggregate_type: aggregate_type.clone(), expr: expr.unit_convert().into() },
+            Expr::Interval { start, end } => {
+                start.unit_convert();
+                end.unit_convert();
+            }
+            Expr::Always {
+                interval,
+                not: _,
+                expr,
+            } => {
+                if let Some(interval) = interval {
+                    interval.unit_convert();
+                };
+                expr.unit_convert();
+            }
+            Expr::Eventually {
+                interval,
+                not: _,
+                expr,
+            } => {
+                if let Some(interval) = interval {
+                    interval.unit_convert();
+                };
+                expr.unit_convert();
+            }
+            Expr::BinaryOperations { lhs, rhs, operator: _ } => {
+                lhs.unit_convert();
+                rhs.unit_convert();
+            }
+            Expr::UnaryOperations { operand, operator: _ } => operand.unit_convert(),
+            Expr::Function {
+                aggregate_type: _,
+                expr,
+            } => expr.unit_convert(),
             Expr::Unit { number, unit } => {
-                let Expr::Number(n) = *number.as_ref() else { unreachable!() };
+                let Expr::Number(n) = number.as_mut() else {
+                    unreachable!()
+                };
                 match unit {
-                    Unit::Minutes => Expr::Unit { number: Expr::Number(n * 60).into(), unit: Unit::Seconds },
-                    Unit::Hours => Expr::Unit { number: Expr::Number(n * 60 * 60).into(), unit: Unit::Seconds },
-                    Unit::KiloWatts => Expr::Unit { number: Expr::Number(n * 1000).into(), unit: Unit::Watt },
-                    Unit::KiloWattHours => Expr::Unit { number: Expr::Number(n * 1000 * 60 * 60).into(), unit: Unit::WattSeconds },
-                    Unit::WattHours => Expr::Unit { number: Expr::Number(n * 60 * 60).into(), unit: Unit::WattSeconds },
-                    Unit::WattMinutes => Expr::Unit { number: Expr::Number(n * 60).into(), unit: Unit::WattSeconds },
-                    _=> self.clone()
-                }
-            },
-            _ => self.clone()
+                    Unit::Minutes => {
+                        *n *= 60;
+                        *unit = Unit::Seconds;
+                    },
+                    Unit::Hours => {
+                        *n *= 60 * 60;
+                        *unit = Unit::Seconds;
+                    },
+                    Unit::KiloWatts => {
+                        *n *= 1000;
+                        *unit = Unit::Watt;
+                    },
+                    Unit::KiloWattHours => {
+                        *n *= 1000 * 60 * 60;
+                        *unit = Unit::WattSeconds;
+                    },
+                    Unit::WattHours => {
+                        *n *= 60 * 60;
+                        *unit = Unit::WattSeconds;
+                    },
+                    Unit::WattMinutes => {
+                        *n *= 60;
+                        *unit = Unit::WattSeconds;
+                    },
+                    _ => {},
+                };
+            }
+            _ => {},
         }
     }
 }
