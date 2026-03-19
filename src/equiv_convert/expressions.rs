@@ -1,7 +1,7 @@
 use std::error::Error;
 
 use crate::{
-    equiv_convert::conversion_binary_operator::conversion_binary_operations,
+    equiv_convert::binary_operations::binary_operations,
     program::{expressions::Expr, function_types::FunctionType},
 };
 
@@ -13,7 +13,7 @@ impl Expr {
                 lhs.equiv_convert()?;
                 rhs.equiv_convert()?;
 
-                *self = conversion_binary_operations(*lhs.clone(), *rhs.clone(), operator.clone())?;
+                *self = binary_operations(*lhs.clone(), *rhs.clone(), operator.clone())?;
                 Ok(())
             }
             Expr::Always {

@@ -5,7 +5,7 @@ use crate::{errors, program::{
     operations::{BinaryOperators, UnaryOperators},
 }};
 
-pub fn conversion_binary_operations(
+pub fn binary_operations(
     lhs: Expr,
     rhs: Expr,
     operator: BinaryOperators,

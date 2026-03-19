@@ -4,8 +4,8 @@ use crate::program::Program;
 
 mod expressions;
 #[cfg(test)]
-mod conversion_binary_operator_test;
-mod conversion_binary_operator;
+mod binary_operations_test;
+mod binary_operations;
 
 impl Program {
     pub fn equiv_convert(&mut self) -> Result<(), Box<dyn Error>> {
