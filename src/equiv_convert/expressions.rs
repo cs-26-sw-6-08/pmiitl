@@ -7,77 +7,78 @@ use crate::{
 
 impl Expr {
     //minimize tree by calculating simple arithmetic and boolean expressions and making certain equivalence conversions
-    pub fn equiv_convert(&self) -> Result<Expr, Box<dyn Error>> {
+    pub fn equiv_convert(&mut self) -> Result<(), Box<dyn Error>> {
         match self {
             Expr::BinaryOperations { lhs, rhs, operator } => {
-                let lhs = lhs.equiv_convert()?;
-                let rhs = rhs.equiv_convert()?;
+                lhs.equiv_convert()?;
+                rhs.equiv_convert()?;
 
-                Ok(conversion_binary_operations(lhs, rhs, operator)?)
+                *self = conversion_binary_operations(*lhs.clone(), *rhs.clone(), operator.clone())?;
+                Ok(())
             }
             Expr::Always {
                 interval,
-                not,
+                not: _,
                 expr,
-            } => Ok(Expr::Always {
-                interval: interval
-                    .clone()
-                    .and_then(|e| Some(e.equiv_convert().ok()?.into())),
-                not: *not,
-                expr: expr.equiv_convert()?.into(),
-            }),
+            } => {
+                if let Some(interval) = interval {
+                    interval.equiv_convert()?;
+                }
+                expr.equiv_convert()?;
+                Ok(())
+            }
             Expr::Unit { number, unit: _ } => Ok(number.equiv_convert()?),
             Expr::Function {
                 aggregate_type,
                 expr,
             } => match aggregate_type {
                 FunctionType::Count => {
-                    let expr = expr.equiv_convert()?;
-                    Ok(Expr::Function {
-                        aggregate_type: FunctionType::Sum,
-                        expr: match expr {
-                            Expr::Number(n) => Expr::Boolean(n != 0).into(),
-                            Expr::Boolean(n) => Expr::Boolean(n).into(),
-                            _ => unreachable!(),
-                        },
-                    })
+                    expr.equiv_convert()?;
+
+                    *aggregate_type = FunctionType::Sum;
+                    *expr = match expr.as_ref() {
+                        Expr::Number(n) => Expr::Boolean(*n != 0).into(),
+                        Expr::Boolean(n) => Expr::Boolean(*n).into(),
+                        _ => unreachable!(),
+                    };
+                    Ok(())
                 }
                 FunctionType::Counttime => {
-                    let expr = expr.equiv_convert()?;
-                    Ok(Expr::Function {
-                        aggregate_type: FunctionType::Sumtime,
-                        expr: match expr {
-                            Expr::Number(n) => Expr::Boolean(n != 0).into(),
-                            Expr::Boolean(n) => Expr::Boolean(n).into(),
+                    expr.equiv_convert()?;
+
+                    *aggregate_type = FunctionType::Sumtime;
+
+                    *expr = match expr.as_ref() {
+                            Expr::Number(n) => Expr::Boolean(*n != 0).into(),
+                            Expr::Boolean(n) => Expr::Boolean(*n).into(),
                             _ => unreachable!(),
-                        },
-                    })
+                        };
+                    Ok(())
+                    
                 }
-                _ => Ok(Expr::Function {
-                    aggregate_type: aggregate_type.clone(),
-                    expr: expr.equiv_convert()?.into(),
-                }),
+                _ => Ok(expr.equiv_convert()?),
             },
-            Expr::Interval { start, end } => Ok(Expr::Interval {
-                start: start.equiv_convert()?.into(),
-                end: end.equiv_convert()?.into(),
-            }),
+            Expr::Interval { start, end } => {
+                start.equiv_convert()?;
+                end.equiv_convert()?;
+                Ok(())
+            },
             Expr::Eventually {
                 interval,
-                not,
+                not: _,
                 expr,
-            } => Ok(Expr::Eventually {
-                interval: interval
-                    .clone()
-                    .and_then(|e| Some(e.equiv_convert().ok()?.into())),
-                not: *not,
-                expr: expr.equiv_convert()?.into(),
-            }),
-            Expr::UnaryOperations { operand, operator } => Ok(Expr::UnaryOperations {
-                operand: operand.equiv_convert()?.into(),
-                operator: operator.clone(),
-            }),
-            _ => Ok(self.clone()),
+            } => {
+                if let Some(interval) = interval {
+                    interval.equiv_convert()?;
+                }
+                expr.equiv_convert()?;
+                Ok(())
+            }
+            Expr::UnaryOperations {
+                operand,
+                operator: _,
+            } => Ok(operand.equiv_convert()?),
+            _ => Ok(()),
         }
     }
 }

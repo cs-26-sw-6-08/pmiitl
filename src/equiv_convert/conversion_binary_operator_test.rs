@@ -8,59 +8,92 @@ use crate::utils::test_helper_func::{binary_expr, bool_expr, member_expr, number
 
 #[test]
 fn times() {
-    assert_eq!(binary_expr(number_expr(), number_expr(), BinaryOperators::Times).equiv_convert().unwrap(), Expr::Number(5000*5000));
-    assert_eq!(binary_expr(number_expr(), bool_expr(), BinaryOperators::Times).equiv_convert().unwrap(), Expr::Number(5000));
-    assert_eq!(binary_expr(bool_expr(), number_expr(), BinaryOperators::Times).equiv_convert().unwrap(), Expr::Number(5000));
-    assert_eq!(binary_expr(bool_expr(), bool_expr(), BinaryOperators::Times).equiv_convert().unwrap(), Expr::Number(1));
+    for (mut expr, expected) in [
+        (binary_expr(number_expr(), number_expr(), BinaryOperators::Times), Expr::Number(5000*5000)),
+        (binary_expr(number_expr(), bool_expr(), BinaryOperators::Times), Expr::Number(5000)),
+        (binary_expr(bool_expr(), number_expr(), BinaryOperators::Times), Expr::Number(5000)),
+        (binary_expr(bool_expr(), bool_expr(), BinaryOperators::Times), Expr::Number(1))
+    ] {
+        assert!(expr.equiv_convert().is_ok());
+        assert!(expr.eq(&expected))
+    }
 }
 
 #[test]
 fn divide() {
-    assert_eq!(binary_expr(number_expr(), number_expr(), BinaryOperators::Divide).equiv_convert().unwrap(), Expr::Number(5000/5000));
-    assert_eq!(binary_expr(number_expr(), bool_expr(), BinaryOperators::Divide).equiv_convert().unwrap(), Expr::Number(5000));
-    assert_eq!(binary_expr(bool_expr(), number_expr(), BinaryOperators::Divide).equiv_convert().unwrap(), Expr::Number(1/5000));
-    assert_eq!(binary_expr(bool_expr(), bool_expr(), BinaryOperators::Divide).equiv_convert().unwrap(), Expr::Number(1));
+    for (mut expr, expected) in [
+        (binary_expr(number_expr(), number_expr(), BinaryOperators::Divide), Expr::Number(5000/5000)),
+        (binary_expr(number_expr(), bool_expr(), BinaryOperators::Divide), Expr::Number(5000)),
+        (binary_expr(bool_expr(), number_expr(), BinaryOperators::Divide), Expr::Number(1/5000)),
+        (binary_expr(bool_expr(), bool_expr(), BinaryOperators::Divide), Expr::Number(1))
+    ] {
+        assert!(expr.equiv_convert().is_ok());
+        assert!(expr.eq(&expected))
+    }
+
+    
 }
 
 #[test]
 fn plus() {
-    assert_eq!(binary_expr(number_expr(), number_expr(), BinaryOperators::Plus).equiv_convert().unwrap(), Expr::Number(5000+5000));
-    assert_eq!(binary_expr(number_expr(), bool_expr(), BinaryOperators::Plus).equiv_convert().unwrap(), Expr::Number(5000+1));
-    assert_eq!(binary_expr(bool_expr(), number_expr(), BinaryOperators::Plus).equiv_convert().unwrap(), Expr::Number(1+5000));
-    assert_eq!(binary_expr(bool_expr(), bool_expr(), BinaryOperators::Plus).equiv_convert().unwrap(), Expr::Number(1+1));
+    for (mut expr, expected) in [
+        (binary_expr(number_expr(), number_expr(), BinaryOperators::Plus), Expr::Number(5000+5000)),
+        (binary_expr(number_expr(), bool_expr(), BinaryOperators::Plus), Expr::Number(5000+1)),
+        (binary_expr(bool_expr(), number_expr(), BinaryOperators::Plus), Expr::Number(1+5000)),
+        (binary_expr(bool_expr(), bool_expr(), BinaryOperators::Plus), Expr::Number(1+1))
+    ] {
+        assert!(expr.equiv_convert().is_ok());
+        assert!(expr.eq(&expected))
+    }
 }
 
 #[test]
 fn minus() {
-    assert_eq!(binary_expr(number_expr(), number_expr(), BinaryOperators::Minus).equiv_convert().unwrap(), Expr::Number(5000-5000));
-    assert_eq!(binary_expr(number_expr(), bool_expr(), BinaryOperators::Minus).equiv_convert().unwrap(), Expr::Number(5000-1));
-    assert_eq!(binary_expr(bool_expr(), number_expr(), BinaryOperators::Minus).equiv_convert().unwrap(), Expr::Number(1-5000));
-    assert_eq!(binary_expr(bool_expr(), bool_expr(), BinaryOperators::Minus).equiv_convert().unwrap(), Expr::Number(1-1));
+    for (mut expr, expected) in [
+        (binary_expr(number_expr(), number_expr(), BinaryOperators::Minus), Expr::Number(5000-5000)),
+        (binary_expr(number_expr(), bool_expr(), BinaryOperators::Minus), Expr::Number(5000-1)),
+        (binary_expr(bool_expr(), number_expr(), BinaryOperators::Minus), Expr::Number(1-5000)),
+        (binary_expr(bool_expr(), bool_expr(), BinaryOperators::Minus), Expr::Number(1-1)),
+    ] {
+        assert!(expr.equiv_convert().is_ok());
+        assert!(expr.eq(&expected))
+    }
 }
 
 #[test]
 fn modulo() {
-    assert_eq!(binary_expr(number_expr(), number_expr(), BinaryOperators::Mod).equiv_convert().unwrap(), Expr::Number(0));
-    assert_eq!(binary_expr(number_expr(), bool_expr(), BinaryOperators::Mod).equiv_convert().unwrap(), Expr::Number(0));
-    assert_eq!(binary_expr(bool_expr(), number_expr(), BinaryOperators::Mod).equiv_convert().unwrap(), Expr::Number(1));
-    assert_eq!(binary_expr(bool_expr(), bool_expr(), BinaryOperators::Mod).equiv_convert().unwrap(), Expr::Number(0));
+    for (mut expr, expected) in [
+        (binary_expr(number_expr(), number_expr(), BinaryOperators::Mod), Expr::Number(0)),
+        (binary_expr(number_expr(), bool_expr(), BinaryOperators::Mod), Expr::Number(0)),
+        (binary_expr(bool_expr(), number_expr(), BinaryOperators::Mod), Expr::Number(1)),
+        (binary_expr(bool_expr(), bool_expr(), BinaryOperators::Mod), Expr::Number(0))
+    ] {
+        assert!(expr.equiv_convert().is_ok());
+        assert!(expr.eq(&expected))
+    }
 }
 
 #[test]
 fn and_or_implies_eqal_greaterequal_lessequal() {
     for operator in [BinaryOperators::And, BinaryOperators::Or, BinaryOperators::Implies, BinaryOperators::Equal, BinaryOperators::GreaterEqual, BinaryOperators::LessEqual] {
-        assert_eq!(binary_expr(number_expr(), number_expr(), operator.clone()).equiv_convert().unwrap(), Expr::Boolean(true));
-        assert_eq!(binary_expr(number_expr(), bool_expr(), operator.clone()).equiv_convert().unwrap(), Expr::Boolean(true));
-        assert_eq!(binary_expr(bool_expr(), number_expr(), operator.clone()).equiv_convert().unwrap(), Expr::Boolean(true));
-        assert_eq!(binary_expr(bool_expr(), bool_expr(), operator.clone()).equiv_convert().unwrap(), Expr::Boolean(true));
+        for (mut expr, expected) in [
+            (binary_expr(number_expr(), number_expr(), operator.clone()), Expr::Boolean(true)),
+            (binary_expr(number_expr(), bool_expr(), operator.clone()), Expr::Boolean(true)),
+            (binary_expr(bool_expr(), number_expr(), operator.clone()), Expr::Boolean(true)),
+            (binary_expr(bool_expr(), bool_expr(), operator.clone()), Expr::Boolean(true)),
+        ] {
+            assert!(expr.equiv_convert().is_ok());
+            assert!(expr.eq(&expected))
+        }
     }
    
 }
 
 #[test]
 fn and_equivalence_conversion() {
-    assert_eq!(binary_expr(number_expr(), member_expr(MemberType::Active), BinaryOperators::And).equiv_convert().unwrap(), 
-                unary_expr(binary_expr(unary_expr(number_expr(), UnaryOperators::Not), unary_expr(member_expr(MemberType::Active), UnaryOperators::Not), BinaryOperators::Or), UnaryOperators::Not));
+    let mut expr = binary_expr(number_expr(), member_expr(MemberType::Active), BinaryOperators::And);
+    assert!(expr.equiv_convert().is_ok());
+    assert_eq!(expr, unary_expr(binary_expr(unary_expr(number_expr(), UnaryOperators::Not), unary_expr(member_expr(MemberType::Active), UnaryOperators::Not), BinaryOperators::Or), UnaryOperators::Not));
 }
 
 
@@ -68,16 +101,24 @@ fn and_equivalence_conversion() {
 #[test]
 fn notequal_greater_less() {
     for operator in [BinaryOperators::NotEqual, BinaryOperators::Greater, BinaryOperators::Less] {
-        assert_eq!(binary_expr(number_expr(), number_expr(), operator.clone()).equiv_convert().unwrap(), Expr::Boolean(false));
-        assert_eq!(binary_expr(number_expr(), bool_expr(), operator.clone()).equiv_convert().unwrap(), Expr::Boolean(false));
-        assert_eq!(binary_expr(bool_expr(), number_expr(), operator.clone()).equiv_convert().unwrap(), Expr::Boolean(false));
-        assert_eq!(binary_expr(bool_expr(), bool_expr(), operator.clone()).equiv_convert().unwrap(), Expr::Boolean(false));
+        for (mut expr, expected) in [
+            (binary_expr(number_expr(), number_expr(), operator.clone()), Expr::Boolean(false)),
+            (binary_expr(number_expr(), bool_expr(), operator.clone()), Expr::Boolean(false)),
+            (binary_expr(bool_expr(), number_expr(), operator.clone()), Expr::Boolean(false)),
+            (binary_expr(bool_expr(), bool_expr(), operator.clone()), Expr::Boolean(false)),
+        ] {
+            assert!(expr.equiv_convert().is_ok());
+            assert!(expr.eq(&expected))
+        }
     }
+        
 }
 
 #[test]
 fn implies_equivalence_conversion() {
-    assert_eq!(binary_expr(number_expr(), member_expr(MemberType::Active), BinaryOperators::Implies).equiv_convert().unwrap(), 
-                binary_expr(unary_expr(number_expr(), UnaryOperators::Not), member_expr(MemberType::Active), BinaryOperators::Or));
+    let mut expr = binary_expr(number_expr(), member_expr(MemberType::Active), BinaryOperators::Implies);
+    assert!(expr.equiv_convert().is_ok());
+    assert_eq!(expr, binary_expr(unary_expr(number_expr(), UnaryOperators::Not), member_expr(MemberType::Active), BinaryOperators::Or));
+ 
 }
 
