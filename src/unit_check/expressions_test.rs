@@ -64,6 +64,16 @@ fn plus_minus_mod_operations() {
             .unwrap(),
             Type::WattSeconds,
         );
+        assert_eq!(
+            binary_expr(
+                member_expr(MemberType::Active),
+                number_expr(),
+                operator.clone(),
+            )
+            .unit_check()
+            .unwrap(),
+            Type::Number,
+        );
 
         assert!(binary_expr(string_expr(), string_expr(), operator.clone())
             .unit_check().is_err());

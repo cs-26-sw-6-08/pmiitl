@@ -2,7 +2,7 @@ use std::error::Error;
 
 use crate::program::Program;
 mod expressions;
-mod types;
+pub mod types;
 #[cfg(test)]
 mod expressions_test;
 

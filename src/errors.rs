@@ -1,4 +1,4 @@
-use crate::program::{expressions::Expr, operations::BinaryOperators};
+use crate::{program::{expressions::Expr, operations::BinaryOperators}, unit_check::types::Type};
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -9,10 +9,12 @@ pub enum Error {
     ASTNodeValueInvalid(String),
     #[error("program parse error line {1} column {2}: {0}")]
     ProgramParse(String, usize, usize),
-    #[error("could not convert operation {0:?} lhs: {1:?} rhs: {2:?}")]
+    #[error("could not convert operation {0} lhs: {1} rhs: {2}")]
     ConversionBinaryOperation(BinaryOperators, Expr, Expr),
-    #[error("type error")]
-    Typechecking,
+    #[error("typechecking failed at expr: {0}, got type: {1}")]
+    IncorrectType(Expr, Type),
+    #[error("typechecking failed at expr: {0}, got types: {1} and {2}")]
+    IncorrectTwoTypes(Expr, Type, Type)
 }
 
 impl PartialEq for Error {

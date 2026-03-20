@@ -1,4 +1,4 @@
-use std::error::Error;
+use std::{error::Error, fmt::Display};
 
 use hime_redist::{ast::AstNode, symbols::SemanticElementTrait};
 
@@ -206,4 +206,23 @@ impl Expr {
     }
 
     
+}
+
+impl Display for Expr {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Expr::Number(n) => write!(f, "Number({})", n),
+            Expr::String(s) => write!(f,"String({})",s),
+            Expr::Boolean(b) => write!(f, "Boolean({})", b),
+            Expr::CurrentTime => write!(f, "CURRENTTIME"),
+            Expr::Unit { number, unit } => write!(f, "Unit({}, {})", number, unit),
+            Expr::Interval { start, end } => write!(f, "Interval({}, {})", start, end),
+            Expr::Always { interval, not, expr } => if interval.is_some() { write!(f, "Always({}, {}, {})", interval.as_ref().unwrap(), not, expr)} else {write!(f, "Always(None, {}, {})", not, expr)},
+            Expr::Eventually { interval, not, expr } => if interval.is_some() { write!(f, "Eventually({}, {}, {})", interval.as_ref().unwrap(), not, expr)} else {write!(f, "Eventually(None, {}, {})", not, expr)},
+            Expr::BinaryOperations { lhs, rhs, operator } => write!(f, "Binaryoperation({}, {}, {})", lhs, operator, rhs ),
+            Expr::UnaryOperations { operand, operator } => write!(f, "Unaryoperation({}, {})", operator, operand),
+            Expr::Member { access_type } => write!(f, "Member({})", access_type),
+            Expr::Function { aggregate_type, expr } => write!(f, "Function({}, {})", aggregate_type, expr),
+        }
+    }
 }

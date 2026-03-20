@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::program::units::Unit;
 
 #[derive(Debug, PartialEq)]
@@ -18,5 +20,18 @@ impl Type {
             Unit::WattSeconds => Type::WattSeconds,
             _ => unreachable!()
         }        
+    }
+}
+
+impl Display for Type {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Type::Seconds => write!(f, "Seconds"),
+            Type::WattSeconds => write!(f, "WattSeconds"),
+            Type::Watt => write!(f, "Watt"),
+            Type::Number => write!(f, "Number"),
+            Type::String => write!(f, "String"),
+            Type::Bool => write!(f, "Bool"),
+        }
     }
 }

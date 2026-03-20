@@ -1,2 +1,2 @@
-always power + sum(power*2) > 4;
+always sum(power*2 & name=fridge) > 5w;
 

@@ -21,7 +21,7 @@ impl Expr {
                 if number.unit_check()? == Type::Number {
                     return Ok(unit_type);
                 }
-                Err(errors::Error::Typechecking.into())
+                Err(errors::Error::IncorrectType(self.clone(), number.unit_check()?).into())
             }
             Expr::Interval { start, end } => {
                 let start_type = start.unit_check()?;
@@ -29,7 +29,7 @@ impl Expr {
                 if start_type == Type::Seconds && end_type == Type::Seconds {
                     return Ok(Type::Seconds);
                 }
-                Err(errors::Error::Typechecking.into())
+                Err(errors::Error::IncorrectTwoTypes(self.clone(), start_type, end_type).into())
             }
             Expr::Always {
                 interval,
@@ -47,7 +47,7 @@ impl Expr {
                 let expr_type = expr.unit_check()?;
                 match expr_type {
                     Type::Bool => Ok(Type::Bool),
-                    _ => Err(errors::Error::Typechecking.into()),
+                    _ => Err(errors::Error::IncorrectType(self.clone(), expr.unit_check()?).into()),
                 }
             },
             Expr::BinaryOperations { lhs, rhs, operator } => {
@@ -65,7 +65,7 @@ impl Expr {
                         | (Type::Watt, Type::Watt)
                         | (Type::Seconds, Type::Seconds)
                         | (Type::WattSeconds, Type::WattSeconds) => Ok(Type::Bool),
-                        _ => Err(errors::Error::Typechecking.into()),
+                        _ => Err(errors::Error::IncorrectTwoTypes(self.clone(), lhs.unit_check()?, rhs.unit_check()?).into()),
                     },
                     BinaryOperators::Equal | BinaryOperators::NotEqual => {
                         match (lhs_type, rhs_type) {
@@ -77,7 +77,7 @@ impl Expr {
                             | (Type::Seconds, Type::Seconds)
                             | (Type::WattSeconds, Type::WattSeconds)
                             | (Type::String, Type::String) => Ok(Type::Bool),
-                            _ => Err(errors::Error::Typechecking.into()),
+                            _ => Err(errors::Error::IncorrectTwoTypes(self.clone(), lhs.unit_check()?, rhs.unit_check()?).into()),
                         }
                     }
                     BinaryOperators::Plus | BinaryOperators::Minus | BinaryOperators::Mod => {
@@ -89,7 +89,7 @@ impl Expr {
                             (Type::Watt, Type::Watt) => Ok(Type::Watt),
                             (Type::Seconds, Type::Seconds) => Ok(Type::Seconds),
                             (Type::WattSeconds, Type::WattSeconds) => Ok(Type::WattSeconds),
-                            _ => Err(errors::Error::Typechecking.into()),
+                            _ => Err(errors::Error::IncorrectTwoTypes(self.clone(), lhs.unit_check()?, rhs.unit_check()?).into()),
                         }
                     }
                     BinaryOperators::Times => match (lhs_type, rhs_type) {
@@ -103,7 +103,7 @@ impl Expr {
                         | (Type::Number, Type::WattSeconds)
                         | (Type::Seconds, Type::Watt)
                         | (Type::Watt, Type::Seconds) | (Type::Bool, Type::WattSeconds) | (Type::WattSeconds, Type::Bool) => Ok(Type::WattSeconds),                        
-                        _ => Err(errors::Error::Typechecking.into()),
+                        _ => Err(errors::Error::IncorrectTwoTypes(self.clone(), lhs.unit_check()?, rhs.unit_check()?).into()),
                     },
                     BinaryOperators::Divide => match (lhs_type, rhs_type) {
                         (Type::Number, Type::Number)
@@ -116,7 +116,7 @@ impl Expr {
                         (Type::Watt, Type::Number) | (Type::WattSeconds, Type::Seconds) | (Type::Watt, Type::Bool) => Ok(Type::Watt),                        
                         (Type::Seconds, Type::Number) | (Type::WattSeconds, Type::Watt) | (Type::Seconds, Type::Bool) => Ok(Type::Seconds),
                         (Type::WattSeconds, Type::Number) | (Type::WattSeconds, Type::Bool) => Ok(Type::WattSeconds),
-                        _ => Err(errors::Error::Typechecking.into()),
+                        _ => Err(errors::Error::IncorrectTwoTypes(self.clone(), lhs.unit_check()?, rhs.unit_check()?).into()),
                     },
                     BinaryOperators::And | BinaryOperators::Or | BinaryOperators::Implies => {
                         match (lhs_type, rhs_type) {
@@ -124,7 +124,7 @@ impl Expr {
                             | (Type::Bool, Type::Number)
                             | (Type::Number, Type::Bool)
                             | (Type::Bool, Type::Bool) => Ok(Type::Bool),
-                            _ => Err(errors::Error::Typechecking.into()),
+                            _ => Err(errors::Error::IncorrectTwoTypes(self.clone(), lhs.unit_check()?, rhs.unit_check()?).into()),
                         }
                     }
                 }
@@ -136,7 +136,7 @@ impl Expr {
                     UnaryOperators::Not => match operand_type {
                         Type::Number => Ok(Type::Bool),
                         Type::Bool => Ok(Type::Bool),
-                        _ => Err(errors::Error::Typechecking.into()),
+                        _ => Err(errors::Error::IncorrectType(self.clone(), operand.unit_check()?).into()),
                     },
                     UnaryOperators::Negative => match operand_type {
                         Type::Number => Ok(Type::Number),
@@ -144,7 +144,7 @@ impl Expr {
                         Type::Seconds => Ok(Type::Seconds),
                         Type::Watt => Ok(Type::Watt),
                         Type::WattSeconds => Ok(Type::WattSeconds),
-                        _ => Err(errors::Error::Typechecking.into()),
+                        _ => Err(errors::Error::IncorrectType(self.clone(), operand.unit_check()?).into()),
                     },
                 }
             }
@@ -160,27 +160,27 @@ impl Expr {
                 let expr_type = expr.unit_check()?;
                 match aggregate_type {
                     FunctionType::Sum | FunctionType::Avg => match expr_type {
-                        Type::String => Err(errors::Error::Typechecking.into()),
+                        Type::String => Err(errors::Error::IncorrectType(self.clone(), Type::String).into()),
                         Type::Bool => Ok(Type::Number),
                         _ => Ok(expr_type),
                     },
                     FunctionType::Count => match expr_type {
                         Type::Bool | Type::Number | Type::Seconds | Type::WattSeconds | Type::Watt => Ok(Type::Number),
-                        _ => Err(errors::Error::Typechecking.into()),
+                        _ => Err(errors::Error::IncorrectType(self.clone(), expr.unit_check()?).into()),
                     },
                     FunctionType::Sumtime => match expr_type {
                         Type::Watt => Ok(Type::WattSeconds),
                         Type::Number| Type::Bool => Ok(Type::Seconds),
-                        _ => Err(errors::Error::Typechecking.into()),
+                        _ => Err(errors::Error::IncorrectType(self.clone(), expr.unit_check()?).into()),
                     },
                     FunctionType::Avgtime => match expr_type {
-                        Type::String => Err(errors::Error::Typechecking.into()),
+                        Type::String => Err(errors::Error::IncorrectType(self.clone(), Type::String).into()),
                         Type::Bool => Ok(Type::Number),
                         _ => Ok(expr_type),
                     },
                     FunctionType::Counttime => match expr_type {
                         Type::Watt | Type::Number| Type::Bool => Ok(Type::Seconds),
-                        _ => Err(errors::Error::Typechecking.into()),
+                        _ => Err(errors::Error::IncorrectType(self.clone(), expr.unit_check()?).into()),
                     },
                     FunctionType::Foreach => todo!(),
                 }

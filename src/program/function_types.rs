@@ -1,4 +1,4 @@
-use std::error::Error;
+use std::{error::Error, fmt::Display};
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum FunctionType {
@@ -23,5 +23,19 @@ impl FunctionType {
             "foreach" => Self::Foreach,
             _ => unreachable!()
         })
+    }
+}
+
+impl Display for FunctionType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            FunctionType::Sum => write!(f, "Sum"),
+            FunctionType::Avg => write!(f, "Avg"),
+            FunctionType::Count => write!(f, "Count"),
+            FunctionType::Sumtime => write!(f, "Sumtime"),
+            FunctionType::Avgtime => write!(f, "Avgtime"),
+            FunctionType::Counttime => write!(f, "Counttime"),
+            FunctionType::Foreach => write!(f, "Foreach"),
+        }
     }
 }
