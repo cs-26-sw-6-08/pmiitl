@@ -5,7 +5,7 @@ use crate::{program::{
     member_types::MemberType,
     operations::{BinaryOperators, UnaryOperators},
     units::Unit,
-}, utils::test_helper_func::{ always_expr, binary_expr, bool_expr, custom_number_expr, custom_bool_expr, custom_unit_expr, eventually_expr, eventually_interval_expr, always_interval_expr, function_expr, interval_expr, member_expr, number_expr, unary_expr, unit_expr}
+}, utils::test_helper_func::{ always_expr, binary_expr, custom_number_expr, custom_unit_expr, eventually_expr, eventually_interval_expr, always_interval_expr, function_expr, interval_expr, member_expr, number_expr, unary_expr, unit_expr}
 };
 
 #[test]
@@ -13,7 +13,7 @@ fn eventually() {
     let program = Program::new("eventually true;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        eventually_expr(custom_bool_expr(true))
+        eventually_expr(custom_number_expr(1000))
     );
 }
 
@@ -22,7 +22,7 @@ fn always() {
     let program = Program::new("always false;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        always_expr(custom_bool_expr(false))
+        always_expr(custom_number_expr(0))
     );
 }
 
@@ -31,7 +31,7 @@ fn eventually_interval() {
     let program = Program::new("eventually[1s,3h] false;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        eventually_interval_expr(interval_expr(custom_unit_expr(1000, Unit::Seconds), custom_unit_expr(3000, Unit::Hours)), custom_bool_expr(false))
+        eventually_interval_expr(interval_expr(custom_unit_expr(1000, Unit::Seconds), custom_unit_expr(3000, Unit::Hours)), custom_number_expr(0))
     );
 }
 
@@ -40,7 +40,7 @@ fn always_interval() {
     let program = Program::new("always[1s,3h] false;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        always_interval_expr(interval_expr(custom_unit_expr(1000, Unit::Seconds), custom_unit_expr(3000, Unit::Hours)), custom_bool_expr(false))
+        always_interval_expr(interval_expr(custom_unit_expr(1000, Unit::Seconds), custom_unit_expr(3000, Unit::Hours)), custom_number_expr(0))
     );
 }
 
@@ -193,7 +193,7 @@ fn not() {
     let program = Program::new("always !true;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        always_expr(unary_expr(bool_expr(), UnaryOperators::Not))
+        always_expr(unary_expr(custom_number_expr(1000), UnaryOperators::Not))
     );
 }
 
@@ -281,7 +281,7 @@ fn bool() {
     let program = Program::new("always true;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        always_expr(bool_expr())
+        always_expr(custom_number_expr(1000))
     );
 }
 

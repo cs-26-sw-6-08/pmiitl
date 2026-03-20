@@ -1,4 +1,4 @@
-use std::{error::Error, fmt::Display};
+use std::{error::Error, fmt::Display, ops::Add};
 
 use hime_redist::{ast::AstNode, symbols::SemanticElementTrait};
 
@@ -19,7 +19,6 @@ pub struct SpannedExpr {
 pub enum Expr {
     Number(i128),
     String(String),
-    Boolean(bool),
     CurrentTime,
     Unit {
         number: Box<Expr>,
@@ -83,13 +82,18 @@ impl Expr {
                     .parse::<f64>()?
                     * 1000.0).round() as i128, // Numbers are stored as integers, decimals is represented as last 3 digits.
             ),
-            "BOOL" => Expr::Boolean(
-                node.get_value()
+            "BOOL" => {
+                let value = node
+                    .get_value()
                     .ok_or_else(|| {
                         errors::Error::ASTNodeValueInvalid(node.get_symbol().name.into())
-                    })?
-                    .parse()?,
-            ),
+                    })?;
+                if value.eq("true") {
+                    Expr::Number(1000)
+                } else {
+                    Expr::Number(0)
+                }
+            }
             "STRING" => Expr::String(
                 node.get_value()
                     .ok_or_else(|| {
@@ -213,7 +217,6 @@ impl Display for Expr {
         match self {
             Expr::Number(n) => write!(f, "Number({})", n),
             Expr::String(s) => write!(f,"String({})",s),
-            Expr::Boolean(b) => write!(f, "Boolean({})", b),
             Expr::CurrentTime => write!(f, "CURRENTTIME"),
             Expr::Unit { number, unit } => write!(f, "Unit({}, {})", number, unit),
             Expr::Interval { start, end } => write!(f, "Interval({}, {})", start, end),

@@ -24,14 +24,6 @@ pub fn string_expr() -> Expr {
     Expr::String("christian".into())
 }
 
-pub fn bool_expr() -> Expr {
-    Expr::Boolean(true)
-}
-
-pub fn custom_bool_expr(bool: bool) -> Expr {
-    Expr::Boolean(bool)
-}
-
 pub fn current_time() -> Expr {
     Expr::CurrentTime
 }

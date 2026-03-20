@@ -36,23 +36,12 @@ impl Expr {
                     expr.equiv_convert()?;
 
                     *aggregate_type = FunctionType::Sum;
-                    *expr = match expr.as_ref() {
-                        Expr::Number(n) => Expr::Boolean(*n != 0).into(),
-                        Expr::Boolean(n) => Expr::Boolean(*n).into(),
-                        _ => unreachable!(),
-                    };
                     Ok(())
                 }
                 FunctionType::Counttime => {
                     expr.equiv_convert()?;
 
                     *aggregate_type = FunctionType::Sumtime;
-
-                    *expr = match expr.as_ref() {
-                            Expr::Number(n) => Expr::Boolean(*n != 0).into(),
-                            Expr::Boolean(n) => Expr::Boolean(*n).into(),
-                            _ => unreachable!(),
-                        };
                     Ok(())
                     
                 }

@@ -14,7 +14,9 @@ pub enum Error {
     #[error("typechecking failed at expr: {0}, got type: {1}")]
     IncorrectType(Expr, Type),
     #[error("typechecking failed at expr: {0}, got types: {1} and {2}")]
-    IncorrectTwoTypes(Expr, Type, Type)
+    IncorrectTwoTypes(Expr, Type, Type),
+    #[error("binary operation failed: {0}, lhs: {1}, rhs: {2}")]
+    BinaryOperationFail(BinaryOperators, i128, i128),
 }
 
 impl PartialEq for Error {

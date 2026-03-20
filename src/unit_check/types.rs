@@ -8,8 +8,7 @@ pub enum Type {
     WattSeconds,
     Watt,
     Number,
-    String,
-    Bool
+    String
 }
 
 impl Type {
@@ -31,7 +30,6 @@ impl Display for Type {
             Type::Watt => write!(f, "Watt"),
             Type::Number => write!(f, "Number"),
             Type::String => write!(f, "String"),
-            Type::Bool => write!(f, "Bool"),
         }
     }
 }

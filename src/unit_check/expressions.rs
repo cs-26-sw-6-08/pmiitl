@@ -14,7 +14,6 @@ impl Expr {
         match self {
             Expr::Number(_) => Ok(Type::Number),
             Expr::String(_) => Ok(Type::String),
-            Expr::Boolean(_) => Ok(Type::Bool),
             Expr::CurrentTime => Ok(Type::Seconds),
             Expr::Unit { number, unit } => {
                 let unit_type = Type::unit_type(unit);
@@ -46,7 +45,7 @@ impl Expr {
 
                 let expr_type = expr.unit_check()?;
                 match expr_type {
-                    Type::Bool => Ok(Type::Bool),
+                    Type::Number | Type::Seconds | Type::Watt | Type::WattSeconds => Ok(Type::Number),
                     _ => Err(errors::Error::IncorrectType(self.clone(), expr.unit_check()?).into()),
                 }
             },
@@ -59,33 +58,24 @@ impl Expr {
                     | BinaryOperators::LessEqual
                     | BinaryOperators::GreaterEqual => match (lhs_type, rhs_type) {
                         (Type::Number, Type::Number)
-                        | (Type::Bool, Type::Number)
-                        | (Type::Number, Type::Bool)
-                        | (Type::Bool, Type::Bool)
                         | (Type::Watt, Type::Watt)
                         | (Type::Seconds, Type::Seconds)
-                        | (Type::WattSeconds, Type::WattSeconds) => Ok(Type::Bool),
+                        | (Type::WattSeconds, Type::WattSeconds) => Ok(Type::Number),
                         _ => Err(errors::Error::IncorrectTwoTypes(self.clone(), lhs.unit_check()?, rhs.unit_check()?).into()),
                     },
                     BinaryOperators::Equal | BinaryOperators::NotEqual => {
                         match (lhs_type, rhs_type) {
                             (Type::Number, Type::Number)
-                            | (Type::Bool, Type::Number)
-                            | (Type::Number, Type::Bool)
-                            | (Type::Bool, Type::Bool)
                             | (Type::Watt, Type::Watt)
                             | (Type::Seconds, Type::Seconds)
                             | (Type::WattSeconds, Type::WattSeconds)
-                            | (Type::String, Type::String) => Ok(Type::Bool),
+                            | (Type::String, Type::String) => Ok(Type::Number),
                             _ => Err(errors::Error::IncorrectTwoTypes(self.clone(), lhs.unit_check()?, rhs.unit_check()?).into()),
                         }
                     }
                     BinaryOperators::Plus | BinaryOperators::Minus | BinaryOperators::Mod => {
                         match (lhs_type, rhs_type) {
-                            (Type::Number, Type::Number)
-                            | (Type::Bool, Type::Number)
-                            | (Type::Number, Type::Bool)
-                            | (Type::Bool, Type::Bool) => Ok(Type::Number),
+                            (Type::Number, Type::Number) => Ok(Type::Number),
                             (Type::Watt, Type::Watt) => Ok(Type::Watt),
                             (Type::Seconds, Type::Seconds) => Ok(Type::Seconds),
                             (Type::WattSeconds, Type::WattSeconds) => Ok(Type::WattSeconds),
@@ -93,37 +83,32 @@ impl Expr {
                         }
                     }
                     BinaryOperators::Times => match (lhs_type, rhs_type) {
-                        (Type::Number, Type::Number)
-                        | (Type::Bool, Type::Number)
-                        | (Type::Number, Type::Bool)
-                        | (Type::Bool, Type::Bool) => Ok(Type::Number),
-                        (Type::Watt, Type::Number) | (Type::Number, Type::Watt) | (Type::Bool, Type::Watt) | (Type::Watt, Type::Bool) => Ok(Type::Watt),
-                        (Type::Seconds, Type::Number) | (Type::Number, Type::Seconds) | (Type::Bool, Type::Seconds) | (Type::Seconds, Type::Bool) => Ok(Type::Seconds),                        
+                        (Type::Number, Type::Number) => Ok(Type::Number),
+                        (Type::Watt, Type::Number) | (Type::Number, Type::Watt) => Ok(Type::Watt),
+                        (Type::Seconds, Type::Number) | (Type::Number, Type::Seconds) => Ok(Type::Seconds),                        
                         (Type::WattSeconds, Type::Number)
                         | (Type::Number, Type::WattSeconds)
                         | (Type::Seconds, Type::Watt)
-                        | (Type::Watt, Type::Seconds) | (Type::Bool, Type::WattSeconds) | (Type::WattSeconds, Type::Bool) => Ok(Type::WattSeconds),                        
+                        | (Type::Watt, Type::Seconds) => Ok(Type::WattSeconds),                        
                         _ => Err(errors::Error::IncorrectTwoTypes(self.clone(), lhs.unit_check()?, rhs.unit_check()?).into()),
                     },
                     BinaryOperators::Divide => match (lhs_type, rhs_type) {
                         (Type::Number, Type::Number)
-                        | (Type::Bool, Type::Number)
-                        | (Type::Number, Type::Bool)
-                        | (Type::Bool, Type::Bool)
                         | (Type::Watt, Type::Watt)
                         | (Type::Seconds, Type::Seconds)
                         | (Type::WattSeconds, Type::WattSeconds) => Ok(Type::Number),
-                        (Type::Watt, Type::Number) | (Type::WattSeconds, Type::Seconds) | (Type::Watt, Type::Bool) => Ok(Type::Watt),                        
-                        (Type::Seconds, Type::Number) | (Type::WattSeconds, Type::Watt) | (Type::Seconds, Type::Bool) => Ok(Type::Seconds),
-                        (Type::WattSeconds, Type::Number) | (Type::WattSeconds, Type::Bool) => Ok(Type::WattSeconds),
+                        (Type::Watt, Type::Number) | (Type::WattSeconds, Type::Seconds)  => Ok(Type::Watt),                        
+                        (Type::Seconds, Type::Number) | (Type::WattSeconds, Type::Watt)  => Ok(Type::Seconds),
+                        (Type::WattSeconds, Type::Number) => Ok(Type::WattSeconds),
                         _ => Err(errors::Error::IncorrectTwoTypes(self.clone(), lhs.unit_check()?, rhs.unit_check()?).into()),
                     },
                     BinaryOperators::And | BinaryOperators::Or | BinaryOperators::Implies => {
                         match (lhs_type, rhs_type) {
-                            (Type::Number, Type::Number)
-                            | (Type::Bool, Type::Number)
-                            | (Type::Number, Type::Bool)
-                            | (Type::Bool, Type::Bool) => Ok(Type::Bool),
+                            (Type::Number, Type::Number) | 
+                            (Type::Watt, Type::Number) | (Type::Number, Type::Watt) | (Type::Watt, Type::Watt) |
+                            (Type::Seconds, Type::Number) | (Type::Number, Type::Seconds) | (Type::Seconds, Type::Seconds) | 
+                            (Type::WattSeconds, Type::Number) | (Type::Number, Type::WattSeconds) | (Type::WattSeconds, Type::WattSeconds)
+                            => Ok(Type::Number),
                             _ => Err(errors::Error::IncorrectTwoTypes(self.clone(), lhs.unit_check()?, rhs.unit_check()?).into()),
                         }
                     }
@@ -134,13 +119,11 @@ impl Expr {
 
                 match operator {
                     UnaryOperators::Not => match operand_type {
-                        Type::Number => Ok(Type::Bool),
-                        Type::Bool => Ok(Type::Bool),
+                        Type::Number => Ok(Type::Number),
                         _ => Err(errors::Error::IncorrectType(self.clone(), operand.unit_check()?).into()),
                     },
                     UnaryOperators::Negative => match operand_type {
                         Type::Number => Ok(Type::Number),
-                        Type::Bool => Ok(Type::Number),
                         Type::Seconds => Ok(Type::Seconds),
                         Type::Watt => Ok(Type::Watt),
                         Type::WattSeconds => Ok(Type::WattSeconds),
@@ -149,7 +132,7 @@ impl Expr {
                 }
             }
             Expr::Member { access_type } => match access_type {
-                MemberType::Active => Ok(Type::Bool),
+                MemberType::Active => Ok(Type::Number),
                 MemberType::Power => Ok(Type::Watt),
                 MemberType::Name => Ok(Type::String),
             },
@@ -161,25 +144,23 @@ impl Expr {
                 match aggregate_type {
                     FunctionType::Sum | FunctionType::Avg => match expr_type {
                         Type::String => Err(errors::Error::IncorrectType(self.clone(), Type::String).into()),
-                        Type::Bool => Ok(Type::Number),
                         _ => Ok(expr_type),
                     },
                     FunctionType::Count => match expr_type {
-                        Type::Bool | Type::Number | Type::Seconds | Type::WattSeconds | Type::Watt => Ok(Type::Number),
+                        Type::Number | Type::Seconds | Type::WattSeconds | Type::Watt => Ok(Type::Number),
                         _ => Err(errors::Error::IncorrectType(self.clone(), expr.unit_check()?).into()),
                     },
                     FunctionType::Sumtime => match expr_type {
                         Type::Watt => Ok(Type::WattSeconds),
-                        Type::Number| Type::Bool => Ok(Type::Seconds),
+                        Type::Number => Ok(Type::Seconds),
                         _ => Err(errors::Error::IncorrectType(self.clone(), expr.unit_check()?).into()),
                     },
                     FunctionType::Avgtime => match expr_type {
                         Type::String => Err(errors::Error::IncorrectType(self.clone(), Type::String).into()),
-                        Type::Bool => Ok(Type::Number),
                         _ => Ok(expr_type),
                     },
                     FunctionType::Counttime => match expr_type {
-                        Type::Watt | Type::Number| Type::Bool => Ok(Type::Seconds),
+                        Type::Watt | Type::Number => Ok(Type::Seconds),
                         _ => Err(errors::Error::IncorrectType(self.clone(), expr.unit_check()?).into()),
                     },
                     FunctionType::Foreach => todo!(),
