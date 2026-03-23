@@ -1,9 +1,12 @@
 use std::error::Error;
 
-use crate::{errors, program::{
-    expressions::Expr,
-    operations::{BinaryOperators, UnaryOperators},
-}};
+use crate::{
+    errors,
+    program::{
+        expressions::Expr,
+        operations::{BinaryOperators, UnaryOperators},
+    },
+};
 
 pub fn binary_operations(
     lhs: Expr,
@@ -19,7 +22,7 @@ pub fn binary_operations(
                 with last 3 digits being the decimal precisions
 
                 So to multiply two i128:
-                1. extract original int of second i128
+                1. extract int of second i128
                 2. extract last three digits of second i128.
                 3. multiply the first i128 with the integer and fraction seperately. The fraction multiplication should also be divided with 1000
                 4. then add them together
@@ -27,58 +30,90 @@ pub fn binary_operations(
                 let m_int = m / 1000;
                 let m_frac = m % 1000;
                 //check whether multiplying will make the number too high for i128
-                let temp1 = n.checked_mul(m_int).ok_or(errors::Error::BinaryOperationFail(BinaryOperators::Times, n, m_int))?;
-                let temp2 = (n.checked_mul(m_frac).ok_or(errors::Error::BinaryOperationFail(BinaryOperators::Times, n, m_int))?) / 1000;
+                let temp1 = n
+                    .checked_mul(m_int)
+                    .ok_or(errors::Error::BinaryOperationFail(
+                        BinaryOperators::Times,
+                        n,
+                        m_int,
+                    ))?;
+                let temp2 = (n
+                    .checked_mul(m_frac)
+                    .ok_or(errors::Error::BinaryOperationFail(
+                        BinaryOperators::Times,
+                        n,
+                        m_frac,
+                    ))?)
+                    / 1000;
 
                 Ok(Expr::Number(temp1 + temp2))
-
-
-            },
-            (lhs, rhs) => Err(errors::Error::ConversionBinaryOperation(BinaryOperators::Times, lhs, rhs).into()),
+            }
+            (lhs, rhs) => {
+                Err(
+                    errors::Error::ConversionBinaryOperation(BinaryOperators::Times, lhs, rhs)
+                        .into(),
+                )
+            }
         },
         BinaryOperators::Divide => match (lhs, rhs) {
             (Expr::Number(n), Expr::Number(m)) => {
-                if m == 0 {
-                    Ok(Expr::Number(0))
-                } else {
-                    /*
-                    We have to handle multiplication untraditionally
-                    as decimal numbers are represented as i128
-                    with last 3 digits being the decimal precisions
+                /*
+                We have to handle division untraditionally
+                as decimal numbers are represented as i128
+                with last 3 digits being the decimal precisions
 
-                    So to multiply two i128:
-                    1. extract original int of second i128
-                    2. extract last three digits of second i128.
-                    3. multiply the first i128 with the integer and fraction seperately. The fraction multiplication should also be divided with 1000
-                    4. then add them together
-                    */
-                    NOT WORK TODO
-                
-                }
-            },
-            (lhs, rhs) => Err(errors::Error::ConversionBinaryOperation(BinaryOperators::Divide, lhs, rhs).into()),
+                1. extract int of second i128
+                2. extract last three digits of second i128.
+                3. divide the first i128 with the integer and fraction seperately.
+                4. add them together
+                */
+                let m_int = m / 1000;
+                let m_frac = m % 1000;
+
+                let temp1 = n.checked_div(m_int).unwrap_or(0);
+                let temp2 = n.checked_div(m_frac).unwrap_or(0);
+
+                Ok(Expr::Number(temp1 + temp2))
+            }
+            (lhs, rhs) => {
+                Err(
+                    errors::Error::ConversionBinaryOperation(BinaryOperators::Divide, lhs, rhs)
+                        .into(),
+                )
+            }
         },
         BinaryOperators::Plus => match (lhs, rhs) {
-            (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number(n+m)),
-            (lhs, rhs) => Err(errors::Error::ConversionBinaryOperation(BinaryOperators::Plus, lhs, rhs).into()),
+            (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number(n + m)),
+            (lhs, rhs) => {
+                Err(
+                    errors::Error::ConversionBinaryOperation(BinaryOperators::Plus, lhs, rhs)
+                        .into(),
+                )
+            }
         },
         BinaryOperators::Minus => match (lhs, rhs) {
             (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number(n - m)),
-            (lhs, rhs) => Err(errors::Error::ConversionBinaryOperation(BinaryOperators::Minus, lhs, rhs).into()),
+            (lhs, rhs) => {
+                Err(
+                    errors::Error::ConversionBinaryOperation(BinaryOperators::Minus, lhs, rhs)
+                        .into(),
+                )
+            }
         },
-        BinaryOperators::Mod => match (lhs, rhs) {            (Expr::Number(n), Expr::Number(m)) => {
-                if m == 0 {
-                    Ok(Expr::Number(0))
-                } else {
-                    Ok(Expr::Number(n % m))
-                }
-            },
-            (lhs, rhs) => Err(errors::Error::ConversionBinaryOperation(BinaryOperators::Mod, lhs, rhs).into()),
+        BinaryOperators::Mod => match (lhs, rhs) {
+            (Expr::Number(n), Expr::Number(m)) => {
+               // Rust does not have a correct mathmatical mod function, therefore this calculation is used instead:
+               // https://stackoverflow.com/a/31210691
+                Ok(Expr::Number(((n.checked_rem(m).unwrap_or(0)) + m).checked_rem(m).unwrap_or(0)))
+            }
+            (lhs, rhs) => {
+                Err(errors::Error::ConversionBinaryOperation(BinaryOperators::Mod, lhs, rhs).into())
+            }
         },
         BinaryOperators::And => match (lhs, rhs) {
             (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number((n != 0 && m != 0) as i128)),
 
-            /* To make the semantics easier p & q => !(!p || !q). 
+            /* To make the semantics easier p & q => !(!p || !q).
             This should be done for all non-trivial expressions such as power & true */
             (lhs, rhs) => Ok(Expr::UnaryOperations {
                 operand: Expr::BinaryOperations {
@@ -100,38 +135,77 @@ pub fn binary_operations(
         },
         BinaryOperators::Or => match (lhs, rhs) {
             (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number((n != 0 || m != 0) as i128)),
-            (lhs, rhs) => Err(errors::Error::ConversionBinaryOperation(BinaryOperators::Or, lhs, rhs).into()),
+            (lhs, rhs) => {
+                Err(errors::Error::ConversionBinaryOperation(BinaryOperators::Or, lhs, rhs).into())
+            }
         },
         BinaryOperators::Equal => match (lhs, rhs) {
             (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number((n == m) as i128)),
-            (lhs, rhs) => Err(errors::Error::ConversionBinaryOperation(BinaryOperators::Equal, lhs, rhs).into()),
+            (lhs, rhs) => {
+                Err(
+                    errors::Error::ConversionBinaryOperation(BinaryOperators::Equal, lhs, rhs)
+                        .into(),
+                )
+            }
         },
         BinaryOperators::NotEqual => match (lhs, rhs) {
             (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number((n != m) as i128)),
-            (lhs, rhs) => Err(errors::Error::ConversionBinaryOperation(BinaryOperators::NotEqual, lhs, rhs).into()),
+            (lhs, rhs) => {
+                Err(
+                    errors::Error::ConversionBinaryOperation(BinaryOperators::NotEqual, lhs, rhs)
+                        .into(),
+                )
+            }
         },
         BinaryOperators::Greater => match (lhs, rhs) {
             (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number((n > m) as i128)),
-            (lhs, rhs) => Err(errors::Error::ConversionBinaryOperation(BinaryOperators::Greater, lhs, rhs).into()),
+            (lhs, rhs) => {
+                Err(
+                    errors::Error::ConversionBinaryOperation(BinaryOperators::Greater, lhs, rhs)
+                        .into(),
+                )
+            }
         },
         BinaryOperators::GreaterEqual => match (lhs, rhs) {
             (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number((n >= m) as i128)),
-            (lhs, rhs) => Err(errors::Error::ConversionBinaryOperation(BinaryOperators::GreaterEqual, lhs, rhs).into()),
+            (lhs, rhs) => Err(errors::Error::ConversionBinaryOperation(
+                BinaryOperators::GreaterEqual,
+                lhs,
+                rhs,
+            )
+            .into()),
         },
         BinaryOperators::Less => match (lhs, rhs) {
             (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number((n < m) as i128)),
-            (lhs, rhs) => Err(errors::Error::ConversionBinaryOperation(BinaryOperators::Less, lhs, rhs).into()),
+            (lhs, rhs) => {
+                Err(
+                    errors::Error::ConversionBinaryOperation(BinaryOperators::Less, lhs, rhs)
+                        .into(),
+                )
+            }
         },
         BinaryOperators::LessEqual => match (lhs, rhs) {
             (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number((n <= m) as i128)),
-            (lhs, rhs) => Err(errors::Error::ConversionBinaryOperation(BinaryOperators::LessEqual, lhs, rhs).into()),
+            (lhs, rhs) => {
+                Err(
+                    errors::Error::ConversionBinaryOperation(BinaryOperators::LessEqual, lhs, rhs)
+                        .into(),
+                )
+            }
         },
         BinaryOperators::Implies => match (lhs, rhs) {
             (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number((n == 0 || (m != 0)) as i128)),
-            /* To make the semantics easier p -> q => !p || q. 
+            /* To make the semantics easier p -> q => !p || q.
             This should be done for all non-trivial expressions such as power -> true */
-            (lhs, rhs) => Ok(Expr::BinaryOperations { lhs: Expr::UnaryOperations { operand: lhs.into(), operator: UnaryOperators::Not }.into(), rhs: rhs.into(), operator: BinaryOperators::Or }),
+            (lhs, rhs) => Ok(Expr::BinaryOperations {
+                lhs: Expr::UnaryOperations {
+                    operand: lhs.into(),
+                    operator: UnaryOperators::Not,
+                }
+                .into(),
+                rhs: rhs.into(),
+                operator: BinaryOperators::Or,
+            }),
         },
     }
 }
-
