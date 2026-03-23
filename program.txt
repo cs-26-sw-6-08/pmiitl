@@ -1,0 +1,2 @@
+always sum(power*2 & name=fridge) > 5w;
+

@@ -1,5 +1,9 @@
 mod grammar;// default namespace for the parser is the grammar's name
 pub mod program;
+pub mod unit_check;
+pub mod equiv_convert;
+pub mod unit_convert;
+pub mod utils;
 mod errors;
 
 extern crate hime_redist;
@@ -18,9 +22,21 @@ fn main() {
 ".to_string());
     let ast = result.get_ast();
     let root = ast.get_root();*/
-    let program = match Program::new(program_str.as_str()) {
+    let mut program = match Program::new(program_str.as_str()) {
         Ok(program) => program,
         Err(err) => return println!("Error: {}", err),
+    };
+
+    if let Err(err) = program.unit_convert() {
+        return println!("Error: {}", err);
+    };
+
+    if let Err(err) = program.unit_check() {
+        return println!("Error: {}", err);
+    }
+
+    if let Err(err) = program.equiv_convert() {
+        return println!("Error: {}", err);
     };
 
     println!("{:?}", program);

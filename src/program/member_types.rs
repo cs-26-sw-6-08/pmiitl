@@ -1,6 +1,6 @@
-use std::error::Error;
+use std::{error::Error, fmt::Display};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum MemberType {
     Active,
     Power,
@@ -15,5 +15,15 @@ impl MemberType {
             "name" => Self::Name,
             _ => unreachable!()
         })
+    }
+}
+
+impl Display for MemberType {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            MemberType::Active => write!(f, "Active"),
+            MemberType::Power => write!(f, "Power"),
+            MemberType::Name => write!(f, "Name"),
+        }
     }
 }

@@ -1,13 +1,13 @@
 use std::error::Error;
 
-use hime_redist::ast::AstNode;
+use hime_redist::{ast::AstNode, errors::ParseErrorDataTrait};
 
 use crate::{errors, grammar::cfg, program::expressions::SpannedExpr};
-mod expressions;
-mod units;
-mod operations;
-mod function_types;
-mod member_types;
+pub mod expressions;
+pub mod units;
+pub mod operations;
+pub mod function_types;
+pub mod member_types;
 #[cfg(test)]
 mod program_test;
 
@@ -22,18 +22,24 @@ impl Program {
         let parsed = cfg::parse_string(programstr.to_lowercase());
         let mut exprs : Vec<SpannedExpr> = Vec::new();
         if !parsed.is_success() {
+            for error in parsed.errors.errors {
+                println!("{} at line: {} column: {}", error, error.get_position().line, error.get_position().column);
+            }
             return Err(errors::Error::HimeParse.into())
         }
         let ast = parsed.get_ast();
         let root = ast.get_root();
 
+        /* TODO: Slet */
         print(root, Vec::<bool>::new());
 
         for node in root.children(){
             exprs.push(SpannedExpr::new(node)?);
 
         }
-        Ok(Program { expressions: exprs})
+
+        let program = Program { expressions: exprs};
+        Ok(program)
     }
 
 }

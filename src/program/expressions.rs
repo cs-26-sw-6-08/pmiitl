@@ -1,60 +1,50 @@
-use std::error::Error;
+use std::{error::Error, fmt::Display};
 
 use hime_redist::{ast::AstNode, symbols::SemanticElementTrait};
 
 use crate::{
     errors,
     program::{
-        function_types::FunctionType,
-        member_types::MemberType,
-        operations::{BinaryOperators, UnaryOperators},
-        units::Unit,
+        function_types::FunctionType, member_types::MemberType, operations::{BinaryOperators, UnaryOperators}, units::Unit
     },
 };
 
 #[derive(Debug, PartialEq)]
 pub struct SpannedExpr {
-    pub expr: ExprKind,
+    pub expr: Expr,
     pub line: usize,
 }
 
-#[derive(Debug, PartialEq)]
-pub enum ExprKind {
-    Number(i64),
+#[derive(Debug, PartialEq, Clone)]
+pub enum Expr {
+    Number(i128),
     String(String),
-    Boolean(bool),
     CurrentTime,
     Unit {
-        number: Box<ExprKind>,
+        number: Box<Expr>,
         unit: Unit,
     },
     Interval {
-        start: Box<ExprKind>,
-        end: Box<ExprKind>,
+        start: Box<Expr>,
+        end: Box<Expr>,
     },
     Always {
-        interval: Option<Box<ExprKind>>,
+        interval: Option<Box<Expr>>,
         not: bool,
-        expr: Box<ExprKind>,
+        expr: Box<Expr>,
     },
     Eventually {
-        interval: Option<Box<ExprKind>>,
+        interval: Option<Box<Expr>>,
         not: bool,
-        expr: Box<ExprKind>,
-    },
-    Until {
-        interval: Option<Box<ExprKind>>,
-        not: bool,
-        lhs: Box<ExprKind>,
-        rhs: Box<ExprKind>,
+        expr: Box<Expr>,
     },
     BinaryOperations {
-        lhs: Box<ExprKind>,
-        rhs: Box<ExprKind>,
-        operator: BinaryOperators 
+        lhs: Box<Expr>,
+        rhs: Box<Expr>,
+        operator: BinaryOperators,
     },
     UnaryOperations {
-        operand: Box<ExprKind>,
+        operand: Box<Expr>,
         operator: UnaryOperators,
     },
     Member {
@@ -62,58 +52,68 @@ pub enum ExprKind {
     },
     Function {
         aggregate_type: FunctionType,
-        expr: Box<ExprKind>,
+        expr: Box<Expr>,
     },
 }
 
 impl SpannedExpr {
-    pub fn new(node: AstNode) -> Result<Self, Box<dyn Error>>{
-        let position = node.get_position().unwrap_or(hime_redist::text::TextPosition { line: 0, column: 0 });
-        let expr = ExprKind::new(node)?;
+    pub fn new(node: AstNode) -> Result<Self, Box<dyn Error>> {
+        let position = node
+            .get_position()
+            .unwrap_or(hime_redist::text::TextPosition { line: 0, column: 0 });
+        let expr = Expr::new(node)?;
 
-        Ok(SpannedExpr { expr, line : position.line })
+        Ok(SpannedExpr {
+            expr,
+            line: position.line,
+        })
     }
 }
 
-impl ExprKind {
+impl Expr {
     pub fn new(node: AstNode) -> Result<Self, Box<dyn Error>> {
         let expr = match node.get_symbol().name {
-            "NUMBER" => ExprKind::Number(
+            "NUMBER" => Expr::Number(
                 (node
                     .get_value()
                     .ok_or_else(|| {
                         errors::Error::ASTNodeValueInvalid(node.get_symbol().name.into())
                     })?
                     .parse::<f64>()?
-                    * 1000f64) as i64, // Numbers are stored as integers, decimals is represented as last 3 digits.
+                    * 1000.0).round() as i128, // Numbers are stored as integers, decimals is represented as last 3 digits.
             ),
-            "BOOL" => ExprKind::Boolean(
-                node.get_value()
+            "BOOL" => {
+                let value = node
+                    .get_value()
                     .ok_or_else(|| {
                         errors::Error::ASTNodeValueInvalid(node.get_symbol().name.into())
-                    })?
-                    .parse()?,
-            ),
-            "STRING" => ExprKind::String(
+                    })?;
+                if value.eq("true") {
+                    Expr::Number(1000)
+                } else {
+                    Expr::Number(0)
+                }
+            }
+            "STRING" => Expr::String(
                 node.get_value()
                     .ok_or_else(|| {
                         errors::Error::ASTNodeValueInvalid(node.get_symbol().name.into())
                     })?
                     .into(),
             ),
-            "TIME" => ExprKind::CurrentTime,
+            "TIME" => Expr::CurrentTime,
             "TIMEUNIT" | "POWERUNIT" => {
-                let number = ExprKind::new(node.child(0))?.into();
+                let number = Expr::new(node.child(0))?.into();
                 let unit = Unit::new(node.get_value().ok_or_else(|| {
                     errors::Error::ASTNodeValueInvalid(node.get_symbol().name.into())
                 })?)?;
-                ExprKind::Unit { number, unit }
+                Expr::Unit { number, unit }
             }
 
             "Interval" => {
-                let start = ExprKind::new(node.child(0))?.into();
-                let end = ExprKind::new(node.child(1))?.into();
-                ExprKind::Interval { start, end }
+                let start = Expr::new(node.child(0))?.into();
+                let end = Expr::new(node.child(1))?.into();
+                Expr::Interval { start, end }
             }
             "always" => {
                 let interval = match node
@@ -121,16 +121,16 @@ impl ExprKind {
                     .iter()
                     .find(|node| node.get_symbol().name.eq("Interval"))
                 {
-                    Some(interval) => Some(ExprKind::new(interval)?.into()),
+                    Some(interval) => Some(Expr::new(interval)?.into()),
                     None => None,
                 };
                 let not = node
                     .children()
                     .iter()
-                    .any(|node| node.get_symbol().name.eq("not"));
-                let expr = ExprKind::new(node.children().iter().next_back().unwrap())?.into();
+                    .any(|node| node.get_symbol().name.eq("!") && node.children_count()==0);
+                let expr = Expr::new(node.children().iter().next_back().unwrap())?.into();
 
-                ExprKind::Always {
+                Expr::Always {
                     interval,
                     not,
                     expr,
@@ -142,81 +142,53 @@ impl ExprKind {
                     .iter()
                     .find(|node| node.get_symbol().name.eq("Interval"))
                 {
-                    Some(interval) => Some(ExprKind::new(interval)?.into()),
+                    Some(interval) => Some(Expr::new(interval)?.into()),
                     None => None,
                 };
                 let not = node
-                    .children()
-                    .iter()
-                    .any(|node| node.get_symbol().name.eq("not"));
-                let expr = ExprKind::new(node.children().iter().next_back().unwrap())?.into();
+                .children()
+                .iter()
+                .any(|node| node.get_symbol().name.eq("!") && node.children_count()==0);
+                
+    
+                let expr = Expr::new(node.children().iter().next_back().unwrap())?.into();
 
-                ExprKind::Eventually {
+                Expr::Eventually {
                     interval,
                     not,
                     expr,
                 }
-            }
-            "until" => {
-                let interval = match node
-                    .children()
-                    .iter()
-                    .find(|node| node.get_symbol().name.eq("Interval"))
-                {
-                    Some(interval) => Some(ExprKind::new(interval)?.into()),
-                    None => None,
-                };
-                let not = node
-                    .children()
-                    .iter()
-                    .any(|node| node.get_symbol().name.eq("not"));
-
-                let mut iter = node
-                    .children()
-                    .iter()
-                    .rev()
-                    .take(2)
-                    .map(|node| Box::new(ExprKind::new(node).unwrap()));
-
-                let (rhs, lhs) = (iter.next().unwrap(), iter.next().unwrap());
-
-                ExprKind::Until {
-                    interval,
-                    not,
-                    lhs,
-                    rhs,
-                }
-            }
+            },
             "->" | "|" | "&" | "=" | "<=" | ">=" | "!=" | "<" | ">" | "+" | "-" | "*" | "/"
             | "%" | "!" => {
                 //unary and binary operations are in one match due to "-" acting as both depending on number of children
                 if node.children_count() == 2 {
-                    let lhs = ExprKind::new(node.child(0))?.into();
-                    let rhs = ExprKind::new(node.child(1))?.into();
+                    let lhs = Expr::new(node.child(0))?.into();
+                    let rhs = Expr::new(node.child(1))?.into();
                     let operator = BinaryOperators::new(node.get_value().ok_or_else(|| {
                         errors::Error::ASTNodeValueInvalid(node.get_symbol().name.into())
                     })?)?;
-                    ExprKind::BinaryOperations { lhs, rhs, operator }
+                    Expr::BinaryOperations { lhs, rhs, operator }
                 } else {
-                    let operand = ExprKind::new(node.child(0))?.into();
+                    let operand = Expr::new(node.child(0))?.into();
                     let operator = UnaryOperators::new(node.get_value().ok_or_else(|| {
                         errors::Error::ASTNodeValueInvalid(node.get_symbol().name.into())
                     })?)?;
-                    ExprKind::UnaryOperations { operand, operator }
+                    Expr::UnaryOperations { operand, operator }
                 }
             }
             "active" | "power" | "name" => {
                 let access_type = MemberType::new(node.get_value().ok_or_else(|| {
                     errors::Error::ASTNodeValueInvalid(node.get_symbol().name.into())
                 })?)?;
-                ExprKind::Member { access_type }
+                Expr::Member { access_type }
             }
             "sum" | "avg" | "count" | "sumtime" | "avgtime" | "counttime" | "foreach" => {
                 let aggregate_type = FunctionType::new(node.get_value().ok_or_else(|| {
                     errors::Error::ASTNodeValueInvalid(node.get_symbol().name.into())
                 })?)?;
-                let expr = ExprKind::new(node.child(0))?.into();
-                ExprKind::Function {
+                let expr = Expr::new(node.child(0))?.into();
+                Expr::Function {
                     aggregate_type,
                     expr,
                 }
@@ -235,5 +207,25 @@ impl ExprKind {
         };
 
         Ok(expr)
+    }
+
+    
+}
+
+impl Display for Expr {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Expr::Number(n) => write!(f, "Number({})", n),
+            Expr::String(s) => write!(f,"String({})",s),
+            Expr::CurrentTime => write!(f, "CURRENTTIME"),
+            Expr::Unit { number, unit } => write!(f, "Unit({}, {})", number, unit),
+            Expr::Interval { start, end } => write!(f, "Interval({}, {})", start, end),
+            Expr::Always { interval, not, expr } => if interval.is_some() { write!(f, "Always({}, {}, {})", interval.as_ref().unwrap(), not, expr)} else {write!(f, "Always(None, {}, {})", not, expr)},
+            Expr::Eventually { interval, not, expr } => if interval.is_some() { write!(f, "Eventually({}, {}, {})", interval.as_ref().unwrap(), not, expr)} else {write!(f, "Eventually(None, {}, {})", not, expr)},
+            Expr::BinaryOperations { lhs, rhs, operator } => write!(f, "Binaryoperation({}, {}, {})", lhs, operator, rhs ),
+            Expr::UnaryOperations { operand, operator } => write!(f, "Unaryoperation({}, {})", operator, operand),
+            Expr::Member { access_type } => write!(f, "Member({})", access_type),
+            Expr::Function { aggregate_type, expr } => write!(f, "Function({}, {})", aggregate_type, expr),
+        }
     }
 }

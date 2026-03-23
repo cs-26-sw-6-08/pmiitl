@@ -1,6 +1,6 @@
-use std::error::Error;
+use std::{error::Error, fmt::Display};
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum BinaryOperators {
     Equal,
     Less,
@@ -39,7 +39,29 @@ impl BinaryOperators {
         })
     }
 }
-#[derive(Debug, PartialEq)]
+
+impl Display for BinaryOperators {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            BinaryOperators::Equal => write!(f, "="),
+            BinaryOperators::Less => write!(f, "<"),
+            BinaryOperators::Greater => write!(f, ">"),
+            BinaryOperators::LessEqual => write!(f, "<="),
+            BinaryOperators::GreaterEqual => write!(f, ">="),
+            BinaryOperators::NotEqual => write!(f, "!="),
+            BinaryOperators::Plus => write!(f, "+"),
+            BinaryOperators::Minus => write!(f, "-"),
+            BinaryOperators::Times => write!(f, "*"),
+            BinaryOperators::Divide => write!(f, "/"),
+            BinaryOperators::Mod => write!(f, "%"),
+            BinaryOperators::And => write!(f, "&"),
+            BinaryOperators::Or => write!(f, "|"),
+            BinaryOperators::Implies => write!(f, "->"),
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Clone)]
 pub enum UnaryOperators {
     Not,
     Negative
@@ -52,5 +74,14 @@ impl UnaryOperators {
             "-" => Self::Negative,
             _ => unreachable!()
         })
+    }
+}
+
+impl Display for UnaryOperators {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            UnaryOperators::Not => write!(f, "!"),
+            UnaryOperators::Negative => write!(f, "-"),
+        }
     }
 }
