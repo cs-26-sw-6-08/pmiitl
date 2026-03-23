@@ -1,4 +1,4 @@
-use std::{error::Error, fmt::Display, ops::Add};
+use std::{error::Error, fmt::Display};
 
 use hime_redist::{ast::AstNode, symbols::SemanticElementTrait};
 

@@ -163,7 +163,10 @@ impl Expr {
                         Type::Watt | Type::Number => Ok(Type::Seconds),
                         _ => Err(errors::Error::IncorrectType(self.clone(), expr.unit_check()?).into()),
                     },
-                    FunctionType::Foreach => todo!(),
+                    FunctionType::Foreach => match expr_type {
+                        Type::String => Err(errors::Error::IncorrectType(self.clone(), Type::String).into()),
+                        _ => Ok(Type::Number),
+                    }
                 }
             }
         }

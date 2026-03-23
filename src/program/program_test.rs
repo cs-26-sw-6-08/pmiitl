@@ -258,21 +258,12 @@ fn counttime() {
         always_expr(binary_expr(function_expr(FunctionType::Counttime, number_expr()), custom_number_expr(1000), BinaryOperators::Greater)));
 }
 
-//TODO: Ændre test til at bruge hjælpe func, når vi har implemeneret for foreach. 
 #[test]
 fn foreach() {
     let program = Program::new("always foreach(5);").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        Expr::Always {
-            interval: None,
-            not: false,
-            expr: Expr::Function {
-                aggregate_type: FunctionType::Foreach,
-                expr: Expr::Number(5000).into()
-            }
-            .into()
-        }
+        always_expr(function_expr(FunctionType::Foreach, number_expr()))
     );
 }
 

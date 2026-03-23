@@ -529,7 +529,18 @@ fn function_avgtime() {
     assert_eq!(function_expr(FunctionType::Avgtime, unit_expr(Unit::Seconds)).unit_check().unwrap(), Type::Seconds);
     assert_eq!(function_expr(FunctionType::Avgtime, unit_expr(Unit::WattSeconds)).unit_check().unwrap(), Type::WattSeconds);
     
-    assert!(function_expr(FunctionType::Counttime, string_expr()).unit_check().is_err());
+    assert!(function_expr(FunctionType::Avgtime, string_expr()).unit_check().is_err());
+}
+
+#[test]
+fn function_foreach() {
+    
+    assert_eq!(function_expr(FunctionType::Foreach, number_expr()).unit_check().unwrap(), Type::Number);
+    assert_eq!(function_expr(FunctionType::Foreach, unit_expr(Unit::Watt)).unit_check().unwrap(), Type::Number);
+    assert_eq!(function_expr(FunctionType::Foreach, unit_expr(Unit::Seconds)).unit_check().unwrap(), Type::Number);
+    assert_eq!(function_expr(FunctionType::Foreach, unit_expr(Unit::WattSeconds)).unit_check().unwrap(), Type::Number);
+    
+    assert!(function_expr(FunctionType::Foreach, string_expr()).unit_check().is_err());
 }
 
 #[test]
