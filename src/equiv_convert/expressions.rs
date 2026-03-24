@@ -27,7 +27,11 @@ impl Expr {
                 expr.equiv_convert()?;
                 Ok(())
             }
-            Expr::Unit { number, unit: _ } => Ok(number.equiv_convert()?),
+            Expr::Unit { number, unit: _ } => {
+                number.equiv_convert()?;
+                *self = number.as_ref().clone();
+                Ok(())
+            },
             Expr::Function {
                 aggregate_type,
                 expr,

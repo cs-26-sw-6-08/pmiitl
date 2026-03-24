@@ -1,2 +1,2 @@
-always sum(power*2 & name=fridge) > 5w;
+always 5000s * 2 > 10m;
 
