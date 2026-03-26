@@ -64,8 +64,7 @@ fn and_or_implies_eqal_greaterequal_lessequal() {
     for operator in [BinaryOperators::And, BinaryOperators::Or, BinaryOperators::Implies, BinaryOperators::Equal, BinaryOperators::GreaterEqual, BinaryOperators::LessEqual] {
         let mut expr = binary_expr(number_expr(), number_expr(), operator.clone());
         assert!(expr.equiv_convert().is_ok());
-        assert_eq!(expr, Expr::Number(1));
-        //OBS 1?
+        assert_eq!(expr, Expr::Number(1000));
     }
    
 }

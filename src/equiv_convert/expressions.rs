@@ -1,8 +1,7 @@
 use std::error::Error;
 
 use crate::{
-    equiv_convert::binary_operations::binary_operations,
-    program::{expressions::Expr, function_types::FunctionType},
+    equiv_convert::binary_operations::binary_operations, errors, program::{expressions::Expr, function_types::FunctionType}
 };
 
 impl Expr {
@@ -54,7 +53,16 @@ impl Expr {
             Expr::Interval { start, end } => {
                 start.equiv_convert()?;
                 end.equiv_convert()?;
+                let Expr::Number(start_value) = start.as_ref() else { unreachable!() };
+                let Expr::Number(end_value) = end.as_ref() else { unreachable!() };
+                if *start_value < 0 || *end_value < 0 {
+                    return Err(errors::Error::IntervalBelowZero(*start_value, *end_value).into());
+                }
+                if *start_value > *end_value {
+                    return Err(errors::Error::IntervalStartGreaterThanEnd(*start_value, *end_value).into());
+                }
                 Ok(())
+                
             },
             Expr::Eventually {
                 interval,
@@ -66,6 +74,8 @@ impl Expr {
                 }
                 expr.equiv_convert()?;
                 Ok(())
+
+                
             }
             Expr::UnaryOperations {
                 operand,

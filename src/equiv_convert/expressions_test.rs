@@ -39,6 +39,20 @@ fn interval(){
 }
 
 #[test]
+fn interval_below_zero(){
+    let mut expr = interval_expr(binary_expr(custom_number_expr(5000), custom_number_expr(10000), BinaryOperators::Minus), number_expr());
+    assert!(expr.equiv_convert().is_err());
+    
+}
+
+#[test]
+fn interval_start_greater_than_end(){
+    let mut expr = interval_expr(custom_number_expr(10000), number_expr());
+    assert!(expr.equiv_convert().is_err());
+    
+}
+
+#[test]
 fn unit(){
     let mut expr = unit_expr(Unit::Seconds);
     assert!(expr.equiv_convert().is_ok());

@@ -79,135 +79,135 @@ pub const TERMINALS: &[Symbol] = &[
         name: "TIME"
     },
     Symbol {
-        id: 0x002A,
+        id: 0x0029,
         name: ";"
     },
     Symbol {
-        id: 0x002C,
+        id: 0x002B,
         name: "!"
     },
     Symbol {
-        id: 0x002D,
+        id: 0x002C,
         name: "always"
     },
     Symbol {
-        id: 0x002E,
+        id: 0x002D,
         name: "eventually"
     },
     Symbol {
-        id: 0x002F,
+        id: 0x002E,
         name: "["
     },
     Symbol {
-        id: 0x0030,
+        id: 0x002F,
         name: ","
     },
     Symbol {
-        id: 0x0031,
+        id: 0x0030,
         name: "]"
     },
     Symbol {
-        id: 0x0032,
+        id: 0x0031,
         name: "+"
     },
     Symbol {
-        id: 0x0033,
+        id: 0x0032,
         name: "-"
     },
     Symbol {
-        id: 0x0034,
+        id: 0x0033,
         name: "*"
     },
     Symbol {
-        id: 0x0035,
+        id: 0x0034,
         name: "/"
     },
     Symbol {
-        id: 0x0036,
+        id: 0x0035,
         name: "%"
     },
     Symbol {
-        id: 0x0037,
+        id: 0x0036,
         name: "("
     },
     Symbol {
-        id: 0x0038,
+        id: 0x0037,
         name: ")"
     },
     Symbol {
-        id: 0x0039,
+        id: 0x0038,
         name: "->"
     },
     Symbol {
-        id: 0x003A,
+        id: 0x0039,
         name: "|"
     },
     Symbol {
-        id: 0x003B,
+        id: 0x003A,
         name: "&"
     },
     Symbol {
-        id: 0x003C,
+        id: 0x003B,
         name: "="
     },
     Symbol {
-        id: 0x003D,
+        id: 0x003C,
         name: "<="
     },
     Symbol {
-        id: 0x003E,
+        id: 0x003D,
         name: ">="
     },
     Symbol {
-        id: 0x003F,
+        id: 0x003E,
         name: "!="
     },
     Symbol {
-        id: 0x0040,
+        id: 0x003F,
         name: "<"
     },
     Symbol {
-        id: 0x0041,
+        id: 0x0040,
         name: ">"
     },
     Symbol {
-        id: 0x0042,
+        id: 0x0041,
         name: "sumtime"
     },
     Symbol {
-        id: 0x0043,
+        id: 0x0042,
         name: "avgtime"
     },
     Symbol {
-        id: 0x0044,
+        id: 0x0043,
         name: "counttime"
     },
     Symbol {
-        id: 0x0045,
+        id: 0x0044,
         name: "foreach"
     },
     Symbol {
-        id: 0x0046,
+        id: 0x0045,
         name: "sum"
     },
     Symbol {
-        id: 0x0047,
+        id: 0x0046,
         name: "avg"
     },
     Symbol {
-        id: 0x0048,
+        id: 0x0047,
         name: "count"
     },
     Symbol {
-        id: 0x0049,
+        id: 0x0048,
         name: "active"
     },
     Symbol {
-        id: 0x004A,
+        id: 0x0049,
         name: "power"
     },
     Symbol {
-        id: 0x004B,
+        id: 0x004A,
         name: "name"
     }
 ];
@@ -238,50 +238,48 @@ pub const ID_VARIABLE_EXPR_A1: u32 = 0x0011;
 pub const ID_VARIABLE_EXPR_A2: u32 = 0x0012;
 /// The unique identifier for variable `ExprA3`
 pub const ID_VARIABLE_EXPR_A3: u32 = 0x0013;
-/// The unique identifier for variable `ExprA4`
-pub const ID_VARIABLE_EXPR_A4: u32 = 0x0014;
 /// The unique identifier for variable `Expr`
-pub const ID_VARIABLE_EXPR: u32 = 0x0015;
+pub const ID_VARIABLE_EXPR: u32 = 0x0014;
 /// The unique identifier for variable `ExprV1`
-pub const ID_VARIABLE_EXPR_V1: u32 = 0x0016;
+pub const ID_VARIABLE_EXPR_V1: u32 = 0x0015;
 /// The unique identifier for variable `ExprV2`
-pub const ID_VARIABLE_EXPR_V2: u32 = 0x0017;
+pub const ID_VARIABLE_EXPR_V2: u32 = 0x0016;
 /// The unique identifier for variable `ExprV3`
-pub const ID_VARIABLE_EXPR_V3: u32 = 0x0018;
+pub const ID_VARIABLE_EXPR_V3: u32 = 0x0017;
 /// The unique identifier for variable `ExprV4`
-pub const ID_VARIABLE_EXPR_V4: u32 = 0x0019;
+pub const ID_VARIABLE_EXPR_V4: u32 = 0x0018;
 /// The unique identifier for variable `ExprV5`
-pub const ID_VARIABLE_EXPR_V5: u32 = 0x001A;
+pub const ID_VARIABLE_EXPR_V5: u32 = 0x0019;
 /// The unique identifier for variable `ExprV6`
-pub const ID_VARIABLE_EXPR_V6: u32 = 0x001B;
+pub const ID_VARIABLE_EXPR_V6: u32 = 0x001A;
 /// The unique identifier for variable `ExprV7`
-pub const ID_VARIABLE_EXPR_V7: u32 = 0x001C;
+pub const ID_VARIABLE_EXPR_V7: u32 = 0x001B;
 /// The unique identifier for variable `ExprV8`
-pub const ID_VARIABLE_EXPR_V8: u32 = 0x001D;
+pub const ID_VARIABLE_EXPR_V8: u32 = 0x001C;
 /// The unique identifier for variable `Function`
-pub const ID_VARIABLE_FUNCTION: u32 = 0x001E;
+pub const ID_VARIABLE_FUNCTION: u32 = 0x001D;
 /// The unique identifier for variable `Aggregate`
-pub const ID_VARIABLE_AGGREGATE: u32 = 0x001F;
+pub const ID_VARIABLE_AGGREGATE: u32 = 0x001E;
 /// The unique identifier for variable `FunctionExpr`
-pub const ID_VARIABLE_FUNCTION_EXPR: u32 = 0x0020;
+pub const ID_VARIABLE_FUNCTION_EXPR: u32 = 0x001F;
 /// The unique identifier for variable `FunctionExprV1`
-pub const ID_VARIABLE_FUNCTION_EXPR_V1: u32 = 0x0021;
+pub const ID_VARIABLE_FUNCTION_EXPR_V1: u32 = 0x0020;
 /// The unique identifier for variable `FunctionExprV2`
-pub const ID_VARIABLE_FUNCTION_EXPR_V2: u32 = 0x0022;
+pub const ID_VARIABLE_FUNCTION_EXPR_V2: u32 = 0x0021;
 /// The unique identifier for variable `FunctionExprV3`
-pub const ID_VARIABLE_FUNCTION_EXPR_V3: u32 = 0x0023;
+pub const ID_VARIABLE_FUNCTION_EXPR_V3: u32 = 0x0022;
 /// The unique identifier for variable `FunctionExprV4`
-pub const ID_VARIABLE_FUNCTION_EXPR_V4: u32 = 0x0024;
+pub const ID_VARIABLE_FUNCTION_EXPR_V4: u32 = 0x0023;
 /// The unique identifier for variable `FunctionExprV5`
-pub const ID_VARIABLE_FUNCTION_EXPR_V5: u32 = 0x0025;
+pub const ID_VARIABLE_FUNCTION_EXPR_V5: u32 = 0x0024;
 /// The unique identifier for variable `FunctionExprV6`
-pub const ID_VARIABLE_FUNCTION_EXPR_V6: u32 = 0x0026;
+pub const ID_VARIABLE_FUNCTION_EXPR_V6: u32 = 0x0025;
 /// The unique identifier for variable `FunctionExprV7`
-pub const ID_VARIABLE_FUNCTION_EXPR_V7: u32 = 0x0027;
+pub const ID_VARIABLE_FUNCTION_EXPR_V7: u32 = 0x0026;
 /// The unique identifier for variable `FunctionExprV8`
-pub const ID_VARIABLE_FUNCTION_EXPR_V8: u32 = 0x0028;
+pub const ID_VARIABLE_FUNCTION_EXPR_V8: u32 = 0x0027;
 /// The unique identifier for variable `Member`
-pub const ID_VARIABLE_MEMBER: u32 = 0x0029;
+pub const ID_VARIABLE_MEMBER: u32 = 0x0028;
 
 
 /// The collection of variables matched by this parser
@@ -318,98 +316,94 @@ pub const VARIABLES: &[Symbol] = &[
     },
     Symbol {
         id: 0x0014,
-        name: "ExprA4"
-    },
-    Symbol {
-        id: 0x0015,
         name: "Expr"
     },
     Symbol {
-        id: 0x0016,
+        id: 0x0015,
         name: "ExprV1"
     },
     Symbol {
-        id: 0x0017,
+        id: 0x0016,
         name: "ExprV2"
     },
     Symbol {
-        id: 0x0018,
+        id: 0x0017,
         name: "ExprV3"
     },
     Symbol {
-        id: 0x0019,
+        id: 0x0018,
         name: "ExprV4"
     },
     Symbol {
-        id: 0x001A,
+        id: 0x0019,
         name: "ExprV5"
     },
     Symbol {
-        id: 0x001B,
+        id: 0x001A,
         name: "ExprV6"
     },
     Symbol {
-        id: 0x001C,
+        id: 0x001B,
         name: "ExprV7"
     },
     Symbol {
-        id: 0x001D,
+        id: 0x001C,
         name: "ExprV8"
     },
     Symbol {
-        id: 0x001E,
+        id: 0x001D,
         name: "Function"
     },
     Symbol {
-        id: 0x001F,
+        id: 0x001E,
         name: "Aggregate"
     },
     Symbol {
-        id: 0x0020,
+        id: 0x001F,
         name: "FunctionExpr"
     },
     Symbol {
-        id: 0x0021,
+        id: 0x0020,
         name: "FunctionExprV1"
     },
     Symbol {
-        id: 0x0022,
+        id: 0x0021,
         name: "FunctionExprV2"
     },
     Symbol {
-        id: 0x0023,
+        id: 0x0022,
         name: "FunctionExprV3"
     },
     Symbol {
-        id: 0x0024,
+        id: 0x0023,
         name: "FunctionExprV4"
     },
     Symbol {
-        id: 0x0025,
+        id: 0x0024,
         name: "FunctionExprV5"
     },
     Symbol {
-        id: 0x0026,
+        id: 0x0025,
         name: "FunctionExprV6"
     },
     Symbol {
-        id: 0x0027,
+        id: 0x0026,
         name: "FunctionExprV7"
     },
     Symbol {
-        id: 0x0028,
+        id: 0x0027,
         name: "FunctionExprV8"
     },
     Symbol {
-        id: 0x0029,
+        id: 0x0028,
         name: "Member"
     },
     Symbol {
-        id: 0x002B,
-        name: "__V43"
+        id: 0x002A,
+        name: "__V42"
     },
     Symbol {
-        id: 0x004C,
+        id: 0x004B,
         name: "__VAxiom"
     }
 ];
@@ -486,7 +480,6 @@ pub trait Visitor {
     fn on_variable_expr_a1(&self, node: &AstNode) {}
     fn on_variable_expr_a2(&self, node: &AstNode) {}
     fn on_variable_expr_a3(&self, node: &AstNode) {}
-    fn on_variable_expr_a4(&self, node: &AstNode) {}
     fn on_variable_expr(&self, node: &AstNode) {}
     fn on_variable_expr_v1(&self, node: &AstNode) {}
     fn on_variable_expr_v2(&self, node: &AstNode) {}
@@ -538,28 +531,27 @@ pub fn visit_ast_node(node: AstNode, visitor: &dyn Visitor) {
         0x0011 => visitor.on_variable_expr_a1(&node),
         0x0012 => visitor.on_variable_expr_a2(&node),
         0x0013 => visitor.on_variable_expr_a3(&node),
-        0x0014 => visitor.on_variable_expr_a4(&node),
-        0x0015 => visitor.on_variable_expr(&node),
-        0x0016 => visitor.on_variable_expr_v1(&node),
-        0x0017 => visitor.on_variable_expr_v2(&node),
-        0x0018 => visitor.on_variable_expr_v3(&node),
-        0x0019 => visitor.on_variable_expr_v4(&node),
-        0x001A => visitor.on_variable_expr_v5(&node),
-        0x001B => visitor.on_variable_expr_v6(&node),
-        0x001C => visitor.on_variable_expr_v7(&node),
-        0x001D => visitor.on_variable_expr_v8(&node),
-        0x001E => visitor.on_variable_function(&node),
-        0x001F => visitor.on_variable_aggregate(&node),
-        0x0020 => visitor.on_variable_function_expr(&node),
-        0x0021 => visitor.on_variable_function_expr_v1(&node),
-        0x0022 => visitor.on_variable_function_expr_v2(&node),
-        0x0023 => visitor.on_variable_function_expr_v3(&node),
-        0x0024 => visitor.on_variable_function_expr_v4(&node),
-        0x0025 => visitor.on_variable_function_expr_v5(&node),
-        0x0026 => visitor.on_variable_function_expr_v6(&node),
-        0x0027 => visitor.on_variable_function_expr_v7(&node),
-        0x0028 => visitor.on_variable_function_expr_v8(&node),
-        0x0029 => visitor.on_variable_member(&node),
+        0x0014 => visitor.on_variable_expr(&node),
+        0x0015 => visitor.on_variable_expr_v1(&node),
+        0x0016 => visitor.on_variable_expr_v2(&node),
+        0x0017 => visitor.on_variable_expr_v3(&node),
+        0x0018 => visitor.on_variable_expr_v4(&node),
+        0x0019 => visitor.on_variable_expr_v5(&node),
+        0x001A => visitor.on_variable_expr_v6(&node),
+        0x001B => visitor.on_variable_expr_v7(&node),
+        0x001C => visitor.on_variable_expr_v8(&node),
+        0x001D => visitor.on_variable_function(&node),
+        0x001E => visitor.on_variable_aggregate(&node),
+        0x001F => visitor.on_variable_function_expr(&node),
+        0x0020 => visitor.on_variable_function_expr_v1(&node),
+        0x0021 => visitor.on_variable_function_expr_v2(&node),
+        0x0022 => visitor.on_variable_function_expr_v3(&node),
+        0x0023 => visitor.on_variable_function_expr_v4(&node),
+        0x0024 => visitor.on_variable_function_expr_v5(&node),
+        0x0025 => visitor.on_variable_function_expr_v6(&node),
+        0x0026 => visitor.on_variable_function_expr_v7(&node),
+        0x0027 => visitor.on_variable_function_expr_v8(&node),
+        0x0028 => visitor.on_variable_member(&node),
         _ => ()
     };
 }

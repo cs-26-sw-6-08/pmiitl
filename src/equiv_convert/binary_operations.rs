@@ -111,7 +111,9 @@ pub fn binary_operations(
             }
         },
         BinaryOperators::And => match (lhs, rhs) {
-            (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number((n != 0 && m != 0) as i128)),
+            // To ensure that true/false evaluates to 1000 or 0 we multiply by 1000.
+            // It is neccesary to do this as decimal numbers in our program are represented using the last 3 digits of an int.
+            (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number((n != 0 && m != 0) as i128 * 1000)),
 
             /* To make the semantics easier p & q => !(!p || !q).
             This should be done for all non-trivial expressions such as power & true */
@@ -134,13 +136,13 @@ pub fn binary_operations(
             }),
         },
         BinaryOperators::Or => match (lhs, rhs) {
-            (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number((n != 0 || m != 0) as i128)),
+            (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number((n != 0 || m != 0) as i128 * 1000)),
             (lhs, rhs) => {
                 Err(errors::Error::ConversionBinaryOperation(BinaryOperators::Or, lhs, rhs).into())
             }
         },
         BinaryOperators::Equal => match (lhs, rhs) {
-            (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number((n == m) as i128)),
+            (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number((n == m) as i128 * 1000)),
             (lhs, rhs) => {
                 Err(
                     errors::Error::ConversionBinaryOperation(BinaryOperators::Equal, lhs, rhs)
@@ -149,7 +151,7 @@ pub fn binary_operations(
             }
         },
         BinaryOperators::NotEqual => match (lhs, rhs) {
-            (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number((n != m) as i128)),
+            (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number((n != m) as i128 * 1000)),
             (lhs, rhs) => {
                 Err(
                     errors::Error::ConversionBinaryOperation(BinaryOperators::NotEqual, lhs, rhs)
@@ -158,7 +160,7 @@ pub fn binary_operations(
             }
         },
         BinaryOperators::Greater => match (lhs, rhs) {
-            (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number((n > m) as i128)),
+            (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number((n > m) as i128 * 1000)),
             (lhs, rhs) => {
                 Err(
                     errors::Error::ConversionBinaryOperation(BinaryOperators::Greater, lhs, rhs)
@@ -167,7 +169,7 @@ pub fn binary_operations(
             }
         },
         BinaryOperators::GreaterEqual => match (lhs, rhs) {
-            (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number((n >= m) as i128)),
+            (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number((n >= m) as i128 * 1000)),
             (lhs, rhs) => Err(errors::Error::ConversionBinaryOperation(
                 BinaryOperators::GreaterEqual,
                 lhs,
@@ -176,7 +178,7 @@ pub fn binary_operations(
             .into()),
         },
         BinaryOperators::Less => match (lhs, rhs) {
-            (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number((n < m) as i128)),
+            (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number((n < m) as i128 * 1000)),
             (lhs, rhs) => {
                 Err(
                     errors::Error::ConversionBinaryOperation(BinaryOperators::Less, lhs, rhs)
@@ -185,7 +187,7 @@ pub fn binary_operations(
             }
         },
         BinaryOperators::LessEqual => match (lhs, rhs) {
-            (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number((n <= m) as i128)),
+            (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number((n <= m) as i128 * 1000)),
             (lhs, rhs) => {
                 Err(
                     errors::Error::ConversionBinaryOperation(BinaryOperators::LessEqual, lhs, rhs)
@@ -194,7 +196,7 @@ pub fn binary_operations(
             }
         },
         BinaryOperators::Implies => match (lhs, rhs) {
-            (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number((n == 0 || (m != 0)) as i128)),
+            (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number((n == 0 || (m != 0)) as i128 * 1000)),
             /* To make the semantics easier p -> q => !p || q.
             This should be done for all non-trivial expressions such as power -> true */
             (lhs, rhs) => Ok(Expr::BinaryOperations {

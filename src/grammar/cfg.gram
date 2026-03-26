@@ -33,9 +33,8 @@ grammar cfg
     Interval -> '['!ExprA','!ExprA']'!;
     ExprA  -> ExprA '+'^ ExprA1 | ExprA '-'^ ExprA1 | ExprA1^;
     ExprA1 -> ExprA1 '*'^ ExprA2 | ExprA1 '/'^ ExprA2 | ExprA1 '%'^ ExprA2 | ExprA2^;
-    ExprA2 -> '-'^ExprA3 | ExprA3^;
-    ExprA3 -> '('! ExprA^ ')'! | ExprA4^;
-    ExprA4 -> (NUMBER TIMEUNIT)^;
+    ExprA2 -> '('! ExprA^ ')'! | ExprA3^;
+    ExprA3 -> (NUMBER TIMEUNIT)^;
 
     Expr   -> ExprV1 '->'^ Expr | ExprV1^;
     ExprV1 -> ExprV1 '|'^ ExprV2 | ExprV2^;

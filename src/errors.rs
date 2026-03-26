@@ -17,6 +17,10 @@ pub enum Error {
     IncorrectTwoTypes(Expr, Type, Type),
     #[error("binary operation failed: {0}, lhs: {1}, rhs: {2}")]
     BinaryOperationFail(BinaryOperators, i128, i128),
+    #[error("interval value below zero start: {0} end: {1}")]
+    IntervalBelowZero(i128, i128),
+    #[error("interval start value: {0} is greater than end value: {1}")]
+    IntervalStartGreaterThanEnd(i128, i128),
 }
 
 impl PartialEq for Error {
