@@ -3,6 +3,7 @@ pub mod program;
 pub mod unit_check;
 pub mod equiv_convert;
 pub mod unit_convert;
+pub mod monitorability;
 pub mod utils;
 mod errors;
 
@@ -38,6 +39,10 @@ fn main() {
     if let Err(err) = program.equiv_convert() {
         return println!("Error: {}", err);
     };
+
+    if let Err(err) = program.monitorability_check() {
+        return println!("Error: {}", err);
+    }
 
     println!("{:?}", program);
 

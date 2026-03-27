@@ -1,7 +1,7 @@
 use std::error::Error;
 
 use crate::{
-    equiv_convert::binary_operations::binary_operations, errors, program::{expressions::Expr, function_types::FunctionType}
+    equiv_convert::binary_operations::binary_operations, errors, program::{expressions::Expr, function_types::FunctionType, operations::UnaryOperators}
 };
 
 impl Expr {
@@ -17,15 +17,46 @@ impl Expr {
             }
             Expr::Always {
                 interval,
-                not: _,
+                not,
                 expr,
             } => {
                 if let Some(interval) = interval {
                     interval.equiv_convert()?;
                 }
                 expr.equiv_convert()?;
+                // !always p is equivalent to eventually !p
+                if *not {
+                    if let Expr::UnaryOperations{operand, operator: UnaryOperators::Not} = expr.as_ref() {
+                        *expr = operand.clone();
+                    } else {
+                        *expr = Expr::UnaryOperations { operand: expr.clone(), operator: UnaryOperators::Not }.into();
+                    }
+                    *self = Expr::Eventually { interval: interval.clone(), not: false, expr: expr.clone() };
+                }
                 Ok(())
-            }
+            },
+            Expr::Eventually {
+                interval,
+                not,
+                expr,
+            } => {
+                if let Some(interval) = interval {
+                    interval.equiv_convert()?;
+                }
+                expr.equiv_convert()?;
+                // !eventually p is equivalent to always !p
+                if *not {
+                    if let Expr::UnaryOperations{operand, operator: UnaryOperators::Not} = expr.as_ref() {
+                        *expr = operand.clone();
+                    } else {
+                        *expr = Expr::UnaryOperations { operand: expr.clone(), operator: UnaryOperators::Not }.into();
+                    }
+                    *self = Expr::Always { interval: interval.clone(), not: false, expr: expr.clone() };
+                }
+                Ok(())
+
+                
+            },
             Expr::Unit { number, unit: _ } => {
                 number.equiv_convert()?;
                 *self = number.as_ref().clone();
@@ -64,23 +95,40 @@ impl Expr {
                 Ok(())
                 
             },
-            Expr::Eventually {
-                interval,
-                not: _,
-                expr,
-            } => {
-                if let Some(interval) = interval {
-                    interval.equiv_convert()?;
-                }
-                expr.equiv_convert()?;
-                Ok(())
-
-                
-            }
             Expr::UnaryOperations {
                 operand,
-                operator: _,
-            } => Ok(operand.equiv_convert()?),
+                operator,
+            } => {
+                operand.equiv_convert()?;
+
+                if *operator == UnaryOperators::Not {
+                    match operand.as_ref() {
+                        // !always p is equivalent to eventually !p
+                        Expr::Always { interval, not: _, expr } => {
+                            *self = Expr::Eventually { interval: interval.clone(), not: false, expr: {
+                                if let Expr::UnaryOperations{operand, operator: UnaryOperators::Not} = expr.as_ref() {
+                                    operand.clone()
+                                } else {
+                                    Expr::UnaryOperations { operand: expr.clone(), operator: UnaryOperators::Not }.into()
+                                }
+                            } };
+                        },
+                        // !eventually p is equivalent to always !p
+                        Expr::Eventually { interval, not: _, expr } => {
+                            *self = Expr::Always { interval: interval.clone(), not: false, expr: {
+                                if let Expr::UnaryOperations{operand, operator: UnaryOperators::Not} = expr.as_ref() {
+                                    operand.clone()
+                                } else {
+                                    Expr::UnaryOperations { operand: expr.clone(), operator: UnaryOperators::Not }.into()
+                                } 
+                            } };
+                        }
+                        _ => {}
+                    }
+                }
+
+                Ok(())
+            },
             _ => Ok(()),
         }
     }

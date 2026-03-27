@@ -1,7 +1,7 @@
 use crate::program::function_types::FunctionType;
 use crate::program::operations::{BinaryOperators, UnaryOperators};
 use crate::program::units::Unit;
-use crate::utils::test_helper_func::{always_expr, binary_expr, custom_number_expr, custom_unit_expr, eventually_expr, function_expr, interval_expr, number_expr, unary_expr, unit_expr};
+use crate::utils::test_helper_func::{always_expr, always_negated_expr, always_interval_expr, binary_expr, custom_number_expr, custom_unit_expr, eventually_expr, eventually_negated_expr, function_expr, interval_expr, number_expr, unary_expr, unit_expr};
 
 #[test]
 fn count(){
@@ -25,10 +25,31 @@ fn always(){
 }
 
 #[test]
+fn always_interval(){
+    let mut expr = always_interval_expr(interval_expr(unit_expr(Unit::Seconds), unit_expr(Unit::Seconds)), binary_expr(number_expr(), number_expr(), BinaryOperators::Plus));
+    assert!(expr.equiv_convert().is_ok());
+    assert_eq!(expr, always_interval_expr(interval_expr(number_expr(), number_expr()), custom_number_expr(10000)));
+}
+
+#[test]
+fn always_negated(){
+    let mut expr = always_negated_expr(unary_expr(number_expr(), UnaryOperators::Not));
+    assert!(expr.equiv_convert().is_ok());
+    assert_eq!(expr, eventually_expr(number_expr()));
+}
+
+#[test]
 fn eventually(){
     let mut expr = eventually_expr(binary_expr(number_expr(), number_expr(), BinaryOperators::Plus));
     assert!(expr.equiv_convert().is_ok());
     assert_eq!(expr, eventually_expr(custom_number_expr(10000)));
+}
+
+#[test]
+fn eventually_negated(){
+    let mut expr = eventually_negated_expr(unary_expr(number_expr(), UnaryOperators::Not));
+    assert!(expr.equiv_convert().is_ok());
+    assert_eq!(expr, always_expr(number_expr()));
 }
 
 #[test]
@@ -64,4 +85,18 @@ fn unary() {
     let mut expr = unary_expr(unit_expr(Unit::Seconds), UnaryOperators::Negative );
     assert!(expr.equiv_convert().is_ok());
     assert_eq!(expr, unary_expr(number_expr(), UnaryOperators::Negative));
+}
+
+#[test]
+fn unary_not_always() {
+    let mut expr = unary_expr(always_expr(number_expr()), UnaryOperators::Not );
+    assert!(expr.equiv_convert().is_ok());
+    assert_eq!(expr, eventually_expr(unary_expr(number_expr(), UnaryOperators::Not)));
+}
+
+#[test]
+fn unary_not_eventually() {
+    let mut expr = unary_expr(eventually_expr(number_expr()), UnaryOperators::Not );
+    assert!(expr.equiv_convert().is_ok());
+    assert_eq!(expr, always_expr(unary_expr(number_expr(), UnaryOperators::Not)));
 }

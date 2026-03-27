@@ -21,6 +21,10 @@ pub enum Error {
     IntervalBelowZero(i128, i128),
     #[error("interval start value: {0} is greater than end value: {1}")]
     IntervalStartGreaterThanEnd(i128, i128),
+    #[error(" Property is not monitorable: {0}")]
+    Unmonitorable(Expr),
+    #[error(" Property at line {0} is not monitorable")]
+    UnmonitorableLine(usize),
 }
 
 impl PartialEq for Error {
