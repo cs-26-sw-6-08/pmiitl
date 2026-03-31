@@ -86,17 +86,3 @@ fn unary() {
     assert!(expr.equiv_convert().is_ok());
     assert_eq!(expr, unary_expr(number_expr(), UnaryOperators::Negative));
 }
-
-#[test]
-fn unary_not_always() {
-    let mut expr = unary_expr(always_expr(number_expr()), UnaryOperators::Not );
-    assert!(expr.equiv_convert().is_ok());
-    assert_eq!(expr, eventually_expr(unary_expr(number_expr(), UnaryOperators::Not)));
-}
-
-#[test]
-fn unary_not_eventually() {
-    let mut expr = unary_expr(eventually_expr(number_expr()), UnaryOperators::Not );
-    assert!(expr.equiv_convert().is_ok());
-    assert_eq!(expr, always_expr(unary_expr(number_expr(), UnaryOperators::Not)));
-}

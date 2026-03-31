@@ -1,1 +1,8 @@
-always eventually 1000ws + 1000ws;
+always (t % 24h = 0s) -> always[0h,24h] sumtime(active * power) <10 kWh;
+always foreach(active -> eventually[0h,6h] !active);
+always count(name=fridge & active);
+always count(active) >= 5 -> eventually[0h,6h] count(active) < 5;
+always sum(active * power) <= 100 W;
+always 7; !eventually 7;
+always always always 5;
+always true -> !eventually true -> !eventually true -> true;

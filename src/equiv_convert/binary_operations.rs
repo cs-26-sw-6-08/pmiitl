@@ -47,13 +47,8 @@ pub fn binary_operations(
                     / 1000;
 
                 Ok(Expr::Number(temp1 + temp2))
-            }
-            (lhs, rhs) => {
-                Err(
-                    errors::Error::ConversionBinaryOperation(BinaryOperators::Times, lhs, rhs)
-                        .into(),
-                )
-            }
+            },
+            (lhs, rhs) => Ok(Expr::BinaryOperations{lhs: lhs.into(), rhs: rhs.into(), operator })
         },
         BinaryOperators::Divide => match (lhs, rhs) {
             (Expr::Number(n), Expr::Number(m)) => {
@@ -75,30 +70,15 @@ pub fn binary_operations(
 
                 Ok(Expr::Number(temp1 + temp2))
             }
-            (lhs, rhs) => {
-                Err(
-                    errors::Error::ConversionBinaryOperation(BinaryOperators::Divide, lhs, rhs)
-                        .into(),
-                )
-            }
+            (lhs, rhs) => Ok(Expr::BinaryOperations{lhs: lhs.into(), rhs: rhs.into(), operator })
         },
         BinaryOperators::Plus => match (lhs, rhs) {
             (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number(n + m)),
-            (lhs, rhs) => {
-                Err(
-                    errors::Error::ConversionBinaryOperation(BinaryOperators::Plus, lhs, rhs)
-                        .into(),
-                )
-            }
+            (lhs, rhs) => Ok(Expr::BinaryOperations{lhs: lhs.into(), rhs: rhs.into(), operator })
         },
         BinaryOperators::Minus => match (lhs, rhs) {
             (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number(n - m)),
-            (lhs, rhs) => {
-                Err(
-                    errors::Error::ConversionBinaryOperation(BinaryOperators::Minus, lhs, rhs)
-                        .into(),
-                )
-            }
+            (lhs, rhs) => Ok(Expr::BinaryOperations{lhs: lhs.into(), rhs: rhs.into(), operator })
         },
         BinaryOperators::Mod => match (lhs, rhs) {
             (Expr::Number(n), Expr::Number(m)) => {
@@ -106,9 +86,7 @@ pub fn binary_operations(
                // https://stackoverflow.com/a/31210691
                 Ok(Expr::Number(((n.checked_rem(m).unwrap_or(0)) + m).checked_rem(m).unwrap_or(0)))
             }
-            (lhs, rhs) => {
-                Err(errors::Error::ConversionBinaryOperation(BinaryOperators::Mod, lhs, rhs).into())
-            }
+            (lhs, rhs) => Ok(Expr::BinaryOperations{lhs: lhs.into(), rhs: rhs.into(), operator })
         },
         BinaryOperators::And => match (lhs, rhs) {
             // To ensure that true/false evaluates to 1000 or 0 we multiply by 1000.
@@ -137,63 +115,31 @@ pub fn binary_operations(
         },
         BinaryOperators::Or => match (lhs, rhs) {
             (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number((n != 0 || m != 0) as i128 * 1000)),
-            (lhs, rhs) => {
-                Err(errors::Error::ConversionBinaryOperation(BinaryOperators::Or, lhs, rhs).into())
-            }
+            (lhs, rhs) => Ok(Expr::BinaryOperations{lhs: lhs.into(), rhs: rhs.into(), operator })
         },
         BinaryOperators::Equal => match (lhs, rhs) {
             (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number((n == m) as i128 * 1000)),
-            (lhs, rhs) => {
-                Err(
-                    errors::Error::ConversionBinaryOperation(BinaryOperators::Equal, lhs, rhs)
-                        .into(),
-                )
-            }
+            (lhs, rhs) => Ok(Expr::BinaryOperations{lhs: lhs.into(), rhs: rhs.into(), operator })
         },
         BinaryOperators::NotEqual => match (lhs, rhs) {
             (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number((n != m) as i128 * 1000)),
-            (lhs, rhs) => {
-                Err(
-                    errors::Error::ConversionBinaryOperation(BinaryOperators::NotEqual, lhs, rhs)
-                        .into(),
-                )
-            }
+            (lhs, rhs) => Ok(Expr::BinaryOperations{lhs: lhs.into(), rhs: rhs.into(), operator })
         },
         BinaryOperators::Greater => match (lhs, rhs) {
             (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number((n > m) as i128 * 1000)),
-            (lhs, rhs) => {
-                Err(
-                    errors::Error::ConversionBinaryOperation(BinaryOperators::Greater, lhs, rhs)
-                        .into(),
-                )
-            }
+            (lhs, rhs) => Ok(Expr::BinaryOperations{lhs: lhs.into(), rhs: rhs.into(), operator })
         },
         BinaryOperators::GreaterEqual => match (lhs, rhs) {
             (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number((n >= m) as i128 * 1000)),
-            (lhs, rhs) => Err(errors::Error::ConversionBinaryOperation(
-                BinaryOperators::GreaterEqual,
-                lhs,
-                rhs,
-            )
-            .into()),
+            (lhs, rhs) => Ok(Expr::BinaryOperations{lhs: lhs.into(), rhs: rhs.into(), operator })
         },
         BinaryOperators::Less => match (lhs, rhs) {
             (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number((n < m) as i128 * 1000)),
-            (lhs, rhs) => {
-                Err(
-                    errors::Error::ConversionBinaryOperation(BinaryOperators::Less, lhs, rhs)
-                        .into(),
-                )
-            }
+            (lhs, rhs) => Ok(Expr::BinaryOperations{lhs: lhs.into(), rhs: rhs.into(), operator })
         },
         BinaryOperators::LessEqual => match (lhs, rhs) {
             (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number((n <= m) as i128 * 1000)),
-            (lhs, rhs) => {
-                Err(
-                    errors::Error::ConversionBinaryOperation(BinaryOperators::LessEqual, lhs, rhs)
-                        .into(),
-                )
-            }
+            (lhs, rhs) => Ok(Expr::BinaryOperations{lhs: lhs.into(), rhs: rhs.into(), operator })
         },
         BinaryOperators::Implies => match (lhs, rhs) {
             (Expr::Number(n), Expr::Number(m)) => Ok(Expr::Number((n == 0 || (m != 0)) as i128 * 1000)),

@@ -79,7 +79,10 @@ impl Expr {
                     Ok(())
                     
                 }
-                _ => Ok(expr.equiv_convert()?),
+                _ => {
+                    expr.equiv_convert()?;
+                    Ok(())
+                },
             },
             Expr::Interval { start, end } => {
                 start.equiv_convert()?;
@@ -97,36 +100,9 @@ impl Expr {
             },
             Expr::UnaryOperations {
                 operand,
-                operator,
+                operator: _,
             } => {
-                operand.equiv_convert()?;
-
-                if *operator == UnaryOperators::Not {
-                    match operand.as_ref() {
-                        // !always p is equivalent to eventually !p
-                        Expr::Always { interval, not: _, expr } => {
-                            *self = Expr::Eventually { interval: interval.clone(), not: false, expr: {
-                                if let Expr::UnaryOperations{operand, operator: UnaryOperators::Not} = expr.as_ref() {
-                                    operand.clone()
-                                } else {
-                                    Expr::UnaryOperations { operand: expr.clone(), operator: UnaryOperators::Not }.into()
-                                }
-                            } };
-                        },
-                        // !eventually p is equivalent to always !p
-                        Expr::Eventually { interval, not: _, expr } => {
-                            *self = Expr::Always { interval: interval.clone(), not: false, expr: {
-                                if let Expr::UnaryOperations{operand, operator: UnaryOperators::Not} = expr.as_ref() {
-                                    operand.clone()
-                                } else {
-                                    Expr::UnaryOperations { operand: expr.clone(), operator: UnaryOperators::Not }.into()
-                                } 
-                            } };
-                        }
-                        _ => {}
-                    }
-                }
-
+                operand.equiv_convert()?; 
                 Ok(())
             },
             _ => Ok(()),

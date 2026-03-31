@@ -6,7 +6,7 @@ use crate::errors;
 impl Expr {
     pub fn monitorability_check(&self) -> Result<(), Box<dyn Error>> {
         match self {
-            Expr::Number(_) | Expr::String(_) | Expr::CurrentTime => Ok(()),
+            Expr::Number(_) | Expr::String(_) | Expr::CurrentTime | Expr::Member { access_type:_ } => Ok(()),
             Expr::Interval { start: _, end: _ } => Ok(()),
             Expr::Always { interval, not: false, expr } => {
                 if interval.is_some() {
@@ -32,8 +32,14 @@ impl Expr {
                 rhs.monitorability_check()?;
                 Ok(())
             },
-            Expr::UnaryOperations { operand, operator:_ } => Ok(operand.monitorability_check()?),
-            Expr::Function { aggregate_type:_, expr } => Ok(expr.monitorability_check()?),
+            Expr::UnaryOperations { operand, operator:_ } => {
+                operand.monitorability_check()?;
+                Ok(())
+            },
+            Expr::Function { aggregate_type:_, expr } => {
+                expr.monitorability_check()?;
+                Ok(())
+            },
             _ => Err(errors::Error::Unmonitorable(self.clone()).into())
         }
     }
