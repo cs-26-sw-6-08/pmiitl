@@ -58,6 +58,10 @@ pub fn always_expr(expr: Expr) -> Expr {
     Expr::Always { interval: None, not: false, expr: expr.into() }
 }
 
+pub fn always_negated_expr(expr: Expr) -> Expr {
+    Expr::Always { interval: None, not: true, expr: expr.into() }
+}
+
 pub fn always_interval_expr(interval: Expr, expr: Expr) -> Expr {
     Expr::Always { interval: Some(interval.into()), not: false, expr: expr.into() }
 }
@@ -66,6 +70,11 @@ pub fn eventually_expr(expr: Expr) -> Expr {
     Expr::Eventually { interval: None, not: false, expr: expr.into() }
 }
 
+pub fn eventually_negated_expr(expr: Expr) -> Expr {
+    Expr::Eventually { interval: None, not: true, expr: expr.into() }
+}
+
 pub fn eventually_interval_expr(interval: Expr, expr: Expr) -> Expr {
     Expr::Eventually { interval: Some(interval.into()), not: false, expr: expr.into() }
 }
+

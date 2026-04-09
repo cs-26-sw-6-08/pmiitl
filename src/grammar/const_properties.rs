@@ -8,19 +8,19 @@ r#"Program
         |   |   +-> TIMEUNIT = h
         |   |       +-> NUMBER = 24
         |   +-> NUMBER = 0
-        +-> < = <
-            +-> always = always
-            |   +-> Interval
-            |   |   +-> TIMEUNIT = h
-            |   |   |   +-> NUMBER = 0
-            |   |   +-> TIMEUNIT = h
-            |   |       +-> NUMBER = 24
-            |   +-> sumtime = sumtime
-            |       +-> * = *
-            |           +-> active = active
-            |           +-> power = power
-            +-> POWERUNIT = kwh
-                +-> NUMBER = 10
+        +-> always = always
+            +-> Interval
+            |   +-> TIMEUNIT = h
+            |   |   +-> NUMBER = 0
+            |   +-> TIMEUNIT = h
+            |       +-> NUMBER = 24
+            +-> < = <
+                +-> sumtime = sumtime
+                |   +-> * = *
+                |       +-> active = active
+                |       +-> power = power
+                +-> POWERUNIT = kwh
+                    +-> NUMBER = 10
 "#;
 
 pub const PROPERTY2: &str =
@@ -68,16 +68,16 @@ r#"Program
         |   +-> count = count
         |   |   +-> active = active
         |   +-> NUMBER = 5
-        +-> < = <
-            +-> eventually = eventually
-            |   +-> Interval
-            |   |   +-> TIMEUNIT = h
-            |   |   |   +-> NUMBER = 0
-            |   |   +-> TIMEUNIT = h
-            |   |       +-> NUMBER = 6
-            |   +-> count = count
-            |       +-> active = active
-            +-> NUMBER = 5
+        +-> eventually = eventually
+            +-> Interval
+            |   +-> TIMEUNIT = h
+            |   |   +-> NUMBER = 0
+            |   +-> TIMEUNIT = h
+            |       +-> NUMBER = 6
+            +-> < = <
+                +-> count = count
+                |   +-> active = active
+                +-> NUMBER = 5
 "#;
 
 pub const PROPERTY6: &str =
