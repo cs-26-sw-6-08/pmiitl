@@ -11,7 +11,7 @@ pub mod member_types;
 #[cfg(test)]
 mod program_test;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct Program {
     pub expressions: Vec<SpannedExpr>
 }

@@ -68,13 +68,11 @@ impl Expr {
             } => match aggregate_type {
                 FunctionType::Count => {
                     expr.equiv_convert()?;
-
                     *aggregate_type = FunctionType::Sum;
                     Ok(())
                 }
                 FunctionType::Counttime => {
                     expr.equiv_convert()?;
-
                     *aggregate_type = FunctionType::Sumtime;
                     Ok(())
                     

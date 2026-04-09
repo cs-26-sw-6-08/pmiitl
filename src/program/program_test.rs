@@ -5,7 +5,7 @@ use crate::{program::{
     member_types::MemberType,
     operations::{BinaryOperators, UnaryOperators},
     units::Unit,
-}, utils::test_helper_func::{ always_expr, binary_expr, custom_number_expr, custom_unit_expr, eventually_expr, eventually_interval_expr, always_interval_expr, function_expr, interval_expr, member_expr, number_expr, unary_expr, unit_expr}
+}, utils::test_helper_func::{ always_expr, binary_expr, custom_number_expr, string_expr, custom_unit_expr, eventually_expr, eventually_interval_expr, always_interval_expr, function_expr, interval_expr, member_expr, number_expr, unary_expr, unit_expr}
 };
 
 #[test]
@@ -13,7 +13,7 @@ fn eventually() {
     let program = Program::new("eventually true;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        eventually_expr(custom_number_expr(1000))
+        eventually_expr(custom_number_expr(1_000))
     );
 }
 
@@ -31,7 +31,7 @@ fn eventually_interval() {
     let program = Program::new("eventually[1s,3h] false;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        eventually_interval_expr(interval_expr(custom_unit_expr(1000, Unit::Seconds), custom_unit_expr(3000, Unit::Hours)), custom_number_expr(0))
+        eventually_interval_expr(interval_expr(custom_unit_expr(1_000, Unit::Seconds), custom_unit_expr(3_000, Unit::Hours)), custom_number_expr(0))
     );
 }
 
@@ -40,7 +40,7 @@ fn always_interval() {
     let program = Program::new("always[1s,3h] false;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        always_interval_expr(interval_expr(custom_unit_expr(1000, Unit::Seconds), custom_unit_expr(3000, Unit::Hours)), custom_number_expr(0))
+        always_interval_expr(interval_expr(custom_unit_expr(1_000, Unit::Seconds), custom_unit_expr(3_000, Unit::Hours)), custom_number_expr(0))
     );
 }
 
@@ -67,7 +67,7 @@ fn greater() {
     let program = Program::new("always 1 > 5;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        always_expr(binary_expr(custom_number_expr(1000), number_expr(), BinaryOperators::Greater))
+        always_expr(binary_expr(custom_number_expr(1_000), number_expr(), BinaryOperators::Greater))
     );
 }
 
@@ -76,7 +76,7 @@ fn less() {
     let program = Program::new("always 1 < 5;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        always_expr(binary_expr(custom_number_expr(1000), number_expr(), BinaryOperators::Less))
+        always_expr(binary_expr(custom_number_expr(1_000), number_expr(), BinaryOperators::Less))
     );
 }
 
@@ -85,7 +85,7 @@ fn greater_equal() {
     let program = Program::new("always 1 >= 5;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        always_expr(binary_expr(custom_number_expr(1000), number_expr(), BinaryOperators::GreaterEqual))
+        always_expr(binary_expr(custom_number_expr(1_000), number_expr(), BinaryOperators::GreaterEqual))
     );
 }
 
@@ -94,7 +94,7 @@ fn less_equal() {
     let program = Program::new("always 1 <= 5;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        always_expr(binary_expr(custom_number_expr(1000), number_expr(), BinaryOperators::LessEqual))
+        always_expr(binary_expr(custom_number_expr(1_000), number_expr(), BinaryOperators::LessEqual))
     );
 }
 
@@ -103,7 +103,7 @@ fn equal() {
     let program = Program::new("always 1 = 5;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        always_expr(binary_expr(custom_number_expr(1000), number_expr(), BinaryOperators::Equal))
+        always_expr(binary_expr(custom_number_expr(1_000), number_expr(), BinaryOperators::Equal))
     );
 }
 
@@ -112,7 +112,7 @@ fn not_equal() {
     let program = Program::new("always 1 != 5;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        always_expr(binary_expr(custom_number_expr(1000), number_expr(), BinaryOperators::NotEqual))
+        always_expr(binary_expr(custom_number_expr(1_000), number_expr(), BinaryOperators::NotEqual))
     );
 }
 
@@ -121,7 +121,7 @@ fn or() {
     let program = Program::new("always 1 | 5;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        always_expr(binary_expr(custom_number_expr(1000), number_expr(), BinaryOperators::Or))
+        always_expr(binary_expr(custom_number_expr(1_000), number_expr(), BinaryOperators::Or))
     );
 }
 
@@ -130,7 +130,7 @@ fn implies() {
     let program = Program::new("always 1 -> 5;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        always_expr(binary_expr(custom_number_expr(1000), number_expr(), BinaryOperators::Implies))
+        always_expr(binary_expr(custom_number_expr(1_000), number_expr(), BinaryOperators::Implies))
     );
 }
 
@@ -139,7 +139,7 @@ fn and() {
     let program = Program::new("always 1 & 5;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        always_expr(binary_expr(custom_number_expr(1000), number_expr(), BinaryOperators::And))
+        always_expr(binary_expr(custom_number_expr(1_000), number_expr(), BinaryOperators::And))
     );
 }
 
@@ -148,7 +148,7 @@ fn add() {
     let program = Program::new("always (1 + 5) > 5;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        always_expr(binary_expr(binary_expr(custom_number_expr(1000), number_expr(), BinaryOperators::Plus), number_expr(), BinaryOperators::Greater))
+        always_expr(binary_expr(binary_expr(custom_number_expr(1_000), number_expr(), BinaryOperators::Plus), number_expr(), BinaryOperators::Greater))
     );
 }
 
@@ -157,7 +157,7 @@ fn minus() {
     let program = Program::new("always (1 - 5) > 5;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        always_expr(binary_expr(binary_expr(custom_number_expr(1000), number_expr(), BinaryOperators::Minus), number_expr(), BinaryOperators::Greater))
+        always_expr(binary_expr(binary_expr(custom_number_expr(1_000), number_expr(), BinaryOperators::Minus), number_expr(), BinaryOperators::Greater))
     );
 }
 
@@ -166,7 +166,7 @@ fn times() {
     let program = Program::new("always (1 * 5) > 5;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        always_expr(binary_expr(binary_expr(custom_number_expr(1000), number_expr(), BinaryOperators::Times), number_expr(), BinaryOperators::Greater))
+        always_expr(binary_expr(binary_expr(custom_number_expr(1_000), number_expr(), BinaryOperators::Times), number_expr(), BinaryOperators::Greater))
     );
 }
 
@@ -175,7 +175,7 @@ fn devide() {
     let program = Program::new("always (1 / 5) > 5;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        always_expr(binary_expr(binary_expr(custom_number_expr(1000), number_expr(), BinaryOperators::Divide), number_expr(), BinaryOperators::Greater))
+        always_expr(binary_expr(binary_expr(custom_number_expr(1_000), number_expr(), BinaryOperators::Divide), number_expr(), BinaryOperators::Greater))
     );
 }
 
@@ -184,7 +184,7 @@ fn modulo() {
     let program = Program::new("always (1 % 5) > 5;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        always_expr(binary_expr(binary_expr(custom_number_expr(1000), number_expr(), BinaryOperators::Mod), number_expr(), BinaryOperators::Greater))
+        always_expr(binary_expr(binary_expr(custom_number_expr(1_000), number_expr(), BinaryOperators::Mod), number_expr(), BinaryOperators::Greater))
     );
 }
 
@@ -193,7 +193,7 @@ fn not() {
     let program = Program::new("always !true;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        always_expr(unary_expr(custom_number_expr(1000), UnaryOperators::Not))
+        always_expr(unary_expr(custom_number_expr(1_000), UnaryOperators::Not))
     );
 }
 
@@ -211,7 +211,7 @@ fn sum() {
     let program = Program::new("always sum(5) > 1;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        always_expr(binary_expr(function_expr(FunctionType::Sum, number_expr()), custom_number_expr(1000), BinaryOperators::Greater))
+        always_expr(binary_expr(function_expr(FunctionType::Sum, number_expr()), custom_number_expr(1_000), BinaryOperators::Greater))
     );
 }
 
@@ -220,7 +220,7 @@ fn avg() {
     let program = Program::new("always avg(5) > 1;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        always_expr(binary_expr(function_expr(FunctionType::Avg, number_expr()), custom_number_expr(1000), BinaryOperators::Greater))
+        always_expr(binary_expr(function_expr(FunctionType::Avg, number_expr()), custom_number_expr(1_000), BinaryOperators::Greater))
     );
 }
 
@@ -229,7 +229,7 @@ fn count() {
     let program = Program::new("always count(5) > 1;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        always_expr(binary_expr(function_expr(FunctionType::Count, number_expr()), custom_number_expr(1000), BinaryOperators::Greater))
+        always_expr(binary_expr(function_expr(FunctionType::Count, number_expr()), custom_number_expr(1_000), BinaryOperators::Greater))
     );
 }
 
@@ -238,7 +238,7 @@ fn sumtime() {
     let program = Program::new("always sumtime(5) > 1;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        always_expr(binary_expr(function_expr(FunctionType::Sumtime, number_expr()), custom_number_expr(1000), BinaryOperators::Greater))
+        always_expr(binary_expr(function_expr(FunctionType::Sumtime, number_expr()), custom_number_expr(1_000), BinaryOperators::Greater))
     );
 }
 
@@ -247,7 +247,7 @@ fn avgtime() {
     let program = Program::new("always avgtime(5) > 1;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        always_expr(binary_expr(function_expr(FunctionType::Avgtime, number_expr()), custom_number_expr(1000), BinaryOperators::Greater)));
+        always_expr(binary_expr(function_expr(FunctionType::Avgtime, number_expr()), custom_number_expr(1_000), BinaryOperators::Greater)));
 }
 
 #[test]
@@ -255,7 +255,7 @@ fn counttime() {
     let program = Program::new("always counttime(5) > 1;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        always_expr(binary_expr(function_expr(FunctionType::Counttime, number_expr()), custom_number_expr(1000), BinaryOperators::Greater)));
+        always_expr(binary_expr(function_expr(FunctionType::Counttime, number_expr()), custom_number_expr(1_000), BinaryOperators::Greater)));
 }
 
 #[test]
@@ -272,15 +272,15 @@ fn bool() {
     let program = Program::new("always true;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        always_expr(custom_number_expr(1000))
+        always_expr(custom_number_expr(1_000))
     );
 }
 
 #[test]
 fn string() {
-    let program = Program::new("always count(name=fridge);").unwrap();
+    let program = Program::new("always count(name=christian);").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr, 
-        always_expr(function_expr(FunctionType::Count, binary_expr(member_expr(MemberType::Name), Expr::String("fridge".into()), BinaryOperators::Equal)))
+        always_expr(function_expr(FunctionType::Count, binary_expr(member_expr(MemberType::Name), string_expr(), BinaryOperators::Equal)))
     );
 }

@@ -77,3 +77,4 @@ pub fn eventually_negated_expr(expr: Expr) -> Expr {
 pub fn eventually_interval_expr(interval: Expr, expr: Expr) -> Expr {
     Expr::Eventually { interval: Some(interval.into()), not: false, expr: expr.into() }
 }
+

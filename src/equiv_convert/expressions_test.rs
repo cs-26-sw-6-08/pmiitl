@@ -21,14 +21,14 @@ fn counttime(){
 fn always(){
     let mut expr = always_expr(binary_expr(number_expr(), number_expr(), BinaryOperators::Plus));
     assert!(expr.equiv_convert().is_ok());
-    assert_eq!(expr, always_expr(custom_number_expr(10000)));
+    assert_eq!(expr, always_expr(custom_number_expr(10_000)));
 }
 
 #[test]
 fn always_interval(){
     let mut expr = always_interval_expr(interval_expr(unit_expr(Unit::Seconds), unit_expr(Unit::Seconds)), binary_expr(number_expr(), number_expr(), BinaryOperators::Plus));
     assert!(expr.equiv_convert().is_ok());
-    assert_eq!(expr, always_interval_expr(interval_expr(number_expr(), number_expr()), custom_number_expr(10000)));
+    assert_eq!(expr, always_interval_expr(interval_expr(number_expr(), number_expr()), custom_number_expr(10_000)));
 }
 
 #[test]
@@ -42,7 +42,7 @@ fn always_negated(){
 fn eventually(){
     let mut expr = eventually_expr(binary_expr(number_expr(), number_expr(), BinaryOperators::Plus));
     assert!(expr.equiv_convert().is_ok());
-    assert_eq!(expr, eventually_expr(custom_number_expr(10000)));
+    assert_eq!(expr, eventually_expr(custom_number_expr(10_000)));
 }
 
 #[test]
@@ -54,21 +54,21 @@ fn eventually_negated(){
 
 #[test]
 fn interval(){
-    let mut expr = interval_expr(custom_unit_expr(5000, Unit::Seconds), custom_unit_expr(10000, Unit::Seconds));
+    let mut expr = interval_expr(custom_unit_expr(5_000, Unit::Seconds), custom_unit_expr(10_000, Unit::Seconds));
     assert!(expr.equiv_convert().is_ok());
-    assert_eq!(expr, interval_expr(number_expr(), custom_number_expr(10000)));
+    assert_eq!(expr, interval_expr(number_expr(), custom_number_expr(10_000)));
 }
 
 #[test]
 fn interval_below_zero(){
-    let mut expr = interval_expr(binary_expr(custom_number_expr(5000), custom_number_expr(10000), BinaryOperators::Minus), number_expr());
+    let mut expr = interval_expr(binary_expr(custom_number_expr(5_000), custom_number_expr(10_000), BinaryOperators::Minus), number_expr());
     assert!(expr.equiv_convert().is_err());
     
 }
 
 #[test]
 fn interval_start_greater_than_end(){
-    let mut expr = interval_expr(custom_number_expr(10000), number_expr());
+    let mut expr = interval_expr(custom_number_expr(10_000), number_expr());
     assert!(expr.equiv_convert().is_err());
     
 }

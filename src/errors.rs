@@ -9,8 +9,6 @@ pub enum Error {
     ASTNodeValueInvalid(String),
     #[error("program parse error line {1} column {2}: {0}")]
     ProgramParse(String, usize, usize),
-    #[error("could not convert operation {0} lhs: {1} rhs: {2}")]
-    ConversionBinaryOperation(BinaryOperators, Expr, Expr),
     #[error("typechecking failed at expr: {0}, got type: {1}")]
     IncorrectType(Expr, Type),
     #[error("typechecking failed at expr: {0}, got types: {1} and {2}")]
@@ -32,7 +30,6 @@ impl PartialEq for Error {
         match (self, other) {
             (Self::ASTNodeValueInvalid(l0), Self::ASTNodeValueInvalid(r0)) => l0 == r0,
             (Self::ProgramParse(l0, l1, l2), Self::ProgramParse(r0, r1, r2)) => l0 == r0 && l1 == r1 && l2 == r2,
-            (Self::ConversionBinaryOperation(l0, l1, l2), Self::ConversionBinaryOperation(r0, r1, r2)) => l0 == r0 && l1 == r1 && l2 == r2,
             _ => core::mem::discriminant(self) == core::mem::discriminant(other),
         }
     }
