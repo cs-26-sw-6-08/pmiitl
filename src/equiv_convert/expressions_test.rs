@@ -49,7 +49,7 @@ fn eventually(){
 fn eventually_negated(){
     let mut expr = eventually_negated_expr(unary_expr(number_expr(), UnaryOperators::Not));
     assert!(expr.equiv_convert().is_ok());
-    assert_eq!(expr, always_expr(number_expr()));
+    assert_eq!(expr, always_expr(custom_number_expr(1000)));
 }
 
 #[test]
@@ -82,7 +82,7 @@ fn unit(){
 
 #[test]
 fn unary() {
-    let mut expr = unary_expr(unit_expr(Unit::Seconds), UnaryOperators::Negative );
+    let mut expr = unary_expr(number_expr(), UnaryOperators::Negative );
     assert!(expr.equiv_convert().is_ok());
-    assert_eq!(expr, unary_expr(number_expr(), UnaryOperators::Negative));
+    assert_eq!(expr, custom_number_expr(-5000));
 }

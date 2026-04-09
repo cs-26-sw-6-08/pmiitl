@@ -246,7 +246,7 @@ fn test7() {
                 line: 2,
                 expr: eventually_interval_expr(
                     interval_expr(custom_number_expr(0), number_expr()),
-                    unary_expr(custom_number_expr(2000), UnaryOperators::Not),
+                    custom_number_expr(0),
                 ),
             },
             SpannedExpr {
@@ -258,7 +258,7 @@ fn test7() {
             },
             SpannedExpr {
                 line: 4,
-                expr: always_expr(unary_expr(custom_number_expr(4_000), UnaryOperators::Not)),
+                expr: always_expr(custom_number_expr(0)),
             },
         ],
     };

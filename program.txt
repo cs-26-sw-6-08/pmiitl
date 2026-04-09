@@ -1,1 +1,1 @@
-always (t % 24h = 0s) -> always[0h,24h] sumtime(active * power) < 10 kWh;
+always !-5000;
