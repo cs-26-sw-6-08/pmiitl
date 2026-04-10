@@ -8,7 +8,7 @@ impl Expr {
     &self,
     mut streams: Vec<DerivedStream>, 
     key: usize,
-    devices: &HashMap<i128, &Vec<&Device>>, 
+    devices: &HashMap<i128, Vec<Device>>, 
     time_stream: &i128
 ) -> (Vec<DerivedStream>, usize) {   
         match self {
@@ -16,7 +16,7 @@ impl Expr {
                 let value = *c;
                 streams.push(
                     DerivedStream::from_fn(
-                        Box::new(move |_, _, _| DerivedOutput::Number(value))
+                        Box::new(move |_, ds, _, _| DerivedOutput::Number(value))
                     )
                 );
                 (streams, key + 1)
@@ -34,7 +34,7 @@ impl Expr {
             Expr::CurrentTime => {
                 streams.push(
                     DerivedStream::from_fn(
-                        Box::new(move |_, _, current_time| DerivedOutput::Number(current_time))
+                        Box::new(move |_, ds, _, current_time| DerivedOutput::Number(current_time))
                     )
                 );
                 (streams, key + 1)
@@ -51,17 +51,17 @@ impl Expr {
                     let (mut streams, key_new) = expr.eval_expression(streams, key, devices, time_stream);
                     streams.reserve(1);
 
-                    let f_ptr: *const DerivedStream = &streams[key_new - 1] as *const DerivedStream;
-                    let device_ptr: *const HashMap<i128, &Vec<&Device>> = devices;
+                    let f_ptr  = &streams[key_new - 1] as *const DerivedStream;
+                    let device_ptr = devices as *const HashMap<i128, Vec<Device>>;
 
                     streams.push(
                         DerivedStream::from_fn(
-                            Box::new(move |t_prime, _, t| {
-                                let f = unsafe { &*f_ptr };
-                                let devices_to_time = unsafe { &*device_ptr }.get(&t).unwrap();
+                            Box::new(move |t_prime, ds, _, t| {
+                                let devices_map = unsafe { &*device_ptr }; //Unsafe ok in this case :)
+                                let unsafe_f = unsafe { &*f_ptr }; //Unsafe ok in this case :)
 
-                                DerivedOutput::Number(devices_to_time.iter().fold(0, |acc, device| {
-                                    match (f.0)(t_prime, Some(*device), t) {
+                                DerivedOutput::Number(devices_map.get(&t).unwrap().iter().fold(0, |acc, device| {
+                                    match (unsafe_f.0)(t_prime, ds, Some(device), t) {
                                         DerivedOutput::Number(n) => n + acc,
                                         _ => unreachable!()
                                     }

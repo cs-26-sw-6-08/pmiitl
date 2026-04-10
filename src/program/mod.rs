@@ -15,6 +15,7 @@ mod program_test;
 pub struct Program {
     pub expressions: Vec<SpannedExpr>,
     pub environment: Option<Streams>,
+    
 }
 
 impl Program {

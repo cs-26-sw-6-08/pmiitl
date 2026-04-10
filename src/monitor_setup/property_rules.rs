@@ -12,7 +12,8 @@ pub fn eval_properties(exprs: &Vec<SpannedExpr>) -> Result<Streams, Box<dyn Erro
         let expr = &expr.expr;
         match expr {
             Expr::Always { interval, expr, ..} => {
-                expr.eva
+                let _ = expr.eval_expression(Vec::new(), 0, &env.devices, &env.time_stream);
+                todo!()
             },
             Expr::Eventually { interval, expr, ..} => {
                 let Some(interval) = interval else { unreachable!() /*todo: overvej custom error*/ };

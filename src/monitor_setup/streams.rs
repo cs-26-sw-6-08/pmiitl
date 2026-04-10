@@ -3,12 +3,22 @@ use std::{collections::HashMap, error::Error};
 use crate::monitor_setup::types::{DerivedOutput, Device, Verdict};
 
 #[derive(Debug, PartialEq)]
-pub struct Streams(Vec<OutputStream>);
+pub struct Streams {
+    pub output_streams: Vec<OutputStream>,
+    pub devices: HashMap<i128, Vec<Device>>,
+    pub time_stream: i128
+}
 
 impl Streams {
     pub fn new() -> Result<Self, Box<dyn Error>> {
-        Ok(Streams(Vec::new()))
+        Ok(Streams {
+            output_streams: Vec::new(),
+            devices: HashMap::new(),
+            time_stream: 0
+        })
     }
+
+
 }
 
 #[derive(Debug, PartialEq)]
@@ -62,12 +72,12 @@ impl OutputStream {
     }
 }
 
-pub struct<'a> DerivedStream<'a>(
-    pub Box<dyn Fn(i128, &HashMap<i128, &Vec<&Device>>, Option<&Device>, i128) -> DerivedOutput + 'a>
+pub struct DerivedStream(
+    pub Box<dyn for<'a> Fn(i128, &'a HashMap<i128, &'a Vec<Device>>, Option<&'a Device>, i128) -> DerivedOutput<'a>>
 );
 
 impl DerivedStream {
-    pub fn from_fn(value: Box<dyn Fn(i128, &HashMap<i128, &Vec<Device>>, Option<&Device>, i128) -> DerivedOutput + 'static>) -> Self {
+    pub fn from_fn(value: Box<dyn for<'a> Fn(i128, &'a HashMap<i128, &'a Vec<Device>>, Option<&'a Device>, i128) -> DerivedOutput<'a>>) -> Self {
         Self (value)
     }        
 }
