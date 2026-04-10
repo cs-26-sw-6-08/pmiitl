@@ -2,7 +2,7 @@ use std::error::Error;
 
 use hime_redist::{ast::AstNode, errors::ParseErrorDataTrait};
 
-use crate::{errors, grammar::cfg, program::expressions::SpannedExpr};
+use crate::{errors, grammar::cfg, program::expressions::SpannedExpr, monitor_setup::streams::Streams};
 pub mod expressions;
 pub mod units;
 pub mod operations;
@@ -11,9 +11,10 @@ pub mod member_types;
 #[cfg(test)]
 mod program_test;
 
-#[derive(Debug, PartialEq)]
+#[derive(PartialEq)]
 pub struct Program {
-    pub expressions: Vec<SpannedExpr>
+    pub expressions: Vec<SpannedExpr>,
+    pub environment: Option<Streams>,
 }
 
 impl Program {
@@ -38,10 +39,9 @@ impl Program {
 
         }
 
-        let program = Program { expressions: exprs};
+        let program = Program { expressions: exprs, environment: None };
         Ok(program)
     }
-
 }
 
 fn print<'a>(node: AstNode<'_,'_,'a>, crossings: Vec<bool>) {

@@ -5,6 +5,7 @@ pub mod equiv_convert;
 pub mod unit_convert;
 pub mod monitorability;
 pub mod utils;
+pub mod monitor_setup;
 mod errors;
 
 extern crate hime_redist;
@@ -39,6 +40,6 @@ fn main() {
         return println!("Error: {}", err);
     }
 
-    println!("{:?}", program);  
+    println!("{:?}", &program.expressions);  
 
 }
