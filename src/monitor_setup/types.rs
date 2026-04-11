@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 
 #[derive(Debug, PartialEq)]
 pub enum Verdict {
@@ -17,9 +19,9 @@ pub struct Device {
 
 
 #[derive(Debug, PartialEq)]
-pub enum DerivedOutput<'a> {
+pub enum DerivedOutput {
     Verdict(Verdict),
     Number(i128),
-    String(&'a String)
+    String(Rc<str>)
 }
 

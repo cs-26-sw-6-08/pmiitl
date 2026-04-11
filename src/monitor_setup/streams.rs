@@ -1,20 +1,20 @@
-use std::{collections::HashMap, error::Error, rc::Rc, sync::Arc};
+use std::{collections::HashMap, error::Error, rc::Rc};
 
 use crate::monitor_setup::types::{DerivedOutput, Device, Verdict};
 
 #[derive(Debug, PartialEq)]
 pub struct Streams {
     pub output_streams: Vec<OutputStream>,
-    pub devices: Arc<HashMap<i128, Vec<Device>>>,
-    pub time_stream: Arc<i128>
+    pub devices: Rc<HashMap<i128, Vec<Device>>>,
+    pub time_stream: Rc<i128>
 }
 
 impl Streams {
     pub fn new() -> Result<Self, Box<dyn Error>> {
         Ok(Streams {
             output_streams: Vec::new(),
-            devices: Arc::new(HashMap::new()),
-            time_stream: Arc::new(0)
+            devices: Rc::new(HashMap::new()),
+            time_stream: Rc::new(0)
         })
     }
 
@@ -72,7 +72,7 @@ impl OutputStream {
     }
 }
 
-type StreamDerivedSig =  Box<dyn for<'a> Fn(i128, Option<&'a Device>, i128) -> DerivedOutput<'a>>;
+type StreamDerivedSig =  Box<dyn Fn(i128, Option<&Device>, i128) -> DerivedOutput>;
 pub struct DerivedStream(
     pub Rc<StreamDerivedSig>
 );
@@ -82,17 +82,17 @@ impl DerivedStream {
         Self (Rc::new(value))
     }        
 
-    pub fn clone_arc(&self) -> Rc<StreamDerivedSig> {
+    pub fn clone_rc(&self) -> Rc<StreamDerivedSig> {
         self.0.clone()
     }
 }
 
-/* 
-impl From<Box<dyn Fn(i128, Option<Device>, i128) -> DerivedOutput + 'static>> for DerivedStream {    
-    fn from(value: Box<dyn Fn(i128, Option<Device>, i128) -> DerivedOutput + 'static>) -> Self {
-        Self (value)
+
+impl From<StreamDerivedSig> for DerivedStream {    
+    fn from(value: StreamDerivedSig) -> Self {
+        Self (Rc::new(value))
     }        
-}*/
+}
 
 impl std::fmt::Debug for DerivedStream {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {

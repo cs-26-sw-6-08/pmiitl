@@ -57,6 +57,7 @@ fn test1() {
                 BinaryOperators::Or,
             )),
         }],
+        environment: None
     };
 
     assert_eq!(program, expected_program);
@@ -83,6 +84,7 @@ fn test2() {
                 UnaryOperators::Not,
             )),
         }],
+        environment: None,
     };
 
     assert_eq!(program, expected_program);
@@ -112,6 +114,7 @@ fn test3() {
                 ),
             )),
         }],
+        environment: None,
     };
 
     assert_eq!(program, expected_program);
@@ -148,6 +151,7 @@ fn test4() {
                 ),
             )),
         }],
+        environment: None,
     };
 
     assert_eq!(program, expected_program);
@@ -186,6 +190,7 @@ fn test5() {
                 BinaryOperators::Or,
             )),
         }],
+        environment: None,
     };
 
     assert_eq!(program, expected_program);
@@ -216,6 +221,7 @@ fn test6() {
                 BinaryOperators::LessEqual,
             )),
         }],
+        environment: None,
     };
 
     assert_eq!(program, expected_program);
@@ -261,6 +267,7 @@ fn test7() {
                 expr: always_expr(custom_number_expr(0)),
             },
         ],
+        environment: None,
     };
 
     assert_eq!(program, expected_program);

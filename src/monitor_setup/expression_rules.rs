@@ -5,31 +5,32 @@ use crate::{monitor_setup::{streams::DerivedStream, types::{DerivedOutput, Devic
 
 impl Expr {
     pub fn eval_expression(
-    &self,
-    mut streams: Vec<DerivedStream>, 
-    key: usize,
-    devices: &Rc<HashMap<i128, Vec<Device>>>, 
-    time_stream: &Rc<i128>
-) -> (Vec<DerivedStream>, usize) {   
+        &self,
+        mut streams: Vec<DerivedStream>, 
+        key: usize,
+        devices: &Rc<HashMap<i128, Vec<Device>>>, 
+        time_stream: &Rc<i128>
+    ) -> (Vec<DerivedStream>, usize) {   
         match self {
             Expr::Number(c) => {
-                let value = *c;
+                let c = *c;
                 streams.push(
                     DerivedStream::from_fn(
-                        Box::new(move |_, _, _| DerivedOutput::Number(value))
+                        Box::new(move |_, _, _| DerivedOutput::Number(c))
                     )
                 );
                 (streams, key + 1)
             },
             Expr::String(str) => {
-                todo!();
-                // let value = str.clone();
-                // streams.push(
-                //     DerivedStream::from_fn(
-                //         Box::new(move |_, _, _| DerivedOutput::String(value))
-                //     )
-                // );
-                // (streams, key + 1)
+                let value: Rc<str> = str.clone().into();
+                streams.push(
+                    DerivedStream::from_fn(
+                        Box::new(
+                            move |_, _, _| DerivedOutput::String(Rc::clone(&value))
+                        )
+                    )
+                );
+                (streams, key + 1)
             },
             Expr::CurrentTime => {
                 streams.push(
@@ -50,20 +51,25 @@ impl Expr {
                 FunctionType::Sum => {
                     let (mut streams, key_new) = expr.eval_expression(streams, key, devices, time_stream);
 
-                    let f1  = streams[key_new - 1].clone_arc();
+                    let f1  = streams[key_new - 1].clone_rc();
                     let devices = Rc::clone(devices);
 
                     streams.push(
                         DerivedStream::from_fn(
-                            Box::new(move |t_prime, _, t| { //todo: fjern unwrap
-                                DerivedOutput::Number(devices.get(&t).ok_or_else(&Vec::new()).iter().fold(0, |acc, device| {
-                                    match (f1)(t_prime, Some(device), t) {
-                                        DerivedOutput::Number(n) => n + acc,
-                                        _ => unreachable!()
-                                    }
-                                }))
-                            })
+                            Box::new(move |t_prime, _, t| 
+                                DerivedOutput::Number(
+                                    devices.get(&t).map(|devices| 
+                                        devices
+                                            .iter()
+                                            .fold(0i128, |acc, device|
+                                                if let DerivedOutput::Number(n) = f1(t_prime, Some(device), t) { n + acc } 
+                                                else { panic!() }
+                                            )
+                                    ).unwrap_or_default()
+                                )
+                            )
                         )
+    
                     );
                     (streams, key_new + 1)
 

@@ -11,7 +11,7 @@ pub mod member_types;
 #[cfg(test)]
 mod program_test;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Debug)]
 pub struct Program {
     pub expressions: Vec<SpannedExpr>,
     pub environment: Option<Streams>,
@@ -45,7 +45,7 @@ impl Program {
     }
 }
 
-fn print<'a>(node: AstNode<'_,'_,'a>, crossings: Vec<bool>) {
+fn print(node: AstNode<'_,'_,'_>, crossings: Vec<bool>) {
     let mut i = 0;
     if !crossings.is_empty() {
         while i < crossings.len() - 1 {
