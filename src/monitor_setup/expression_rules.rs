@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, rc::Rc};
 
 use crate::{monitor_setup::{streams::DerivedStream, types::{DerivedOutput, Device}}, program::{expressions::Expr,function_types::FunctionType}};
 
@@ -8,15 +8,15 @@ impl Expr {
     &self,
     mut streams: Vec<DerivedStream>, 
     key: usize,
-    devices: &HashMap<i128, Vec<Device>>, 
-    time_stream: &i128
+    devices: &Rc<HashMap<i128, Vec<Device>>>, 
+    time_stream: &Rc<i128>
 ) -> (Vec<DerivedStream>, usize) {   
         match self {
             Expr::Number(c) => {
                 let value = *c;
                 streams.push(
                     DerivedStream::from_fn(
-                        Box::new(move |_, ds, _, _| DerivedOutput::Number(value))
+                        Box::new(move |_, _, _| DerivedOutput::Number(value))
                     )
                 );
                 (streams, key + 1)
@@ -34,7 +34,7 @@ impl Expr {
             Expr::CurrentTime => {
                 streams.push(
                     DerivedStream::from_fn(
-                        Box::new(move |_, ds, _, current_time| DerivedOutput::Number(current_time))
+                        Box::new(move |_, _, current_time| DerivedOutput::Number(current_time))
                     )
                 );
                 (streams, key + 1)
@@ -49,19 +49,15 @@ impl Expr {
             Expr::Function { aggregate_type, expr } => match aggregate_type {
                 FunctionType::Sum => {
                     let (mut streams, key_new) = expr.eval_expression(streams, key, devices, time_stream);
-                    streams.reserve(1);
 
-                    let f_ptr  = &streams[key_new - 1] as *const DerivedStream;
-                    let device_ptr = devices as *const HashMap<i128, Vec<Device>>;
+                    let f1  = streams[key_new - 1].clone_arc();
+                    let devices = Rc::clone(devices);
 
                     streams.push(
                         DerivedStream::from_fn(
-                            Box::new(move |t_prime, ds, _, t| {
-                                let devices_map = unsafe { &*device_ptr }; //Unsafe ok in this case :)
-                                let unsafe_f = unsafe { &*f_ptr }; //Unsafe ok in this case :)
-
-                                DerivedOutput::Number(devices_map.get(&t).unwrap().iter().fold(0, |acc, device| {
-                                    match (unsafe_f.0)(t_prime, ds, Some(device), t) {
+                            Box::new(move |t_prime, _, t| { //todo: fjern unwrap
+                                DerivedOutput::Number(devices.get(&t).ok_or_else(&Vec::new()).iter().fold(0, |acc, device| {
+                                    match (f1)(t_prime, Some(device), t) {
                                         DerivedOutput::Number(n) => n + acc,
                                         _ => unreachable!()
                                     }
