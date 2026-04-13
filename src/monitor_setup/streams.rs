@@ -1,6 +1,6 @@
 use std::{collections::HashMap, error::Error, rc::Rc};
 
-use crate::monitor_setup::types::{DerivedOutput, Device, Verdict};
+use crate::monitor_setup::types::{DerivedOutput, Device, Operation, Verdict};
 
 #[derive(Debug, PartialEq)]
 pub struct Streams {
@@ -22,10 +22,28 @@ impl Streams {
 }
 
 #[derive(Debug, PartialEq)]
+pub enum LTL {
+    Always, 
+    Eventually
+}
+
+#[derive(Debug, PartialEq)]
 pub struct OutputStream {
+    ltl: LTL,
     bound: Option<(i128, i128)>,
     time_verdicts: HashMap<i128, Verdict>,
-    derived_streams: Vec<DerivedStream>,
+    operations: Vec<Operation>,
+}
+
+impl From<(LTL, Vec<Operation>, Option<(i128, i128)>)> for OutputStream {
+    fn from(value: (LTL, Vec<Operation>, Option<(i128, i128)>)) -> Self {
+        Self {
+            bound: value.2,
+            ltl: value.0,
+            operations: value.1,
+            time_verdicts: HashMap::new()
+        }
+    }
 }
 
 impl OutputStream {
