@@ -3,7 +3,7 @@ use std::error::Error;
 use crate::{
     errors,
     monitor_setup::types::Operation, 
-    program::{expressions::Expr,function_types::FunctionType}
+    program::{expressions::Expr,function_types::FunctionType}, utils::vec_helper_funcs::ExtVec
 };
 
 
@@ -20,9 +20,7 @@ impl Expr {
         key: usize,
     ) -> Result<(Vec<Operation>, usize), Box<dyn Error>> {   
         match self {
-            Expr::Number(c) => {
-                todo!()
-            },
+            Expr::Number(c) => Ok((streams.with(Operation::Number(*c)), key)),
             Expr::String(str) => {
                 todo!()
             },
