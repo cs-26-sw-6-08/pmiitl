@@ -1,18 +1,22 @@
-use std::{collections::HashMap, rc::Rc};
+use std::{collections::HashMap, error::Error, rc::Rc};
 
-use crate::{monitor_setup::types::{DerivedOutput, Device, Operation}, program::{expressions::Expr,function_types::FunctionType}};
+use crate::{
+    errors,
+    monitor_setup::types::{DerivedOutput, Device, Operation}, program::{expressions::Expr,function_types::FunctionType}};
 
 
 impl Expr {
-    pub fn compile_expression(&self) -> Vec<Operation> {
-        self.compile_expression_helper(Vec::new(), 0).0
+    pub fn compile_expression(&self) -> Result<Vec<Operation>, Box<dyn Error>> {
+        self
+        .compile_expression_helper(Vec::new(), 0)
+        .map(|res| res.0)
     }
 
     fn compile_expression_helper(
         &self,
         mut streams: Vec<Operation>, 
         key: usize,
-    ) -> (Vec<Operation>, usize) {   
+    ) -> Result<(Vec<Operation>, usize), Box<dyn Error>> {   
         match self {
             Expr::Number(c) => {
                 todo!()
@@ -23,7 +27,7 @@ impl Expr {
             Expr::CurrentTime => {
                 todo!()
             },
-            Expr::Unit { number, unit } => unreachable!(),
+            Expr::Unit { number, unit } => Err(errors::Error::InvalidCompileExpr.into()),
             Expr::Interval { start, end } => todo!(),
             Expr::Always { interval, not, expr } => todo!(),
             Expr::Eventually { interval, not, expr } => todo!(),
@@ -38,7 +42,7 @@ impl Expr {
                 FunctionType::Sumtime => todo!(),
                 FunctionType::Avgtime => todo!(),
                 FunctionType::Foreach => todo!(),
-                FunctionType::Count|FunctionType::Counttime => unreachable!(),
+                FunctionType::Count|FunctionType::Counttime => Err(errors::Error::InvalidCompileExpr.into()),
             },
         }
     }

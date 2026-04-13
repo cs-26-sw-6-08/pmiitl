@@ -2,13 +2,13 @@ mod rules;
 pub mod streams;
 mod types;
 
-use crate::{monitor_setup::streams::{LTL}, program::expressions::{Expr}};
+use crate::{errors, monitor_setup::streams::{LTL, OutputStream}, program::expressions::Expr};
 
 use std::{error::Error};
 use crate::{program::Program};
 
 impl Program {
-    fn compile_properties(&mut self) -> Result<(), Box<dyn Error>> {
+    pub fn compile_properties(&mut self) -> Result<(), Box<dyn Error>> {
         self.environment = Some(
             self.expressions
             .iter()
@@ -16,30 +16,23 @@ impl Program {
             .map(|expr|
                 match expr {
                     Expr::Always { interval, expr, ..} => {                        
-                        (
+                        Ok((
                             LTL::Always, 
-                            expr.compile_expression(), 
-                            interval.as_ref().and_then(get_bound)
-                        ).into()
+                            expr.compile_expression()?, 
+                            interval.as_ref().map(|i| i.get_bound()).transpose()?
+                        ).into())
                     },
                     Expr::Eventually { interval, expr, ..} => {
-                        (
+                        Ok((
                             LTL::Eventually, 
-                            expr.compile_expression(), 
-                            interval.as_ref().and_then(get_bound)
-                        ).into()
+                            expr.compile_expression()?, 
+                            interval.as_ref().map(|i| i.get_bound()).transpose()?
+                        ).into())
                     },
-                    _ => unreachable!() //todo: overvej custom error 
+                    _ => Err(errors::Error::InvalidCompileExpr.into()) 
                 }
-            ).collect()
+            ).collect::<Result<Vec<OutputStream>, Box<dyn Error>>>()?
         );
         Ok(())
     }
-}
-
-fn get_bound(bound: &Box<Expr>) -> Option<(i128,i128)> {
-    let Expr::Interval{ start, end} = bound.as_ref() else { return None };
-    let (Expr::Number(start), Expr::Number(end)) = (start.as_ref(), end.as_ref()) else { return None };
-
-    Some((*start, *end))
 }
