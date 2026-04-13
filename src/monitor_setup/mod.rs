@@ -13,22 +13,18 @@ impl Program {
             self.expressions
             .iter()
             .map(|span_expr| &span_expr.expr)
-            .map(|expr|
-                match expr {
-                    Expr::Always { interval, expr, ..} => {                        
+            .map(|ltl_expr|
+                match ltl_expr {
+                    Expr::Always { interval, expr, .. } 
+                    | Expr::Eventually { interval, expr, .. } => 
                         Ok((
-                            LTL::Always, 
-                            expr.compile_expression()?, 
+                            match ltl_expr {
+                                Expr::Always { .. } => LTL::Always,
+                                _ =>                   LTL::Eventually,
+                            },
+                            expr.compile_expression()?,
                             interval.as_ref().map(|i| i.get_bound()).transpose()?
-                        ).into())
-                    },
-                    Expr::Eventually { interval, expr, ..} => {
-                        Ok((
-                            LTL::Eventually, 
-                            expr.compile_expression()?, 
-                            interval.as_ref().map(|i| i.get_bound()).transpose()?
-                        ).into())
-                    },
+                        ).into()),
                     _ => Err(errors::Error::InvalidCompileExpr.into()) 
                 }
             ).collect::<Result<Vec<OutputStream>, Box<dyn Error>>>()?
