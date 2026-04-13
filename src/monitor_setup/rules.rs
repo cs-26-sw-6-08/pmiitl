@@ -1,8 +1,10 @@
-use std::{collections::HashMap, error::Error, rc::Rc};
 
+use std::error::Error;
 use crate::{
     errors,
-    monitor_setup::types::{DerivedOutput, Device, Operation}, program::{expressions::Expr,function_types::FunctionType}};
+    monitor_setup::types::Operation, 
+    program::{expressions::Expr,function_types::FunctionType}
+};
 
 
 impl Expr {
