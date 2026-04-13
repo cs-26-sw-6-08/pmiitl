@@ -1,6 +1,6 @@
 use std::{collections::HashMap, rc::Rc};
 
-use crate::{monitor_setup::{streams::DerivedStream, types::{DerivedOutput, Device, Operation}}, program::{expressions::Expr,function_types::FunctionType}};
+use crate::{monitor_setup::types::{DerivedOutput, Device, Operation}, program::{expressions::Expr,function_types::FunctionType}};
 
 
 impl Expr {
