@@ -18,12 +18,8 @@ pub struct OutputStream {
 
 impl From<(LTL, Vec<Operation>, Option<(i128, i128)>)> for OutputStream {
     fn from(value: (LTL, Vec<Operation>, Option<(i128, i128)>)) -> Self {
-        Self {
-            ltl: value.0,
-            operations: value.1,
-            bound: value.2,
-            time_verdicts: HashMap::new()
-        }
+        let (ltl, operations, bound) = value;
+        Self { ltl, operations, bound, time_verdicts: HashMap::new() }
     }
 }
 
