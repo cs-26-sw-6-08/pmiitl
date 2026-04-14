@@ -26,11 +26,7 @@ impl From<(LTL, Vec<Operation>, Option<(i128, i128)>)> for OutputStream {
 impl OutputStream {
     // Insert a time point into the output stream.
     fn insert(&mut self, t: i128) {
-        if let Some((a, b)) = self.bound {
-            if a <= t && t <= b {
-                self.time_verdicts.insert(t, Verdict::Undecided);
-            }
-        } else {
+        if self.bound.is_none_or(|(a,b)| a <= t && t <= b) {
             self.time_verdicts.insert(t, Verdict::Undecided);
         }
     }
@@ -53,6 +49,7 @@ impl OutputStream {
             })
             .collect()
     }
+
 
     fn get_verdict_single(&self) -> bool {
         self.time_verdicts

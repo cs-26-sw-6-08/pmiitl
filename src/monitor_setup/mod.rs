@@ -22,7 +22,7 @@ impl Program {
                                 _ =>                   LTL::Eventually,
                             },
                             expr.compile_expression()?,
-                            interval.as_ref().map(|i| i.get_bound()).transpose()?
+                            interval.as_deref().map(Expr::get_bound).transpose()?
                         ).into()),
                     _ => Err(errors::Error::InvalidCompileExpr.into()) 
                 }

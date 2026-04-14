@@ -1,8 +1,10 @@
-use std::error::Error;
 
+use std::error::Error;
 use crate::{
     errors,
-    monitor_setup::types::Operation, program::{expressions::Expr,function_types::FunctionType}};
+    monitor_setup::types::Operation, 
+    program::{expressions::Expr,function_types::FunctionType}, utils::vec_helper_funcs::ExtVec
+};
 
 
 impl Expr {
@@ -18,9 +20,14 @@ impl Expr {
         key: usize,
     ) -> Result<(Vec<Operation>, usize), Box<dyn Error>> {   
         match self {
-            Expr::Number(c) => { todo!() },
-            Expr::String(str) => { todo!() },
-            Expr::CurrentTime => { todo!() },
+            Expr::Number(c) => Ok((streams.with(Operation::Number(*c)), key)),
+            Expr::String(str) => {
+                todo!()
+            },
+            Expr::CurrentTime => {
+                todo!()
+            },
+            Expr::Unit { number, unit } => Err(errors::Error::InvalidCompileExpr.into()),
             Expr::Interval { start, end } => todo!(),
             Expr::Always { interval, not, expr } => todo!(),
             Expr::Eventually { interval, not, expr } => todo!(),
