@@ -1,16 +1,15 @@
 use rv_iot::{
-    program::{
+    monitor::streams::OutputStream, monitor_setup::operation_types::{LTL, Operation}, program::{
         Program,
         expressions::SpannedExpr,
         function_types::FunctionType,
         member_types::MemberType,
         operations::{BinaryOperators, UnaryOperators},
-    },
-    utils::test_helper_func::{
+    }, utils::test_helper_func::{
         always_expr, always_interval_expr, binary_expr, current_time, custom_number_expr,
         eventually_interval_expr, function_expr, interval_expr, member_expr, number_expr,
         string_expr, unary_expr,
-    },
+    }
 };
 #[test]
 fn test1() {
@@ -271,4 +270,51 @@ fn test7() {
     };
 
     assert_eq!(program, expected_program);
+}
+
+#[test]
+fn test8() {
+    let mut program = Program::new(
+        "eventually[5s,10s] foreach( active -> power > 5 W);
+        always sumtime(power * (name = Roomba)) < 200Ws;",
+    )
+    .unwrap();
+
+    assert!(program.unit_convert().is_ok());
+    assert!(program.unit_check().is_ok());
+    assert!(program.equiv_convert().is_ok());
+    assert!(program.monitorability_check().is_ok());
+    assert!(program.compile_properties().is_ok());
+
+    let expected_env = [
+        OutputStream::from((
+            LTL::Eventually,
+            vec![
+                Operation::Foreach { idx: 1 },
+                Operation::Binary { bin_op: BinaryOperators::Or, idx_lhs: 2, idx_rhs: 4 },
+                Operation::Unary { un_op: UnaryOperators::Not, idx: 3 },
+                Operation::Member(MemberType::Active),
+                Operation::Binary { bin_op: BinaryOperators::Greater, idx_lhs: 5, idx_rhs: 6 },
+                Operation::Member(MemberType::Power),
+                Operation::Number(5_000)
+            ],
+            Some((5_000,10_000))
+        )),
+        OutputStream::from((
+            LTL::Always,
+            vec![
+                Operation::Binary { bin_op: BinaryOperators::Less, idx_lhs: 1, idx_rhs: 8 },
+                Operation::Sumtime { idx: 2 },
+                Operation::Sum { idx: 3 },
+                Operation::Binary { bin_op: BinaryOperators::Times, idx_lhs: 4, idx_rhs: 5 },
+                Operation::Member(MemberType::Power),
+                Operation::Binary { bin_op: BinaryOperators::Equal, idx_lhs: 6, idx_rhs: 7 },
+                Operation::Member(MemberType::Name),
+                Operation::String("roomba".to_owned()),
+                Operation::Number(200_000)
+            ],
+            None
+        ))
+    ];
+    assert_eq!(program.environment.unwrap().as_slice(), expected_env);
 }

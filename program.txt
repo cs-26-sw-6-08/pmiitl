@@ -1,1 +1,2 @@
-always !-5000;
+always foreach( active -> power > 5 W);
+always sumtime(power * (name = Roomba)) < 200Ws;

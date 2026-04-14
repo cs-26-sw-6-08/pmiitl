@@ -1,10 +1,12 @@
 mod rules;
-pub mod streams;
-mod types;
 
-use crate::{errors, monitor_setup::streams::{LTL, OutputStream}, program::expressions::Expr};
+pub mod operation_types;
+
 use std::{error::Error};
-use crate::{program::Program};
+use crate::{errors, monitor::streams::OutputStream, monitor_setup::operation_types::LTL, program::{Program, expressions::Expr}};
+
+#[cfg(test)]
+mod rules_test;
 
 impl Program {
     pub fn compile_properties(&mut self) -> Result<(), Box<dyn Error>> {
@@ -14,8 +16,8 @@ impl Program {
             .map(|span_expr| &span_expr.expr)
             .map(|ltl_expr|
                 match ltl_expr {
-                    Expr::Always { interval, expr, .. } | 
-                    Expr::Eventually { interval, expr, .. } => 
+                    Expr::Always { interval, expr, not: false } | 
+                    Expr::Eventually { interval, expr, not: false } => 
                         Ok((
                             match ltl_expr {
                                 Expr::Always { .. } => LTL::Always,
@@ -31,3 +33,9 @@ impl Program {
         Ok(())
     }
 }
+
+
+
+
+
+

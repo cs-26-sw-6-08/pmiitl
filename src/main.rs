@@ -6,6 +6,7 @@ pub mod unit_convert;
 pub mod monitorability;
 pub mod utils;
 pub mod monitor_setup;
+pub mod monitor;
 mod errors;
 
 extern crate hime_redist;
@@ -40,6 +41,9 @@ fn main() {
         return println!("Error: {}", err);
     }
 
-    println!("{:?}", &program.expressions);  
-
+    if let Err(err) = program.compile_properties() {
+        return println!("Error: {}", err);
+    }
+    
+    println!("{:#?}", program);
 }

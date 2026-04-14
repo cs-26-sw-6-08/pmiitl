@@ -2,7 +2,7 @@ use std::error::Error;
 
 use hime_redist::{ast::AstNode, errors::ParseErrorDataTrait};
 
-use crate::{errors, grammar::cfg, monitor_setup::streams::OutputStream, program::expressions::SpannedExpr};
+use crate::{errors, grammar::cfg, monitor::streams::OutputStream, program::expressions::SpannedExpr};
 pub mod expressions;
 pub mod units;
 pub mod operations;
@@ -30,9 +30,6 @@ impl Program {
         }
         let ast = parsed.get_ast();
         let root = ast.get_root();
-
-        /* TODO: Slet */
-        print(root, Vec::<bool>::new());
 
         for node in root.children(){
             exprs.push(SpannedExpr::new(node)?);
