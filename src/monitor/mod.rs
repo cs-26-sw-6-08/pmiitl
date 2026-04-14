@@ -14,12 +14,13 @@ use tokio::time::{Duration, interval};
 
 impl Program {
 
-    pub async fn monitor(&mut self, time_interval: u64) -> Result<(), Box<dyn Error>> {
+    pub async fn monitor(&mut self, time_interval: i128) -> Result<(), Box<dyn Error>> {
+        println!("Monitor has started...");
+        
         let Some(streams) = &mut self.environment else { todo!() };
-
-        let mut interval = interval(Duration::from_millis(time_interval));
-
+        let mut interval = interval(Duration::from_secs(time_interval as u64));
         let mut t = 0;
+        
         loop {
             interval.tick().await;
 
@@ -48,7 +49,7 @@ impl Program {
                     println!("Prop {} was violated at time: {t}", prop_num+1);
                 }
                 
-                t += 1;
+                t += time_interval;
             }.await
         }
     }
