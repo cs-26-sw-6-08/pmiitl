@@ -1,4 +1,4 @@
-use crate::{monitor_setup::operation_types::{LTL, Operation}, program::{function_types::FunctionType, member_types::MemberType, operations::BinaryOperators}, utils::test_helper_func::*};
+use crate::{monitor_setup::operation_types::{AggregateType, LTL, Operation}, program::{function_types::FunctionType, member_types::MemberType, operations::BinaryOperators}, utils::test_helper_func::*};
 use crate::program::{operations::UnaryOperators};
 
 
@@ -133,10 +133,10 @@ fn function_rules() {
         let yes_expr = expr.compile_expression();
         assert!(yes_expr.is_ok());
         match cur_type.clone(){
-            FunctionType::Sum => assert_eq!(yes_expr.unwrap(), vec![Operation::Sum { idx: 1 }, Operation::Number(10_000)]),
-            FunctionType::Avg => assert_eq!(yes_expr.unwrap(), vec![Operation::Avg { idx: 1 }, Operation::Number(10_000)]),
-            FunctionType::Sumtime => assert_eq!(yes_expr.unwrap(), vec![Operation::Sumtime { idx: 1 }, Operation::Sum{ idx: 2}, Operation::Number(10_000)]),
-            FunctionType::Avgtime => assert_eq!(yes_expr.unwrap(), vec![Operation::Avgtime { idx: 1 }, Operation::Sum{ idx: 2}, Operation::Number(10_000)]),
+            FunctionType::Sum => assert_eq!(yes_expr.unwrap(), vec![Operation::AggregateFunction { idx: 1, function_type: AggregateType::Sum }, Operation::Number(10_000)]),
+            FunctionType::Avg => assert_eq!(yes_expr.unwrap(), vec![Operation::AggregateFunction { idx: 1, function_type: AggregateType::Avg }, Operation::Number(10_000)]),
+            FunctionType::Sumtime => assert_eq!(yes_expr.unwrap(), vec![Operation::TimeFunction { idx: 1, function_type: AggregateType::Sum, history: Vec::new() }, Operation::AggregateFunction { idx: 2, function_type: AggregateType::Sum }, Operation::Number(10_000)]),
+            FunctionType::Avgtime => assert_eq!(yes_expr.unwrap(), vec![Operation::TimeFunction { idx: 1, function_type: AggregateType::Avg, history: Vec::new() }, Operation::AggregateFunction { idx: 2, function_type: AggregateType::Avg }, Operation::Number(10_000)]),
             FunctionType::Foreach => assert_eq!(yes_expr.unwrap(), vec![Operation::Foreach { idx: 1 }, Operation::Number(10_000)]),
             _ => unreachable!()
         }
@@ -173,8 +173,8 @@ fn large_expr() {
         large_expr.compile_expression().unwrap(),
         [
             Operation::Binary { bin_op: BinaryOperators::Less, idx_lhs: 1, idx_rhs: 8 },
-            Operation::Sumtime { idx: 2 },
-            Operation::Sum { idx: 3 },
+            Operation::TimeFunction { idx: 2, function_type: AggregateType::Sum, history: Vec::new() },
+            Operation::AggregateFunction { idx: 3, function_type: AggregateType::Sum },
             Operation::Binary { bin_op: BinaryOperators::Times, idx_lhs: 4, idx_rhs: 5 },
             Operation::Member(MemberType::Power),
             Operation::Binary { bin_op: BinaryOperators::Equal, idx_lhs: 6, idx_rhs: 7 },

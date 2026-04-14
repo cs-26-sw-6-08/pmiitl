@@ -1,5 +1,5 @@
 use rv_iot::{
-    monitor::streams::OutputStream, monitor_setup::operation_types::{LTL, Operation}, program::{
+    monitor::streams::OutputStream, monitor_setup::operation_types::{AggregateType, LTL, Operation}, program::{
         Program,
         expressions::SpannedExpr,
         function_types::FunctionType,
@@ -304,8 +304,8 @@ fn test8() {
             LTL::Always,
             vec![
                 Operation::Binary { bin_op: BinaryOperators::Less, idx_lhs: 1, idx_rhs: 8 },
-                Operation::Sumtime { idx: 2 },
-                Operation::Sum { idx: 3 },
+                Operation::TimeFunction { idx: 2, function_type: AggregateType::Sum, history: Vec::new() },
+                Operation::AggregateFunction { idx: 3, function_type: AggregateType::Sum },
                 Operation::Binary { bin_op: BinaryOperators::Times, idx_lhs: 4, idx_rhs: 5 },
                 Operation::Member(MemberType::Power),
                 Operation::Binary { bin_op: BinaryOperators::Equal, idx_lhs: 6, idx_rhs: 7 },

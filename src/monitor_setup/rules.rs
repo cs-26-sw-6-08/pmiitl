@@ -2,7 +2,7 @@
 use std::error::Error;
 use crate::{
     errors,
-    monitor_setup::operation_types::{LTL, Operation}, 
+    monitor_setup::operation_types::{LTL, Operation, AggregateType}, 
     program::{expressions::Expr,function_types::FunctionType}, utils::vec_helper_funcs::ExtVec
 };
 use crate::program::operations::BinaryOperators::*;
@@ -56,25 +56,39 @@ impl Expr {
                 Ok((streams.with(Operation::Unary { un_op: operator.clone(), idx: key+1 }).chain(new_streams), new_key))
             },
             Expr::Function { aggregate_type, expr } => match aggregate_type {
-                FunctionType::Sum |
-                FunctionType::Avg |
                 FunctionType::Foreach => {
                     let (new_streams, new_key) = expr.compile_expression_helper(Vec::new(), key + 1)?;
-                    Ok((streams.with(match aggregate_type {
-                        FunctionType::Sum => Operation::Sum { idx: key + 1 },
-                        FunctionType::Avg => Operation::Avg { idx: key + 1 },
-                        FunctionType::Foreach => Operation::Foreach { idx: key + 1 },
-                        _ => unreachable!()
+                    Ok((streams.with(
+                        Operation::Foreach { idx: key + 1 }
+                    ).chain(new_streams), new_key))
+                }
+                FunctionType::Sum |
+                FunctionType::Avg => {
+                    let (new_streams, new_key) = expr.compile_expression_helper(Vec::new(), key + 1)?;
+                    Ok((streams.with(
+                        Operation::AggregateFunction { 
+                            function_type: match aggregate_type {
+                                FunctionType::Sum => AggregateType::Sum,
+                                _ => AggregateType::Avg,
+                            }, 
+                            idx: key + 1
                     }).chain(new_streams), new_key))
                 },
                 FunctionType::Sumtime | FunctionType::Avgtime => {
-                    let (new_streams, new_key) = Expr::Function { aggregate_type: FunctionType::Sum, expr: expr.clone() }.compile_expression_helper(Vec::new(), key + 1)?;
+                    let inner_function = match aggregate_type {
+                        FunctionType::Sumtime => Expr::Function { aggregate_type: FunctionType::Sum, expr: expr.clone() },
+                        _ => Expr::Function { aggregate_type: FunctionType::Avg, expr: expr.clone() },
+                    };
+                    let (new_streams, new_key) = inner_function.compile_expression_helper(Vec::new(), key + 1)?;
                     Ok((
-                        streams.with(match aggregate_type {
-                            FunctionType::Sumtime => Ok(Operation::Sumtime { idx: key + 1 }),
-                            FunctionType::Avgtime => Ok(Operation::Avgtime { idx: key + 1 }),
-                            _ => Err(errors::Error::InvalidCompileExpr)
-                        }?).chain(new_streams), 
+                        streams.with( Operation::TimeFunction { 
+                            function_type:  match aggregate_type {
+                                FunctionType::Sumtime => AggregateType::Sum,
+                                _ => AggregateType::Avg
+                            }, 
+                            history: Vec::new(), 
+                            idx: key + 1 
+                        }).chain(new_streams), 
                         new_key
                     ))
                 },
