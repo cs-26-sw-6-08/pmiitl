@@ -304,7 +304,7 @@ fn test8() {
             LTL::Always,
             vec![
                 Operation::Binary { bin_op: BinaryOperators::Less, idx_lhs: 1, idx_rhs: 8 },
-                Operation::TimeFunction { idx: 2, function_type: AggregateType::Sum, history: Vec::new() },
+                Operation::TimeFunction { idx: 2, function_type: AggregateType::Sum, history: Vec::new(), max_bound: None },
                 Operation::AggregateFunction { idx: 3, function_type: AggregateType::Sum },
                 Operation::Binary { bin_op: BinaryOperators::Times, idx_lhs: 4, idx_rhs: 5 },
                 Operation::Member(MemberType::Power),

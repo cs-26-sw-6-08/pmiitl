@@ -3,10 +3,10 @@ use crate::{monitor::types::Verdict, monitor_setup::operation_types::{LTL, Opera
 
 #[derive(Debug, PartialEq)]
 pub struct OutputStream {
-    ltl: LTL,
-    bound: Option<(i128, i128)>,
-    time_verdicts: Vec<(i128, Verdict)>,
-    operations: Vec<Operation>,
+    pub(crate) ltl: LTL,
+    pub(crate) bound: Option<(i128, i128)>,
+    pub(crate) time_verdicts: Vec<(i128, Verdict)>,
+    pub(crate) operations: Vec<Operation>,
 }
 
 impl From<(LTL, Vec<Operation>, Option<(i128, i128)>)> for OutputStream {

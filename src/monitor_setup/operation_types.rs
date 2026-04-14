@@ -1,11 +1,6 @@
 
 use crate::program::{member_types::MemberType, operations::{BinaryOperators, UnaryOperators}};
 
-#[derive(Debug, PartialEq, Clone)]
-pub enum LTL {
-    Always, 
-    Eventually
-}
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum Operation {
@@ -17,10 +12,13 @@ pub enum Operation {
     String(String),
     Member(MemberType),
     CurrentTime,
-    TimeFunction { idx:usize, function_type: AggregateType, history: Vec<i128>, bound: Option<usize> },
+    TimeFunction { idx:usize, function_type: AggregateType, history: Vec<i128>, max_bound: Option<usize> },
     AggregateFunction { idx:usize, function_type: AggregateType },
     Foreach { idx:usize }
 }
 
 #[derive(Debug, PartialEq, Clone)]
-pub enum AggregateType { Sum,  Avg}
+pub enum AggregateType { Sum,  Avg }
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum LTL { Always, Eventually }

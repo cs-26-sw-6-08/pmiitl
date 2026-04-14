@@ -92,7 +92,7 @@ impl Expr {
                             }, 
                             history: Vec::new(), 
                             idx: key + 1,
-                            bound: None
+                            max_bound: None
                         }).chain(new_streams), 
                         new_key
                     )

@@ -1,4 +1,4 @@
-use crate::program::{expressions::Expr, function_types::FunctionType, member_types::MemberType, operations::{BinaryOperators, UnaryOperators}, units::Unit};
+use crate::{monitor::types::Number, monitor_setup::operation_types::{AggregateType, LTL, Operation}, program::{expressions::Expr, function_types::FunctionType, member_types::MemberType, operations::{BinaryOperators, UnaryOperators}, units::Unit}};
 
 pub fn binary_expr(lhs: Expr, rhs: Expr, operator: BinaryOperators) -> Expr {
     Expr::BinaryOperations {
@@ -78,3 +78,30 @@ pub fn eventually_interval_expr(interval: Expr, expr: Expr) -> Expr {
     Expr::Eventually { interval: Some(interval.into()), not: false, expr: expr.into() }
 }
 
+
+///always[25s, 40s] sumtime(power) < always[500, 1000] sumtime (1)
+pub fn operations_vec_with_sumtime() -> Vec<Operation> {
+    [
+        Operation::Binary { bin_op: BinaryOperators::Less, idx_lhs: 1, idx_rhs: 5 },
+        Operation::LTLBounded { bound: (25, 40), idx: 2, not: false, ltl_type: LTL::Always },
+        Operation::TimeFunction { idx: 3, function_type: AggregateType::Sum, history: Vec::new(), max_bound: None },
+        Operation::AggregateFunction { idx: 4, function_type: AggregateType::Sum },
+        Operation::Member(MemberType::Power),
+        Operation::LTLBounded { bound: (500, 1000), idx: 6, not: false, ltl_type: LTL::Always },
+        Operation::TimeFunction { idx: 7, function_type: AggregateType::Sum, history: Vec::new(), max_bound: None },
+        Operation::AggregateFunction { idx: 8, function_type: AggregateType::Sum },
+        Operation::Number(1)
+    ].into()
+}
+
+/*
+1 < 5
+    always [25,40]
+        sumtime(3)
+            sum(4)
+                member
+    always[500,1000]
+        sumtime(7)
+            sum(8)
+                1
+*/

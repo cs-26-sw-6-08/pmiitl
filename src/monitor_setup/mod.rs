@@ -1,13 +1,14 @@
 mod rules;
-
 pub mod operation_types;
 pub mod static_analysis;
 
-use std::{error::Error};
-use crate::{errors, monitor::streams::OutputStream, monitor_setup::operation_types::LTL, program::{Program, expressions::Expr}};
-
 #[cfg(test)]
 mod rules_test;
+#[cfg(test)]
+mod static_analysis_test;
+
+use std::{error::Error};
+use crate::{errors, monitor::streams::OutputStream, monitor_setup::operation_types::LTL, program::{Program, expressions::Expr}};
 
 impl Program {
     pub fn compile_properties(&mut self) -> Result<(), Box<dyn Error>> {
@@ -29,7 +30,8 @@ impl Program {
                         ).into()),
                     _ => Err(errors::Error::InvalidCompileExpr.into()) 
                 }
-            ).map(|res| res.map(OutputStream::static_analysis))
+            )
+            .map(|res| res.map(OutputStream::static_analysis))
             .collect::<Result<Vec<_>, Box<dyn Error>>>()?
         );
         Ok(())
