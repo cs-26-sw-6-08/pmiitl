@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use crate::{monitor::types::Verdict, monitor_setup::operation_types::{LTL, Operation}};
 
 
@@ -23,7 +22,7 @@ impl OutputStream {
     // Insert a time point into the output stream.
     pub fn insert(&mut self, t: i128) {
         if self.bound.is_none_or(|(a,b)| a <= t && t <= b) {
-            self.time_verdicts.push((t, Verdict::Undecided));
+            self.time_verdicts.push((t, Verdict::Undecided))
         }
     }
 
@@ -35,15 +34,9 @@ impl OutputStream {
     // Gives verdict to the user based on the time_verdicts.
     pub fn get_verdict_mul(&self) -> Vec<i128> {
         self.time_verdicts
-            .iter()
-            .filter_map(|(time, verdict)| {
-                if *verdict == Verdict::False {
-                    Some(*time)
-                } else {
-                    None
-                }
-            })
-            .collect()
+        .iter()
+        .filter_map(|(time, verdict)| (*verdict == Verdict::False).then_some(*time))
+        .collect()
     }
 
 

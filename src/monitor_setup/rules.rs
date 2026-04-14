@@ -45,14 +45,17 @@ impl Expr {
                 let (new_1_streams, new_1_key) = lhs.compile_expression_helper(Vec::new(), key+1)?;
                 let (new_2_streams, new_2_key) = rhs.compile_expression_helper(Vec::new(), new_1_key)?;
                 
-                (streams.with(Operation::Binary { 
-                    bin_op: match operator {
-                        And | Implies => Err(errors::Error::InvalidCompileExpr),
-                        val => Ok(val.clone())
-                    }?, 
-                    idx_lhs: key+1, 
-                    idx_rhs: new_1_key 
-                }).chain(new_1_streams).chain(new_2_streams), new_2_key)
+                (
+                    streams.with(Operation::Binary { 
+                        bin_op: match operator {
+                            And | Implies => Err(errors::Error::InvalidCompileExpr),
+                            val => Ok(val.clone())
+                        }?, 
+                        idx_lhs: key+1, 
+                        idx_rhs: new_1_key 
+                    }).chain(new_1_streams).chain(new_2_streams), 
+                    new_2_key
+                )
             },
             Expr::UnaryOperations { operand, operator } => {
                 let (new_streams, new_key) = operand.compile_expression_helper(Vec::new(), key+1)?;
@@ -88,7 +91,8 @@ impl Expr {
                                 _ => AggregateType::Avg
                             }, 
                             history: Vec::new(), 
-                            idx: key + 1 
+                            idx: key + 1,
+                            bound: None
                         }).chain(new_streams), 
                         new_key
                     )

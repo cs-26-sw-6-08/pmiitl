@@ -17,7 +17,7 @@ pub enum Operation {
     String(String),
     Member(MemberType),
     CurrentTime,
-    TimeFunction { idx:usize, function_type: AggregateType, history: Vec<i128> },
+    TimeFunction { idx:usize, function_type: AggregateType, history: Vec<i128>, bound: Option<usize> },
     AggregateFunction { idx:usize, function_type: AggregateType },
     Foreach { idx:usize }
 }

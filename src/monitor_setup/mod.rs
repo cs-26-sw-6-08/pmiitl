@@ -1,6 +1,7 @@
 mod rules;
 
 pub mod operation_types;
+pub mod static_analysis;
 
 use std::{error::Error};
 use crate::{errors, monitor::streams::OutputStream, monitor_setup::operation_types::LTL, program::{Program, expressions::Expr}};
@@ -28,7 +29,8 @@ impl Program {
                         ).into()),
                     _ => Err(errors::Error::InvalidCompileExpr.into()) 
                 }
-            ).collect::<Result<Vec<OutputStream>, Box<dyn Error>>>()?
+            ).map(|res| res.map(OutputStream::static_analysis))
+            .collect::<Result<Vec<_>, Box<dyn Error>>>()?
         );
         Ok(())
     }
