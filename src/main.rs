@@ -14,7 +14,9 @@ extern crate hime_redist;
 use std::fs;
 
 use crate::program::Program;
-fn main() {
+
+#[tokio::main]
+async fn main() {
     let program_str = match fs::read_to_string("program.txt") {
         Ok(program_str) => program_str,
         Err(err) => return println!("Error: {}", err)
@@ -24,6 +26,8 @@ fn main() {
         Ok(program) => program,
         Err(err) => return println!("Error: {}", err),
     };
+
+
 
     if let Err(err) = program.unit_convert() {
         return println!("Error: {}", err);
@@ -36,6 +40,8 @@ fn main() {
     if let Err(err) = program.equiv_convert() {
         return println!("Error: {}", err);
     };
+        println!("Program Tree");
+    println!("{:#?}",program.expressions);
 
     if let Err(err) = program.monitorability_check() {
         return println!("Error: {}", err);
@@ -45,5 +51,9 @@ fn main() {
         return println!("Error: {}", err);
     }
     
-    println!("{:#?}", program);
+    // println!("{:#?}", program);
+
+    if let Err(err) = program.monitor(1).await {
+        return println!("Error: {}", err);
+    }
 }

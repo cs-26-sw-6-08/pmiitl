@@ -1,15 +1,18 @@
 use rv_iot::{
-    monitor::streams::OutputStream, monitor_setup::operation_types::{AggregateType, LTL, Operation}, program::{
+    monitor::streams::OutputStream,
+    monitor_setup::operation_types::{AggregateType, LTL, Operation},
+    program::{
         Program,
         expressions::SpannedExpr,
         function_types::FunctionType,
         member_types::MemberType,
         operations::{BinaryOperators, UnaryOperators},
-    }, utils::test_helper_func::{
+    },
+    utils::test_helper_func::{
         always_expr, always_interval_expr, binary_expr, current_time, custom_number_expr,
         eventually_interval_expr, function_expr, interval_expr, member_expr, number_expr,
         string_expr, unary_expr,
-    }
+    },
 };
 #[test]
 fn test1() {
@@ -56,7 +59,7 @@ fn test1() {
                 BinaryOperators::Or,
             )),
         }],
-        environment: None
+        environment: None,
     };
 
     assert_eq!(program, expected_program);
@@ -76,7 +79,14 @@ fn test2() {
             line: 1,
             expr: always_expr(unary_expr(
                 binary_expr(
-                    function_expr(FunctionType::Sum, member_expr(MemberType::Active)),
+                    function_expr(
+                        FunctionType::Sum,
+                        binary_expr(
+                            member_expr(MemberType::Active),
+                            custom_number_expr(0),
+                            BinaryOperators::NotEqual,
+                        ),
+                    ),
                     number_expr(),
                     BinaryOperators::Greater,
                 ),
@@ -133,20 +143,24 @@ fn test4() {
             line: 1,
             expr: always_expr(function_expr(
                 FunctionType::Sum,
-                unary_expr(
-                    binary_expr(
-                        unary_expr(
-                            binary_expr(
-                                member_expr(MemberType::Name),
-                                string_expr(),
-                                BinaryOperators::Equal,
+                binary_expr(
+                    unary_expr(
+                        binary_expr(
+                            unary_expr(
+                                binary_expr(
+                                    member_expr(MemberType::Name),
+                                    string_expr(),
+                                    BinaryOperators::Equal,
+                                ),
+                                UnaryOperators::Not,
                             ),
-                            UnaryOperators::Not,
+                            unary_expr(member_expr(MemberType::Active), UnaryOperators::Not),
+                            BinaryOperators::Or,
                         ),
-                        unary_expr(member_expr(MemberType::Active), UnaryOperators::Not),
-                        BinaryOperators::Or,
+                        UnaryOperators::Not,
                     ),
-                    UnaryOperators::Not,
+                    custom_number_expr(0),
+                    BinaryOperators::NotEqual,
                 ),
             )),
         }],
@@ -172,7 +186,14 @@ fn test5() {
             expr: always_expr(binary_expr(
                 unary_expr(
                     binary_expr(
-                        function_expr(FunctionType::Sum, member_expr(MemberType::Active)),
+                        function_expr(
+                            FunctionType::Sum,
+                            binary_expr(
+                                member_expr(MemberType::Active),
+                                custom_number_expr(0),
+                                BinaryOperators::NotEqual,
+                            ),
+                        ),
                         number_expr(),
                         BinaryOperators::GreaterEqual,
                     ),
@@ -181,7 +202,14 @@ fn test5() {
                 eventually_interval_expr(
                     interval_expr(custom_number_expr(0), custom_number_expr(21_600_000)),
                     binary_expr(
-                        function_expr(FunctionType::Sum, member_expr(MemberType::Active)),
+                        function_expr(
+                            FunctionType::Sum,
+                            binary_expr(
+                                member_expr(MemberType::Active),
+                                custom_number_expr(0),
+                                BinaryOperators::NotEqual,
+                            ),
+                        ),
                         number_expr(),
                         BinaryOperators::Less,
                     ),
@@ -291,30 +319,61 @@ fn test8() {
             LTL::Eventually,
             vec![
                 Operation::Foreach { idx: 1 },
-                Operation::Binary { bin_op: BinaryOperators::Or, idx_lhs: 2, idx_rhs: 4 },
-                Operation::Unary { un_op: UnaryOperators::Not, idx: 3 },
+                Operation::Binary {
+                    bin_op: BinaryOperators::Or,
+                    idx_lhs: 2,
+                    idx_rhs: 4,
+                },
+                Operation::Unary {
+                    un_op: UnaryOperators::Not,
+                    idx: 3,
+                },
                 Operation::Member(MemberType::Active),
-                Operation::Binary { bin_op: BinaryOperators::Greater, idx_lhs: 5, idx_rhs: 6 },
+                Operation::Binary {
+                    bin_op: BinaryOperators::Greater,
+                    idx_lhs: 5,
+                    idx_rhs: 6,
+                },
                 Operation::Member(MemberType::Power),
-                Operation::Number(5_000)
+                Operation::Number(5_000),
             ],
-            Some((5_000,10_000))
+            Some((5_000, 10_000)),
         )),
         OutputStream::from((
             LTL::Always,
             vec![
-                Operation::Binary { bin_op: BinaryOperators::Less, idx_lhs: 1, idx_rhs: 8 },
-                Operation::TimeFunction { idx: 2, function_type: AggregateType::Sum, history: Vec::new(), max_bound: None },
-                Operation::AggregateFunction { idx: 3, function_type: AggregateType::Sum },
-                Operation::Binary { bin_op: BinaryOperators::Times, idx_lhs: 4, idx_rhs: 5 },
+                Operation::Binary {
+                    bin_op: BinaryOperators::Less,
+                    idx_lhs: 1,
+                    idx_rhs: 8,
+                },
+                Operation::TimeFunction {
+                    idx: 2,
+                    function_type: AggregateType::Sum,
+                    history: Vec::new(),
+                    max_bound: None,
+                },
+                Operation::AggregateFunction {
+                    idx: 3,
+                    function_type: AggregateType::Sum,
+                },
+                Operation::Binary {
+                    bin_op: BinaryOperators::Times,
+                    idx_lhs: 4,
+                    idx_rhs: 5,
+                },
                 Operation::Member(MemberType::Power),
-                Operation::Binary { bin_op: BinaryOperators::Equal, idx_lhs: 6, idx_rhs: 7 },
+                Operation::Binary {
+                    bin_op: BinaryOperators::Equal,
+                    idx_lhs: 6,
+                    idx_rhs: 7,
+                },
                 Operation::Member(MemberType::Name),
                 Operation::String("roomba".to_owned()),
-                Operation::Number(200_000)
+                Operation::Number(200_000),
             ],
-            None
-        ))
+            None,
+        )),
     ];
     assert_eq!(program.environment.unwrap().as_slice(), expected_env);
 }

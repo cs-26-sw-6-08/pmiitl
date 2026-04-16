@@ -1,4 +1,4 @@
-use crate::{monitor::types::Number, monitor_setup::operation_types::{AggregateType, LTL, Operation}, program::{expressions::Expr, function_types::FunctionType, member_types::MemberType, operations::{BinaryOperators, UnaryOperators}, units::Unit}};
+use crate::{monitor_setup::operation_types::{AggregateType, LTL, Operation}, program::{expressions::Expr, function_types::FunctionType, member_types::MemberType, operations::{BinaryOperators, UnaryOperators}, units::Unit}};
 
 pub fn binary_expr(lhs: Expr, rhs: Expr, operator: BinaryOperators) -> Expr {
     Expr::BinaryOperations {

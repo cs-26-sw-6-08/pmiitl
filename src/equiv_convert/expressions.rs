@@ -3,7 +3,7 @@ use std::error::Error;
 use crate::{
     equiv_convert::binary_operations::binary_operations,
     errors,
-    program::{expressions::Expr, function_types::FunctionType, operations::UnaryOperators},
+    program::{expressions::Expr, function_types::FunctionType, operations::{BinaryOperators, UnaryOperators}},
 };
 
 impl Expr {
@@ -98,14 +98,16 @@ impl Expr {
                 aggregate_type,
                 expr,
             } => match aggregate_type {
-                FunctionType::Count => { //Todo: ændrer den her
-                    expr.equiv_convert()?;
+                FunctionType::Count => { 
                     *aggregate_type = FunctionType::Sum;
+                    *expr =  Expr::BinaryOperations { lhs: expr.clone(), rhs: Expr::Number(0).into(), operator: BinaryOperators::NotEqual }.into();
+                    expr.equiv_convert()?;
                     Ok(())
                 }
-                FunctionType::Counttime => { //todo: Ændrer den her
-                    expr.equiv_convert()?;
+                FunctionType::Counttime => {                   
                     *aggregate_type = FunctionType::Sumtime;
+                    *expr =  Expr::BinaryOperations { lhs: expr.clone(), rhs: Expr::Number(0).into(), operator: BinaryOperators::NotEqual }.into();
+                    expr.equiv_convert()?;
                     Ok(())
                 }
                 _ => {

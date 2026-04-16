@@ -28,7 +28,7 @@ impl OutputStream {
 
     // Calculate the verdict for the output stream.
     pub fn update(&mut self) {
-        todo!()
+        
     }
 
     // Gives verdict to the user based on the time_verdicts.
@@ -49,5 +49,30 @@ impl OutputStream {
     // Cleans up time_verdicts.
     pub fn clean_up(&mut self) {
         self.time_verdicts.retain(|(_, verdict)| *verdict == Verdict::Undecided);
+    }
+}
+
+
+#[derive(Debug, PartialEq)]
+pub struct IoTDevice{
+    name: String,
+    power: i128,
+    active: bool,
+}
+
+impl From<(String, i128, bool)> for IoTDevice {
+    fn from(value: (String, i128, bool)) -> Self{
+        let (mut name, power, active) = value;
+        name = name.to_lowercase();
+        Self { name, power, active }
+    }
+    
+}
+#[derive(Debug, PartialEq)]
+pub struct IoTStream(Vec<IoTDevice>);
+
+impl From<Vec<IoTDevice>> for IoTStream {
+    fn from(value: Vec<IoTDevice>) -> Self{
+        Self (value)
     }
 }
