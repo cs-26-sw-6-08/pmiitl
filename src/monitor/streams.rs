@@ -11,7 +11,6 @@ pub struct OutputStream {
     pub(crate) bound: Option<(i128, i128)>,
     pub(crate) time_verdicts: Vec<(i128, Verdict)>,
     pub(crate) operations: Vec<Operation>,
-    pub(crate) gone: bool,
 }
 
 impl From<(LTL, Vec<Operation>, Option<(i128, i128)>)> for OutputStream {
@@ -22,7 +21,6 @@ impl From<(LTL, Vec<Operation>, Option<(i128, i128)>)> for OutputStream {
             operations,
             bound,
             time_verdicts: Vec::new(),
-            gone: false
         }
     }
 }
@@ -53,10 +51,10 @@ impl OutputStream {
                 .time_verdicts
                 .iter()
                 .any(|(_, verdict)| *verdict == Verdict::False),
-            LTL::Eventually => {
+            LTL::Eventually(_) => {
                 if self.time_verdicts.iter().any(|(_, v)| *v == Verdict::True) || self.bound.is_some_and(|(_, b)| b <= t) {
                     println!("{}", "\t--- Removed a property ---".yellow().bold().italic().underline());
-                    self.gone = true;
+                    self.ltl = LTL::Eventually(true);
                     return self.bound.is_some_and(|(_, b)| b <= t);
                 }
                 false

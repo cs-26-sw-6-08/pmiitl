@@ -34,4 +34,4 @@ impl From<(i128, i128)> for HistoryValue {
 pub enum AggregateType { Sum,  Avg }
 
 #[derive(Debug, PartialEq, Clone)]
-pub enum LTL { Always, Eventually }
+pub enum LTL { Always, Eventually(bool) }

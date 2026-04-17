@@ -69,7 +69,7 @@ fn ltl_rules() {
     assert_eq!(
         compiled_expr.unwrap().as_slice(), 
         [
-            Operation::LTLBounded { bound: (10, 20), idx: 1, not: false, ltl_type: LTL::Eventually }, 
+            Operation::LTLBounded { bound: (10, 20), idx: 1, not: false, ltl_type: LTL::Eventually(false) }, 
             Operation::Number(5000)
         ]
     );

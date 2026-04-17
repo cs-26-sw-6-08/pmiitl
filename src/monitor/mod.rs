@@ -35,7 +35,7 @@ impl Program {
                 .iter_mut()
                 .enumerate()
                 .map(|(prop_num, output_stream)| {
-                    if output_stream.gone {
+                    if output_stream.ltl == LTL::Eventually(true) {
                         return (prop_num, false)
                     }
                     // SDI update

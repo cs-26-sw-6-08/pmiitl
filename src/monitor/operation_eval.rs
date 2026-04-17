@@ -192,7 +192,7 @@ fn eval_operations<'a>(
                         let ver = if *t_current < *t_spawn + *b { Verdict::Undecided } else { Verdict::True };
                         val.and(ver.into())
                     },
-                    crate::monitor_setup::operation_types::LTL::Eventually => {
+                    crate::monitor_setup::operation_types::LTL::Eventually(_) => {
                         let ver = if *t_current < *t_spawn + *b { Verdict::Undecided } else { Verdict::False };
                         val.or(ver.into())
                     }

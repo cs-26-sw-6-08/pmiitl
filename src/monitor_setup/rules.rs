@@ -37,7 +37,7 @@ impl Expr {
                     not: *not, 
                     ltl_type: match self {
                         Expr::Always { .. } => LTL::Always,
-                        _ => LTL::Eventually
+                        _ => LTL::Eventually(false)
                     }
                 }).chain(new_streams), new_key)
             },

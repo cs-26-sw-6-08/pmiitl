@@ -23,7 +23,7 @@ impl Program {
                         Ok((
                             match ltl_expr {
                                 Expr::Always { .. } => LTL::Always,
-                                _ =>                   LTL::Eventually,
+                                _ =>                   LTL::Eventually(false),
                             },
                             expr.compile_expression()?,
                             interval.as_deref().map(Expr::get_bound).transpose()?
