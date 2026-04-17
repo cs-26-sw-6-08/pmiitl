@@ -90,7 +90,7 @@ impl Expr {
                                 FunctionType::Sumtime => AggregateType::Sum,
                                 _ => AggregateType::Avg
                             }, 
-                            history: Vec::new(), 
+                            history: Vec::with_capacity(1), 
                             idx: key + 1,
                             max_bound: None
                         }).chain(new_streams), 

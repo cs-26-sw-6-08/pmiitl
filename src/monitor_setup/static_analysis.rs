@@ -32,10 +32,9 @@ fn update_bounds(mut operations: Vec<Operation>, idx: usize, bounds: Option<(i12
         Operation::Member(_) | 
         Operation::CurrentTime => (Vec::new(), bounds),
         
-        Operation::TimeFunction { idx, history, max_bound, .. } => {
+        Operation::TimeFunction { idx, max_bound, .. } => {
             //Update the bounds for sumtime and avgtime
             *max_bound = bounds.map(|(a,b)| (b - a) as usize);
-            max_bound.map(|val| *history = Vec::with_capacity(val));
 
             (vec![*idx], bounds)
         }

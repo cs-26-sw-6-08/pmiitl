@@ -48,33 +48,12 @@ impl OutputStream {
     }
 
     pub fn get_violated_verdict_single(&mut self, t: i128) -> bool /* True means violation */ {
-        // (LTL::Always == self.ltl
-        //     && self
-        //         .time_verdicts
-        //         .iter()
-        //         .any(|(_, verdict)| *verdict == Verdict::False))
-        //     || (LTL::Eventually == self.ltl
-        //         && (!self.time_verdicts.iter().any(|(_, v)| *v == Verdict::True))
-        //         && self.bound.is_some_and(|(_, b)| t >= b))
-
         match self.ltl {
             LTL::Always => self
                 .time_verdicts
                 .iter()
                 .any(|(_, verdict)| *verdict == Verdict::False),
             LTL::Eventually => {
-                // if self.time_verdicts.iter().any(|(_, v)| *v == Verdict::True) {
-                //     println!("{}", format!("\t--- Removed a property ---").yellow().bold().italic().underline());
-                //     self.gone = true;
-                //     return false;
-                // }
-                // if  self.bound.is_some_and(|(_,b)| b <= t) {
-                //     println!("{}", format!("\t--- Removed a property ---").yellow().bold().italic().underline());
-                //     self.gone = true;
-                //     return true;
-                // }
-                // false
-
                 if self.time_verdicts.iter().any(|(_, v)| *v == Verdict::True) || self.bound.is_some_and(|(_, b)| b <= t) {
                     println!("{}", "\t--- Removed a property ---".yellow().bold().italic().underline());
                     self.gone = true;
