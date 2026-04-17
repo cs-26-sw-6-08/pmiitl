@@ -28,11 +28,9 @@ impl Program {
         loop {
             interval.tick().await;
             let start = Instant::now();
-            
+            println!("--- Interval {:<4}", format!("{}",t/1000).blue().bold());
             //todo: await devices
-
             async {
-
                 let violated_verdicts = streams
                 .iter_mut()
                 .enumerate()
@@ -47,22 +45,9 @@ impl Program {
                     output_stream.update(t, &temp_iot_stream); 
 
                     // Give verdicts
-                    let is_violated; 
-                    match &mut output_stream.ltl {
-                        LTL::Always => is_violated = output_stream.get_violated_verdict_single(t),
-                        LTL::Eventually => {
-                            is_violated = output_stream.get_violated_verdict_single(t);
-                            if is_violated {
-                                println!("{}", format!("--- Removed {prop_num} ---").yellow().bold().italic().underline());
-                                output_stream.gone = true;
-                            }
-                        },
-                    }
+                    let is_violated = output_stream.get_violated_verdict_single(t);
                     
-                    println!("is_violated: {is_violated}");
-                    if cfg!(debug_assertions) {
-                        println!("{:#?}", output_stream);
-                    }
+                    // println!("{:#?}", output_stream);
                     output_stream.clean_up();
 
 
@@ -70,7 +55,7 @@ impl Program {
                 }).filter(|(_, v)| *v);
 
                 for (prop_num, _) in violated_verdicts {
-                    println!("\t{} at time: {t}", format!("Prop {} violated", prop_num+1).red());
+                    println!("\t{} at time: {t}", format!("Prop {} violated", prop_num+1).red().bold().underline());
                 }
 
                 
@@ -78,10 +63,11 @@ impl Program {
             }.await;
 
             let elapsed = start.elapsed();
-            let colored_time = if elapsed.as_millis() > time_interval as u128 { format!("{:?}",elapsed).red() } 
-                else { format!("{:?}",elapsed).green() };
-            // println!("Yarjis translate to engliesh det tog så lang tid at regne for {} her er tiden {}", t, colored_time);
-            println!("--- Interval {:<4} | Execution Time: {:>10} ---", format!("{}",t/1000).bright_cyan().italic().underline(), colored_time);
+            let colored_time = if elapsed.as_millis() > time_interval as u128 { format!("{:?} ms",elapsed).red().bold() } 
+                else { format!("{:?}",elapsed).bright_green().bold() };
+            // println!("--- Interval {:<4} | Execution Time: {:>10} ---", format!("{}",t/1000).blue().bold(), colored_time);
+            println!("\tExecution Time: {}", colored_time);
+
         }
     }
 }
