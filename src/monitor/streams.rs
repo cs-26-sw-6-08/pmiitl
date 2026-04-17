@@ -32,7 +32,7 @@ impl OutputStream {
 
     // Insert a time point into the output stream.
     pub fn insert(&mut self, t: i128) {
-        if self.bound.is_none_or(|(a, b)| a <= t && t <= b) {
+        if !(self.ltl == LTL::Eventually(true)) || self.bound.is_none_or(|(a, b)| a <= t && t <= b) {
             self.time_verdicts.push((t, Verdict::Undecided))
         }
     }
@@ -51,13 +51,15 @@ impl OutputStream {
                 .time_verdicts
                 .iter()
                 .any(|(_, verdict)| *verdict == Verdict::False),
-            LTL::Eventually(_) => {
-                if self.time_verdicts.iter().any(|(_, v)| *v == Verdict::True) || self.bound.is_some_and(|(_, b)| b <= t) {
+            LTL::Eventually(true) => false,
+            LTL::Eventually(false) => {
+                let within_bounds = self.bound.is_some_and(|(_, b)| b <= t);
+                if within_bounds || self.time_verdicts.iter().any(|(_, v)| *v == Verdict::True)   {
+                    #[cfg(debug_assertions)] 
                     println!("{}", "\t--- Removed a property ---".yellow().bold().italic().underline());
                     self.ltl = LTL::Eventually(true);
-                    return self.bound.is_some_and(|(_, b)| b <= t);
-                }
-                false
+                    within_bounds
+                } else { false }
             },
         }
     }

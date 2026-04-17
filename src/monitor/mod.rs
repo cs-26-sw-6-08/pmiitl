@@ -35,9 +35,7 @@ impl Program {
                 .iter_mut()
                 .enumerate()
                 .map(|(prop_num, output_stream)| {
-                    if output_stream.ltl == LTL::Eventually(true) {
-                        return (prop_num, false)
-                    }
+                    
                     // SDI update
                     output_stream.insert(t); 
 
@@ -47,9 +45,9 @@ impl Program {
                     // Give verdicts
                     let is_violated = output_stream.get_violated_verdict_single(t);
                     
-                    // println!("{:#?}", output_stream);
+                    #[cfg(debug_assertions)]
+                    println!("{:#?}", output_stream);
                     output_stream.clean_up();
-
 
                     (prop_num, is_violated)
                 }).filter(|(_, v)| *v);

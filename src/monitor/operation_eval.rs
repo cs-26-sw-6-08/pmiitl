@@ -1,9 +1,10 @@
-use crate::{monitor::{streams::{IoTDevice, IoTStream, OutputStream}, types::{DerivedOutput, StackValue, Verdict}}, monitor_setup::operation_types::{AggregateType, HistoryValue, Operation}, program::member_types::MemberType};
+use crate::{monitor::{streams::{IoTDevice, IoTStream, OutputStream}, types::{DerivedOutput, StackValue, Verdict}}, monitor_setup::operation_types::{AggregateType, HistoryValue, LTL, Operation}, program::member_types::MemberType};
 
 
 impl OutputStream {
     // Calculate the verdict for the output stream.
     pub fn update(&mut self, t_current: i128, devices: &IoTStream) {
+
         for (t_spawn, ver) in self.time_verdicts.iter_mut() {
             let res = eval_operations(&mut self.operations, devices, &*t_spawn, &t_current);
             *ver = res.get_value().get_verdict().unwrap();
@@ -120,10 +121,7 @@ fn eval_operations<'a>(
                 //Not all devices have been looked at yet
                 } else if !device_stack.is_empty() {
                     device_pointer = device_stack.pop();
-                    idx_stack.extend([
-                        (cur_idx, Reduce),
-                        (*idx, Deepen),
-                    ]);
+                    idx_stack.extend([(cur_idx, Reduce), (*idx, Deepen)]);
 
                 //No devices violated the expression
                 } else {
@@ -164,7 +162,6 @@ fn eval_operations<'a>(
                         AggregateType::Avg => his_val/(t_current - t_spawn),
                 }.into();
                 value_stack.push(val.as_undecided());
-                
             },
             
             // LTL 
@@ -188,11 +185,11 @@ fn eval_operations<'a>(
                 let val = value_stack.pop().expect("Error in ltl");
                 
                 let val = match ltl_type {
-                    crate::monitor_setup::operation_types::LTL::Always => {
+                    LTL::Always => {
                         let ver = if *t_current < *t_spawn + *b { Verdict::Undecided } else { Verdict::True };
                         val.and(ver.into())
                     },
-                    crate::monitor_setup::operation_types::LTL::Eventually(_) => {
+                    LTL::Eventually(_) => {
                         let ver = if *t_current < *t_spawn + *b { Verdict::Undecided } else { Verdict::False };
                         val.or(ver.into())
                     }
