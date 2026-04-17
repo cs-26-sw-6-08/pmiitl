@@ -53,7 +53,7 @@ async fn main() {
     
     // println!("{:#?}", program);
 
-    if let Err(err) = program.monitor(1).await {
+    if let Err(err) = program.monitor(1_000).await {
         return println!("Error: {}", err);
     }
 }

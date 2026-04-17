@@ -1,1 +1,6 @@
-always count(active) > 5;
+// always[0s,9s] t = 1 s | t = 2 s | t = 3 s | t = 4 s |t = 5 s | t = 6 s |t = 7 s | t = 8 s;
+
+// always t%2s = 0s | t%2s = 1s;
+
+Eventually[0s,2s] 1;
+//always[0s,2s] t = 10000000s;

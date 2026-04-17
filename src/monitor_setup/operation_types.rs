@@ -1,5 +1,5 @@
 
-use crate::program::{member_types::MemberType, operations::{BinaryOperators, UnaryOperators}};
+use crate::{monitor::types::Verdict, program::{member_types::MemberType, operations::{BinaryOperators, UnaryOperators}}};
 
 
 #[derive(Debug, PartialEq, Clone)]
