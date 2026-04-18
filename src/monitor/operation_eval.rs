@@ -33,7 +33,7 @@ impl OutputStream {
 #[derive(PartialEq, Debug)]
 enum StepType { Deepen, Reduce }
 
-fn eval_operations<'a>(
+pub(crate) fn eval_operations<'a>(
     operations: &mut [Operation], 
     devices: &'a IoTStream,
     t_spawn: &i128,
@@ -95,13 +95,10 @@ fn eval_operations<'a>(
                 value_stack.extend( [0.into(),0.into()] );
             }
             (Operation::AggregateFunction { function_type, idx }, Reduce) => {
-                let res = value_stack.pop().or_pop_err()?;
+                let val = value_stack.pop().or_pop_err()?;
                 if !device_stack.is_empty() {
                     let acc = value_stack.pop().or_pop_err()?;
-                    value_stack.push(
-                        acc + res
-                        //acc.zip(res).map(|(a, b)| a + b).expect("Error in Aggregate function")
-                    );
+                    value_stack.push( acc + val );
                     device_pointer = device_stack.pop();
                     idx_stack.extend([
                         (cur_idx, Reduce),
@@ -110,7 +107,7 @@ fn eval_operations<'a>(
                 } else {
                     let acc = value_stack.pop().or_pop_err()?;
                     //let res = acc.zip(res).map(|(a, b)| a + b).expect("Error in Aggregate function");
-                    let res = acc + res;
+                    let res = acc + val;
                     value_stack.push(
                         match function_type {
                             AggregateType::Sum => res,
@@ -143,8 +140,7 @@ fn eval_operations<'a>(
             },
 
             // Time functions
-            (Operation::TimeFunction { idx, max_bound, history, function_type }, Deepen) => {
-                
+            (Operation::TimeFunction { idx, .. }, Deepen) => {
                 idx_stack.extend([(cur_idx, Reduce), (*idx, Deepen)]);
             },
             (Operation::TimeFunction { function_type, history, max_bound, .. }, Reduce) => {
@@ -161,7 +157,7 @@ fn eval_operations<'a>(
 
                 let val = time_function_reduce_step(val, *t_spawn, *max_bound, history);
                 let val: StackValue = compute_function_type(function_type, val, *t_spawn, *t_current).into();
-                value_stack.push(val.as_undecided());
+                value_stack.push(val.to_undecided());
             },
             
             // LTL 

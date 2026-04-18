@@ -1,4 +1,4 @@
-use crate::{monitor_setup::operation_types::{AggregateType, LTL, Operation}, program::{expressions::Expr, function_types::FunctionType, member_types::MemberType, operations::{BinaryOperators, UnaryOperators}, units::Unit}};
+use crate::{monitor::streams::IoTStream, monitor_setup::operation_types::{AggregateType, LTL, Operation}, program::{expressions::Expr, function_types::FunctionType, member_types::MemberType, operations::{BinaryOperators, UnaryOperators}, units::Unit}};
 
 pub fn binary_expr(lhs: Expr, rhs: Expr, operator: BinaryOperators) -> Expr {
     Expr::BinaryOperations {
@@ -94,14 +94,10 @@ pub fn operations_vec_with_sumtime() -> Vec<Operation> {
     ].into()
 }
 
-/*
-1 < 5
-    always [25,40]
-        sumtime(3)
-            sum(4)
-                member
-    always[500,1000]
-        sumtime(7)
-            sum(8)
-                1
-*/
+pub fn mock_devices(amt: usize) -> IoTStream {
+    [
+        ("Roomba".into(), 5, true).into(),
+        ("christian".into(), 15, false).into(),
+        ("Fridge".into(), 10, true).into()
+    ].into_iter().take(amt).collect::<Vec<_>>().into()
+}

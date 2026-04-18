@@ -91,7 +91,7 @@ impl<'a> StackValue<'a> {
     }
 
 
-    pub fn as_undecided(mut self) -> Self {
+    pub fn to_undecided(mut self) -> Self {
         self.decided = Decidedability::Undecided;
         self
     }
@@ -226,7 +226,7 @@ pub enum DerivedOutput<'a> {
     String(&'a String)
 }
 
-impl<'a> DerivedOutput<'a> {
+impl DerivedOutput<'_> {
     pub fn get_verdict(&self) -> Option<Verdict> {
         Some(match self {
             DerivedOutput::Verdict(verdict) => verdict.clone(),
@@ -258,7 +258,7 @@ impl Decidedability {
 }
 
 
-impl<'a> From<i128> for StackValue<'a> {
+impl From<i128> for StackValue<'_> {
     fn from(value: i128) -> Self {
         Self { value: DerivedOutput::Number(value), decided: Decidedability::Decided }
     }
@@ -270,13 +270,13 @@ impl<'a> From<&'a String> for StackValue<'a> {
     }
 }
 
-impl<'a> From<Verdict> for StackValue<'a> {
+impl From<Verdict> for StackValue<'_> {
     fn from(value: Verdict) -> Self {
         Self { value: DerivedOutput::Verdict(value), decided: Decidedability::Decided }
     }
 }
 
-impl<'a> From<bool> for StackValue<'a> {
+impl From<bool> for StackValue<'_> {
     fn from(value: bool) -> Self {
         Self { value: DerivedOutput::Verdict(value.into()), decided: Decidedability::Decided }
     }
