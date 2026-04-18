@@ -30,11 +30,11 @@ pub enum Error {
     InvalidCompileExpr,
 
     #[error("Value Stack error: Not enough values in stack")]
-    ValueStackPopError,
+    ValueStackPop,
     #[error("Invalid Device Pointer Assignment")]
-    DevicePointerError,
+    DevicePointer,
     #[error("Value Stack Error: Not the correct value type")]
-    ValueStackValError
+    ValueStackVal
 }
 
 impl PartialEq for Error {

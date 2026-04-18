@@ -238,7 +238,7 @@ impl DerivedOutput<'_> {
     pub fn get_num(&self) -> Result<i128, Box<dyn Error>> {
         match self {
             DerivedOutput::Number(v) => Ok(*v),
-           _ => Err(errors::Error::ValueStackValError.into())
+           _ => Err(errors::Error::ValueStackVal.into())
         }
     }
 }

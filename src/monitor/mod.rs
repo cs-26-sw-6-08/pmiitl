@@ -72,7 +72,8 @@ impl Program {
                     output_stream.insert(t); 
 
                     // Calculate the new state of the streams
-                    output_stream.update(t, device_stream); 
+                    //todo: potentially add error handling
+                    let _ = output_stream.update(t, device_stream); 
 
                     // Give verdicts
                     let is_violated = output_stream.get_violated_verdict_single(t);

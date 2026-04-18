@@ -73,7 +73,7 @@ impl OutputStream {
     }
 }
 
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct IoTDevice {
     pub name: String,
     pub power: i128,
@@ -93,11 +93,15 @@ impl From<(String, i128, bool)> for IoTDevice {
         }
     }
 }
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct IoTStream(Vec<IoTDevice>);
 impl IoTStream {
     pub fn get_devices(&self) -> &Vec<IoTDevice> {
         &self.0
+    }
+
+    pub fn get_mut_devices(&mut self) -> &mut Vec<IoTDevice> {
+        &mut self.0
     }
 }
 

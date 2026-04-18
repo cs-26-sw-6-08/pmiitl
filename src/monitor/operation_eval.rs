@@ -1,6 +1,6 @@
 
 
-use crate::{errors, monitor::{streams::{IoTDevice, IoTStream, OutputStream}, types::{DerivedOutput, StackValue, Verdict}}, monitor_setup::operation_types::{AggregateType, HistoryValue, LTL, Operation}, program::member_types::MemberType, utils::trait_helper_funcs::OptionExt};
+use crate::{errors, monitor::{streams::{IoTDevice, IoTStream, OutputStream}, types::{DerivedOutput, StackValue, Verdict}}, monitor_setup::operation_types::{AggregateType, HistoryValue, LTL, Operation}, program::member_types::MemberType, utils::vec_helper_funcs::{ExtVec}};
 
 use std::error::Error;
 
@@ -59,9 +59,9 @@ pub(crate) fn eval_operations<'a>(
             (Operation::CurrentTime, _) => value_stack.push((*t_spawn * 1_000).into()),
             (Operation::Member(mem_type), _) => {
                 value_stack.push(match mem_type {
-                    MemberType::Active => device_pointer.ok_or(errors::Error::DevicePointerError)?.active.into(),
-                    MemberType::Power =>  device_pointer.ok_or(errors::Error::DevicePointerError)?.power.into(),
-                    MemberType::Name =>  StackValue::from(device_pointer.map(|d| &d.name).ok_or(errors::Error::DevicePointerError)?),
+                    MemberType::Active => device_pointer.ok_or(errors::Error::DevicePointer)?.active.into(),
+                    MemberType::Power =>  device_pointer.ok_or(errors::Error::DevicePointer)?.power.into(),
+                    MemberType::Name =>  StackValue::from(device_pointer.map(|d| &d.name).ok_or(errors::Error::DevicePointer)?),
                 });
             },
 
@@ -75,8 +75,8 @@ pub(crate) fn eval_operations<'a>(
                 ]);
             },
             (Operation::Binary { bin_op, .. }, Reduce) => {
-                let v1 = value_stack.pop().or_pop_err()?;
-                let v2 = value_stack.pop().or_pop_err()?;
+                let v1 = value_stack.pop_or_err()?;
+                let v2 = value_stack.pop_or_err()?;
 
                 value_stack.push( v2.bin_op(v1, bin_op) );
             },
@@ -84,7 +84,7 @@ pub(crate) fn eval_operations<'a>(
                 idx_stack.extend([(cur_idx, Reduce),(*idx, Deepen)]); 
             },
             (Operation::Unary { un_op, .. }, Reduce) => {
-                let res = value_stack.pop().or_pop_err()?.un_op(un_op);
+                let res = value_stack.pop_or_err()?.un_op(un_op);
                 value_stack.push(res);
             },
 
@@ -95,9 +95,9 @@ pub(crate) fn eval_operations<'a>(
                 value_stack.extend( [0.into(),0.into()] );
             }
             (Operation::AggregateFunction { function_type, idx }, Reduce) => {
-                let val = value_stack.pop().or_pop_err()?;
+                let val = value_stack.pop_or_err()?;
                 if !device_stack.is_empty() {
-                    let acc = value_stack.pop().or_pop_err()?;
+                    let acc = value_stack.pop_or_err()?;
                     value_stack.push( acc + val );
                     device_pointer = device_stack.pop();
                     idx_stack.extend([
@@ -105,7 +105,7 @@ pub(crate) fn eval_operations<'a>(
                         (*idx, Deepen),
                     ]);
                 } else {
-                    let acc = value_stack.pop().or_pop_err()?;
+                    let acc = value_stack.pop_or_err()?;
                     //let res = acc.zip(res).map(|(a, b)| a + b).expect("Error in Aggregate function");
                     let res = acc + val;
                     value_stack.push(
@@ -144,7 +144,7 @@ pub(crate) fn eval_operations<'a>(
                 idx_stack.extend([(cur_idx, Reduce), (*idx, Deepen)]);
             },
             (Operation::TimeFunction { function_type, history, max_bound, .. }, Reduce) => {
-                let val = value_stack.pop().or_pop_err()?.get_value().get_num()?;
+                let val = value_stack.pop_or_err()?.get_value().get_num()?;
                 
                 /*//If bound has already been exceeded we aren't interested in calculating further
                 if let Some(bound) = max_bound && (*t_current - *t_spawn) == (*bound) as i128 {
@@ -165,7 +165,7 @@ pub(crate) fn eval_operations<'a>(
                 idx_stack.extend([(cur_idx, Reduce), (*idx, Deepen)]);
             },
             (Operation::LTLAlwaysUnbounded { .. }, Reduce) => {
-                let val = value_stack.pop().or_pop_err()?;
+                let val = value_stack.pop_or_err()?;
                 value_stack.push(
                     val.and(Verdict::Undecided.into())
                 );
@@ -188,7 +188,7 @@ pub(crate) fn eval_operations<'a>(
             },
             (Operation::LTLBounded { bound, not, ltl_type, .. }, Reduce) => {
                 let (_, b) = bound;
-                let val = value_stack.pop().or_pop_err()?;
+                let val = value_stack.pop_or_err()?;
                 //Check whether it is decideable or not
                 let val = match (ltl_type, *t_current < *t_spawn + *b) {
                     (LTL::Always, true) => val.and(Verdict::Undecided.into()),
@@ -201,7 +201,7 @@ pub(crate) fn eval_operations<'a>(
             },
         }
     }
-    value_stack.pop().or_pop_err()
+    value_stack.pop_or_err()
 }
 
  

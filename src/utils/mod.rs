@@ -1,2 +1,2 @@
 pub mod test_helper_func;
-pub mod trait_helper_funcs;
+pub mod vec_helper_funcs;

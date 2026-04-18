@@ -1,8 +1,8 @@
-use crate::{monitor::{operation_eval::eval_operations, types::StackValue}, monitor_setup::operation_types::Operation, utils::test_helper_func::mock_devices};
+use crate::{monitor::{operation_eval::eval_operations, streams::IoTStream, types::{StackValue, Verdict}}, monitor_setup::operation_types::{AggregateType, Operation}, program::{member_types::MemberType, operations::BinaryOperators}, utils::test_helper_func::mock_devices};
 
 
 
-//todo: Test constants, Aggregate functions, Ltl expressions, time functions 
+//todo: Ltl expressions, time functions, bin op, unary op, Random tests
 #[test]
 fn test_constants() {
     let mut operations = [
@@ -11,7 +11,7 @@ fn test_constants() {
         Operation::CurrentTime,
     ];
     let (spawn_t, cur_t) = (0, 1);
-    let devices = mock_devices(1);
+    let devices = mock_devices(1).into();
     assert_eq!(
         StackValue::from(4000),    
         eval_operations(&mut operations[0..1], &devices, &spawn_t, &cur_t).unwrap()
@@ -33,7 +33,63 @@ fn test_constants() {
 
 #[test]
 fn aggregate_functions() {
+    let mut sum = [
+        Operation::AggregateFunction { idx: 1, function_type: AggregateType::Sum },
+        Operation::Member(MemberType::Power)
+    ];
+    let mut avg = [
+        Operation::AggregateFunction { idx: 1, function_type: AggregateType::Avg },
+        Operation::Member(MemberType::Power)
+    ];
+    let mut foreach = [
+        Operation::Foreach { idx: 1 },
+        Operation::Member(MemberType::Active)
+    ];
+    let (spawn_t, cur_t) = (0, 1);
+    let devices: IoTStream = mock_devices(3).into();
+    let devices_all_active: IoTStream = mock_devices(3).into_iter().map(|mut device| { 
+        device.active = true;
+        device
+     }).collect::<Vec<_>>().into(); 
 
+    assert_eq!(
+        StackValue::from(30),    
+        eval_operations(&mut sum, &devices, &spawn_t, &cur_t).unwrap()
+    );
+    assert_eq!(
+        StackValue::from(20),    
+        eval_operations(&mut sum, &mock_devices(2).into(), &spawn_t, &cur_t).unwrap()
+    );
+    assert_eq!(
+        StackValue::from(10),    
+        eval_operations(&mut avg, &devices, &spawn_t, &cur_t).unwrap()
+    );
+    assert_eq!(
+        StackValue::from(Verdict::False),    
+        eval_operations(&mut foreach, &devices, &spawn_t, &cur_t).unwrap()
+    );
+    assert_eq!(
+        StackValue::from(Verdict::True),    
+        eval_operations(&mut foreach, &devices_all_active, &spawn_t, &cur_t).unwrap()
+    );
+}
 
+//todo: Overvej om LTL expression altid skal return either true or false, and whether undecided should be decided by taintness
+#[test]
+fn ltl_expressions() {
+    let mut always_unb = [
+        Operation::LTLAlwaysUnbounded { idx: 1 }, 
+        Operation::Binary { bin_op: BinaryOperators::NotEqual, idx_lhs: 2, idx_rhs: 3 },
+        Operation::CurrentTime, 
+        Operation::Number(10000)
+    ];
+    let devices: IoTStream = mock_devices(3).into();
+    assert_eq!(
+        StackValue::from(Verdict::True),
+        eval_operations(&mut always_unb, &devices, &0, &10).unwrap()
+    );
+    assert!(
+        (0..10).all(|t_spawn| eval_operations(&mut always_unb, &devices, &t_spawn, &10).unwrap() == StackValue::from(Verdict::True) )
+    )
 
 }
