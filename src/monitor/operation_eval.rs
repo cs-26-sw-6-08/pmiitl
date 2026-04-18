@@ -77,7 +77,7 @@ pub(crate) fn eval_operations<'a>(
                 //If the binary operation is an 'or' and returned true, then the rest shouldn't be evaluated
                 // Read as: 'or' -> last_val.is_false
                 if !matches!(bin_op, BinaryOperators::Or) 
-                || !value_stack.last().is_some_and(|val| *val == Verdict::True.into()) {
+                || !value_stack.last().is_some_and(|val| matches!(*val.get_value(), DerivedOutput::Verdict(Verdict::True))) {
                     idx_stack.extend([(cur_idx, Reduce), (*idx_rhs, Deepen)]);
                 }
             },
