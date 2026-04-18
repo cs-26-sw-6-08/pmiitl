@@ -1,3 +1,7 @@
+use std::error::Error;
+
+use crate::errors;
+
 
 
 pub trait ExtVec<T> {
@@ -16,5 +20,16 @@ impl<T> ExtVec<T> for Vec<T> {
     fn chain<I: IntoIterator<Item = T>>(mut self, iter: I) -> Self {
         self.extend(iter);
         self
+    }
+}
+
+
+pub trait OptionExt<T> {
+    fn or_pop_err(self) -> Result<T, Box<dyn Error>>;
+}
+
+impl<T> OptionExt<T> for Option<T> {
+    fn or_pop_err(self) -> Result<T, Box<dyn Error>> {
+        self.ok_or(errors::Error::ValueStackError.into())
     }
 }

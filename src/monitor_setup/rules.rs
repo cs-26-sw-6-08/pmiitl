@@ -3,7 +3,7 @@ use std::error::Error;
 use crate::{
     errors,
     monitor_setup::operation_types::{LTL, Operation, AggregateType}, 
-    program::{expressions::Expr,function_types::FunctionType}, utils::vec_helper_funcs::ExtVec
+    program::{expressions::Expr,function_types::FunctionType}, utils::trait_helper_funcs::ExtVec
 };
 use crate::program::operations::BinaryOperators::*;
 

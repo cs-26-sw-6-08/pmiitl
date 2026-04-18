@@ -27,7 +27,12 @@ pub enum Error {
     #[error("Invalid Interval Expression")]
     InvalidIntervalExpr,
     #[error("Invalid Expression for compilation")]
-    InvalidCompileExpr
+    InvalidCompileExpr,
+
+    #[error("Value Stack error: Not enough values in stack")]
+    ValueStackError,
+    #[error("Invalid Device Pointer Assignment")]
+    DevicePointerError,
 }
 
 impl PartialEq for Error {
