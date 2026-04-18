@@ -351,7 +351,7 @@ fn test8() {
                     idx: 2,
                     function_type: AggregateType::Sum,
                     history: Vec::new(),
-                    max_bound: None,
+                    bound: None,
                 },
                 Operation::AggregateFunction {
                     idx: 3,

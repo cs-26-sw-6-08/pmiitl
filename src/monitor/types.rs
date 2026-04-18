@@ -68,8 +68,8 @@ pub struct Device {
 
 #[derive(Debug, PartialEq, Clone)]
 pub struct StackValue<'a> {
-    value: DerivedOutput<'a>, 
-    decided: Decidedability 
+    pub(crate) value: DerivedOutput<'a>, 
+    pub(crate) decided: Decidedability 
 }
 
 

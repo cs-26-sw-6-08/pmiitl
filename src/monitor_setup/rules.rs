@@ -32,7 +32,7 @@ impl Expr {
             Expr::Eventually { interval: Some(val), not, expr } => {
                 let (new_streams, new_key) = expr.compile_expression_helper(Vec::new(), key+1)?;
                 (streams.with(Operation::LTLBounded { 
-                    bound: val.get_bound()?, 
+                    bound: val.get_bound().map(|(a,b)| (a/1000, b/1000))?, 
                     idx: key+1, 
                     not: *not, 
                     ltl_type: match self {
@@ -92,7 +92,7 @@ impl Expr {
                             }, 
                             history: Vec::with_capacity(1), 
                             idx: key + 1,
-                            max_bound: None
+                            bound: None
                         }).chain(new_streams), 
                         new_key
                     )

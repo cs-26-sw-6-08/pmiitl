@@ -8,6 +8,6 @@
 
 //always counttime(power > 3w) < 4 s;
 
-always t%4s = 0s -> always[0s,4s](counttime(1) < 6s);
+always t%4s = 0s -> always[1s,4s](counttime(1) < 6s);
 
 //always count(name) = t /1s;

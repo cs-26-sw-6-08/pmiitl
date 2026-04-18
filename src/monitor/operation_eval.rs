@@ -1,8 +1,10 @@
 
 
-use crate::{errors, monitor::{streams::{IoTDevice, IoTStream, OutputStream}, types::{DerivedOutput, StackValue, Verdict}}, monitor_setup::operation_types::{AggregateType, HistoryValue, LTL, Operation}, program::member_types::MemberType, utils::vec_helper_funcs::{ExtVec}};
+use hime_redist::utils::bin;
 
-use std::error::Error;
+use crate::{errors, monitor::{streams::{IoTDevice, IoTStream, OutputStream}, types::{DerivedOutput, StackValue, Verdict}}, monitor_setup::operation_types::{AggregateType, HistoryValue, LTL, Operation}, program::{member_types::MemberType, operations::BinaryOperators}, utils::vec_helper_funcs::ExtVec};
+
+use std::{error::Error, ops::Add};
 
 impl OutputStream {
     // Calculate the verdict for the output stream.
@@ -20,7 +22,7 @@ impl OutputStream {
                     if res_val == Verdict::False {
                         *ver = Verdict::False;
                     } else if res.is_decided() {
-                        *ver = res_val;
+                        *ver = Verdict::True;
                     }
                 },
                 LTL::Eventually(_) => todo!(),
@@ -31,7 +33,7 @@ impl OutputStream {
 }
 
 #[derive(PartialEq, Debug)]
-enum StepType { Deepen, Reduce }
+enum StepType { Deepen, Reduce, ReducePartial }
 
 pub(crate) fn eval_operations<'a>(
     operations: &mut [Operation], 
@@ -64,15 +66,20 @@ pub(crate) fn eval_operations<'a>(
                     MemberType::Name =>  StackValue::from(device_pointer.map(|d| &d.name).ok_or(errors::Error::DevicePointer)?),
                 });
             },
-
-            //todo: If we want optimize add case where or-case for fst value is true
             // BinOp / UnOp
-            (Operation::Binary { idx_lhs, idx_rhs,.. }, Deepen) => {
+            (Operation::Binary { idx_lhs,.. }, Deepen) => {
                 idx_stack.extend([
-                    (cur_idx, Reduce),
-                    (*idx_rhs, Deepen),
+                    (cur_idx, ReducePartial),
                     (*idx_lhs, Deepen)
                 ]);
+            },
+            (Operation::Binary { bin_op, idx_rhs, .. }, ReducePartial) => {
+                //If the binary operation is an 'or' and returned true, then the rest shouldn't be evaluated
+                // Read as: 'or' -> last_val.is_false
+                if !matches!(bin_op, BinaryOperators::Or) 
+                || !value_stack.last().is_some_and(|val| *val == Verdict::True.into()) {
+                    idx_stack.extend([(cur_idx, Reduce), (*idx_rhs, Deepen)]);
+                }
             },
             (Operation::Binary { bin_op, .. }, Reduce) => {
                 let v1 = value_stack.pop_or_err()?;
@@ -89,32 +96,40 @@ pub(crate) fn eval_operations<'a>(
             },
 
             // Aggregate Functions
-            (Operation::AggregateFunction { .. }, Deepen) => {
-                idx_stack.push((cur_idx, Reduce));
+            (Operation::AggregateFunction { idx, .. }, Deepen) => {
+                idx_stack.extend([
+                    (cur_idx, ReducePartial),
+                    (*idx, Deepen),
+                ]);
+                
+                //Put devices on device stack and pop the first
                 device_stack.extend(devices.get_devices());
-                value_stack.extend( [0.into(),0.into()] );
+                device_pointer = device_stack.pop();
+
+                //Accumulation starts at zero
+                value_stack.push( 0.into() );
             }
-            (Operation::AggregateFunction { function_type, idx }, Reduce) => {
-                let val = value_stack.pop_or_err()?;
-                if !device_stack.is_empty() {
-                    let acc = value_stack.pop_or_err()?;
-                    value_stack.push( acc + val );
-                    device_pointer = device_stack.pop();
+            (Operation::AggregateFunction { idx, ..}, ReducePartial) => {
+                //Pop the accumulated value and newest value on the stack and add them
+                let res  = value_stack.pop_or_err()? + value_stack.pop_or_err()?;
+                value_stack.push( res );
+
+                if let Some(device) = device_stack.pop() {
+                    device_pointer = Some(device);
                     idx_stack.extend([
-                        (cur_idx, Reduce),
+                        (cur_idx, ReducePartial),
                         (*idx, Deepen),
                     ]);
-                } else {
-                    let acc = value_stack.pop_or_err()?;
-                    //let res = acc.zip(res).map(|(a, b)| a + b).expect("Error in Aggregate function");
-                    let res = acc + val;
-                    value_stack.push(
-                        match function_type {
-                            AggregateType::Sum => res,
-                            AggregateType::Avg => res / (devices.get_devices().len() as i128).into(),
-                        }
-                    );
-                }
+                } else { idx_stack.push((cur_idx, Reduce)); }
+            }
+            (Operation::AggregateFunction { function_type, .. }, Reduce) => {
+                let res  = value_stack.pop_or_err()?;
+                value_stack.push(
+                    match function_type {
+                        AggregateType::Sum => res,
+                        AggregateType::Avg => res / (devices.get_devices().len() as i128).into(),
+                    }
+                );
             },
             (Operation::Foreach { .. }, Deepen) => {
                 idx_stack.push((cur_idx, Reduce));
@@ -122,41 +137,39 @@ pub(crate) fn eval_operations<'a>(
                 value_stack.push( Verdict::True.into() )
             },
             (Operation::Foreach { idx }, Reduce) => {
-                let prev_res = value_stack.pop();
-
-                //Violation Occurred with one of the devices
-                if  prev_res.is_some_and(|v| *v.get_value() == DerivedOutput::Verdict(Verdict::False)) {
-                    value_stack.push(Verdict::False.into());
-                
-                //Not all devices have been looked at yet
-                } else if !device_stack.is_empty() {
+                //Violation didn't occur and not all devices have been looked at
+                //todo: Figure out if undecided should be here as well
+                if value_stack.last().is_some_and(|v| matches!(*v.get_value(), DerivedOutput::Verdict(Verdict::True) | DerivedOutput::Verdict(Verdict::Undecided)))
+                && !device_stack.is_empty() {
+                    let _ = value_stack.pop();
                     device_pointer = device_stack.pop();
                     idx_stack.extend([(cur_idx, Reduce), (*idx, Deepen)]);
-
-                //No devices violated the expression
-                } else {
-                    value_stack.push(Verdict::True.into());
+                
+                //If here, then a violation occured or not depending on the last value in value_stack
+                } else { 
+                    device_stack.clear(); 
                 }
             },
-
             // Time functions
-            (Operation::TimeFunction { idx, .. }, Deepen) => {
-                idx_stack.extend([(cur_idx, Reduce), (*idx, Deepen)]);
+            (Operation::TimeFunction { idx, bound, history, function_type }, Deepen) => {
+                //If bound has already been exceeded we aren't interested in calculating further
+                //todo: Can be optimized by adding this check when the bound is just about to be overstepped
+                match bound { 
+                    //The difference between t_c and t_s is the time the bound has been active. 
+                    //If it exceeds the end (b) (added 1 because of it the num being inclusive), then it shouldn't evaluate the expression and it is decided (or untainted) 
+                    Some((a, b)) if (*t_current - *t_spawn) == *b + 1 => {
+                        let prev_val = history[(t_spawn % (*b - *a + 1)) as usize].value;
+                        value_stack.push(
+                            function_type_computation(function_type, prev_val, *t_spawn, *t_current - 1).into()
+                        );
+                    },
+                    _ => idx_stack.extend([(cur_idx, Reduce), (*idx, Deepen)])
+                }                
             },
-            (Operation::TimeFunction { function_type, history, max_bound, .. }, Reduce) => {
+            (Operation::TimeFunction { function_type, history, bound, .. }, Reduce) => {
                 let val = value_stack.pop_or_err()?.get_value().get_num()?;
-                
-                /*//If bound has already been exceeded we aren't interested in calculating further
-                if let Some(bound) = max_bound && (*t_current - *t_spawn) == (*bound) as i128 {
-                    let his_val = history[(t_spawn % (*bound as i128)) as usize].value;
-                    value_stack.push(
-                       compute_function_type(function_type, his_val, *t_spawn, *t_current).into()
-                    );
-                    continue;
-                }*/
-
-                let val = time_function_reduce_step(val, *t_spawn, *max_bound, history);
-                let val: StackValue = compute_function_type(function_type, val, *t_spawn, *t_current).into();
+                let val = time_function_reduce_step(val, *t_spawn, *bound, history);
+                let val: StackValue = function_type_computation(function_type, val, *t_spawn, *t_current).into();
                 value_stack.push(val.to_undecided());
             },
             
@@ -174,38 +187,39 @@ pub(crate) fn eval_operations<'a>(
             (Operation::LTLBounded { idx, bound, ltl_type, .. }, Deepen) => {
                 let (a,b) = bound;
                 //If over bound, should add verdict to stack and move back up
-                if *t_spawn + *b < *t_current { 
-                    value_stack.push(
+                //fst is lowerbound, snd is upperbound
+                match (*a+*t_spawn <= *t_current, *t_current <= *t_spawn + *b ) {
+                    (true, true) => {
+                        idx_stack.extend([(cur_idx, Reduce), (*idx, Deepen)]);
+                    },
+                    (true, false) => value_stack.push(
                         match ltl_type {
                             LTL::Always | LTL::Eventually(true) => Verdict::True.into(),
                             LTL::Eventually(false) => Verdict::False.into(),
                         }
-                    ); 
-                }
-                else if *a+*t_spawn <= *t_current {
-                    idx_stack.extend([(cur_idx, Reduce), (*idx, Deepen)]);
+                    ),
+                    _ => ()
                 }
             },
-            (Operation::LTLBounded { bound, not, ltl_type, .. }, Reduce) => {
-                let (_, b) = bound;
+            (Operation::LTLBounded { not, ltl_type, .. }, Reduce) => {
                 let val = value_stack.pop_or_err()?;
-                //Check whether it is decideable or not
-                let val = match (ltl_type, *t_current < *t_spawn + *b) {
-                    (LTL::Always, true) => val.and(Verdict::Undecided.into()),
-                    (LTL::Eventually(_), true) => val.or(Verdict::Undecided.into()),
-                    _ => val
+                //Undecideable when here
+                let val = match ltl_type {
+                    LTL::Always => val.and(Verdict::Undecided.into()),
+                    LTL::Eventually(_) => val.or(Verdict::Undecided.into())
                 };
                 //Not the value if necessary
                 let val = if *not { !val } else { val };
                 value_stack.push(val);
             },
+            _ => Err(errors::Error::IllegalOperation)?
         }
     }
     value_stack.pop_or_err()
 }
 
- 
-fn compute_function_type(
+ #[inline]
+fn function_type_computation(
     function_type: &AggregateType, 
     cur_val: i128, 
     t_spawn: i128, 
@@ -222,13 +236,13 @@ fn compute_function_type(
 fn time_function_reduce_step(
     newest_val: i128,
     t_spawn: i128,
-    bound: Option<usize>,
+    bound: Option<(i128, i128)>,
     history_vec: &mut Vec<HistoryValue>
 ) -> i128 {
 
     //Which idx should be overwritten
-    let arr_idx =  if let Some(bound) = bound {
-            (t_spawn % (bound as i128)) as usize } 
+    let arr_idx =  if let Some((a,b)) = bound {
+            (t_spawn % (b-a + 1)) as usize } 
         else { t_spawn as usize };
 
     //Sum up the value according to the history and update history accordingly

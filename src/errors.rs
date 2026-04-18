@@ -34,7 +34,9 @@ pub enum Error {
     #[error("Invalid Device Pointer Assignment")]
     DevicePointer,
     #[error("Value Stack Error: Not the correct value type")]
-    ValueStackVal
+    ValueStackVal,
+    #[error("Illegal operation during evaluation")]
+    IllegalOperation
 }
 
 impl PartialEq for Error {
