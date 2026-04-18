@@ -7,7 +7,19 @@ impl OutputStream {
 
         for (t_spawn, ver) in self.time_verdicts.iter_mut() {
             let res = eval_operations(&mut self.operations, devices, &*t_spawn, &t_current);
-            *ver = res.get_value().get_verdict().unwrap();
+            
+            match self.ltl {
+                LTL::Always => {
+                    let res_val =  res.get_value().get_verdict().unwrap();
+
+                    if res_val == Verdict::False {
+                        *ver = Verdict::False;
+                    } else if res.is_decided() {
+                        *ver = res_val;
+                    }
+                },
+                LTL::Eventually(_) => todo!(),
+            }
         }
     }
 }
@@ -29,7 +41,7 @@ fn eval_operations<'a>(
     let mut device_pointer: Option<&IoTDevice> = None;
 
     idx_stack.push((0usize, StepType::Deepen));
-   
+    
     while let Some((cur_idx, step_type)) = idx_stack.pop() {
         // let cur_op = &mut operations[cur_idx] as *mut Operation;
         let cur_op = &mut operations[cur_idx] as *mut Operation;
@@ -38,7 +50,7 @@ fn eval_operations<'a>(
             // Base cases
             (Operation::Number(val), _) => value_stack.push((*val).into()),
             (Operation::String(val), _) => value_stack.push((&*val).into()),
-            (Operation::CurrentTime, _) => value_stack.push((*t_spawn).into()),
+            (Operation::CurrentTime, _) => value_stack.push((*t_spawn * 1_000).into()),
             (Operation::Member(mem_type), _) => {
                 let msg = "Device pointer was not implemented correctly";
                 value_stack.push(match mem_type {
@@ -48,6 +60,7 @@ fn eval_operations<'a>(
                 });
             },
 
+            //todo: If we want optimize add case where or-case for fst value is true
             // BinOp / UnOp
             (Operation::Binary { idx_lhs, idx_rhs,.. }, Deepen) => {
                 idx_stack.extend([
@@ -80,32 +93,33 @@ fn eval_operations<'a>(
             (Operation::AggregateFunction { .. }, Deepen) => {
                 idx_stack.push((cur_idx, Reduce));
                 device_stack.extend(devices.get_devices());
-                value_stack.push( 0.into() )
+                value_stack.extend( [0.into(),0.into()] );
             }
             (Operation::AggregateFunction { function_type, idx }, Reduce) => {
-                let res = value_stack.pop();
+                let res = value_stack.pop().expect("First val");
                 if !device_stack.is_empty() {
-                    let acc = value_stack.pop();
+                    let acc = value_stack.pop().expect("Sec val");
                     value_stack.push(
-                        acc.zip(res).map(|(a, b)| a + b).expect("Error in Aggregate function")
+                        acc + res
+                        //acc.zip(res).map(|(a, b)| a + b).expect("Error in Aggregate function")
                     );
                     device_pointer = device_stack.pop();
                     idx_stack.extend([
                         (cur_idx, Reduce),
                         (*idx, Deepen),
-                        ]);
-                    } else {
-                        let acc = value_stack.pop();
-                        let res = acc.zip(res).map(|(a, b)| a + b).expect("Error in Aggregate function");
-                        
-                        value_stack.push(
-                            match function_type {
-                                AggregateType::Sum => res,
-                                AggregateType::Avg => res / (devices.get_devices().len() as i128).into(),
-                            }
-                        );
-                    }
-                },
+                    ]);
+                } else {
+                    let acc = value_stack.pop().expect("sec val, Second val");
+                    //let res = acc.zip(res).map(|(a, b)| a + b).expect("Error in Aggregate function");
+                    let res = acc + res;
+                    value_stack.push(
+                        match function_type {
+                            AggregateType::Sum => res,
+                            AggregateType::Avg => res / (devices.get_devices().len() as i128).into(),
+                        }
+                    );
+                }
+            },
             (Operation::Foreach { .. }, Deepen) => {
                 idx_stack.push((cur_idx, Reduce));
                 device_stack.extend(devices.get_devices());
@@ -130,20 +144,32 @@ fn eval_operations<'a>(
             },
 
             // Time functions
-            (Operation::TimeFunction { idx, .. }, Deepen) => {
+            (Operation::TimeFunction { idx, max_bound, history, function_type }, Deepen) => {
+                
                 idx_stack.extend([(cur_idx, Reduce), (*idx, Deepen)]);
             },
             (Operation::TimeFunction { function_type, history, max_bound, .. }, Reduce) => {
+
                 let res = value_stack.pop().and_then( |v| v.get_value().get_num() ).expect("Time func not working");
                 
+                /*//If bound has already been exceeded we aren't interested in calculating further
+                if let Some(bound) = max_bound && (*t_current - *t_spawn) == (*bound) as i128 {
+                    let his_val = history[(t_spawn % (*bound as i128)) as usize].value;
+                    value_stack.push(
+                       compute_function_type(function_type, his_val, *t_spawn, *t_current).into()
+                    );
+                    continue;
+                }*/
+
                 let arr_idx =  if let Some(bound) = max_bound {
                     (t_spawn % (*bound as i128)) as usize } 
-                else { 0 };
+                else { *t_spawn as usize };
 
                 let his_val = match history.get_mut(arr_idx) {
                     Some(HistoryValue { value, spawn_point  }) => {
                         if *spawn_point == *t_spawn {
                             *value += res;
+                            
                         } else {
                             *value = res;
                             *spawn_point = *t_spawn;
@@ -157,10 +183,7 @@ fn eval_operations<'a>(
                     },
                 };
                 
-                let val: StackValue = match function_type {
-                        AggregateType::Sum => his_val,
-                        AggregateType::Avg => his_val/(t_current - t_spawn),
-                }.into();
+                let val: StackValue = compute_function_type(function_type, his_val, *t_spawn, *t_current).into();
                 value_stack.push(val.as_undecided());
             },
             
@@ -174,9 +197,19 @@ fn eval_operations<'a>(
                     val.and(Verdict::Undecided.into())
                 );
             },
-            (Operation::LTLBounded { idx, bound, .. }, Deepen) => {
-                let (a,_) = bound;
-                if *a+*t_spawn <= *t_current {
+            //todo: Write fucking test-cases. this shit is not helping anyone
+            (Operation::LTLBounded { idx, bound, ltl_type, .. }, Deepen) => {
+                let (a,b) = bound;
+                //If over bound, should add verdict to stack and move back up
+                if *t_spawn + *b < *t_current { 
+                    value_stack.push(
+                        match ltl_type {
+                            LTL::Always | LTL::Eventually(true) => Verdict::True.into(),
+                            LTL::Eventually(false) => Verdict::False.into(),
+                        }
+                    ); 
+                }
+                else if *a+*t_spawn <= *t_current {
                     idx_stack.extend([(cur_idx, Reduce), (*idx, Deepen)]);
                 }
             },
@@ -195,11 +228,24 @@ fn eval_operations<'a>(
                     }
                 };
                 value_stack.push(
-                    if *not { val.not() } 
+                    if *not { !val } 
                     else { val }
                 );
             },
         }
     }
     value_stack.pop().unwrap()
+}
+
+ 
+fn compute_function_type(
+    function_type: &AggregateType, 
+    cur_val: i128, 
+    t_spawn: i128, 
+    t_current: i128
+) -> i128 {
+    match function_type {
+        AggregateType::Sum => cur_val,
+        AggregateType::Avg => cur_val/ t_current - t_spawn,
+    }
 }

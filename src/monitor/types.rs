@@ -1,4 +1,4 @@
-use std::ops::{Add, Div, Mul, Sub};
+use std::ops::{Add, Div, Mul, Not, Sub};
 
 use crate::program::operations::{BinaryOperators, UnaryOperators};
 
@@ -7,6 +7,14 @@ use crate::program::operations::{BinaryOperators, UnaryOperators};
 pub enum Verdict { True, False, Undecided }
 
 impl Verdict {
+    pub fn to_bool(&self) -> bool{
+        match self {
+            Verdict::True => true,
+            Verdict::False | 
+            Verdict::Undecided => false,
+        }
+    }
+    
     pub fn and(self, rhs: Self) -> Self {
         match (self, rhs) {
             (Verdict::True, Verdict::True) => Verdict::True,
@@ -26,8 +34,12 @@ impl Verdict {
             (_, Verdict::Undecided) => Verdict::Undecided,
         }
     }
+}
 
-    pub fn not(self) -> Self {
+impl Not for Verdict {
+    type Output = Verdict;
+
+    fn not(self) -> Self::Output {
         use Verdict::*;
         match self {
             True => False,
@@ -66,23 +78,30 @@ impl<'a> StackValue<'a> {
         &self.value
     }
 
-    pub fn as_undecided(mut self) -> Self {
-        self.decided = Decidedability::Undecided;
-        self
+    pub fn get_taint(&self) -> &Decidedability {
+        &self.decided
     }
 
-    pub fn not(mut self) -> Self {
-        self.value = match self.value {
-            DerivedOutput::Verdict(verdict) => DerivedOutput::Verdict(verdict.not()),
-            _ => unreachable!()
-        };
+    pub fn is_undecided(&self) -> bool {
+        self.decided == Decidedability::Undecided
+    }
+    
+    pub fn is_decided(&self) -> bool {
+        self.decided == Decidedability::Decided
+    }
+
+
+    pub fn as_undecided(mut self) -> Self {
+        self.decided = Decidedability::Undecided;
         self
     }
 
 
     pub fn modulo(mut self, rhs: Self) -> Self {
         let value = match (self.get_value(),rhs.get_value()){
-            (DerivedOutput::Number(val1), DerivedOutput::Number(val2)) => DerivedOutput::Number(val1 % val2),
+            (DerivedOutput::Number(val1), DerivedOutput::Number(val2)) => {
+                //println!("{} % {} = {:?}",val1, val2, DerivedOutput::Number(val1 % val2));
+                DerivedOutput::Number((val1 % val2)*1000)},
             _ => unreachable!()
         };
         self.value = value;
@@ -110,6 +129,9 @@ impl<'a> StackValue<'a> {
                 DerivedOutput::Verdict((val1 != val2).into())},
             (DerivedOutput::Verdict(val1), DerivedOutput::Verdict(val2)) => DerivedOutput::Verdict((val1 != val2).into()),
             (DerivedOutput::String(val1), DerivedOutput::String(val2)) => DerivedOutput::Verdict((val1 != val2).into()),
+            (DerivedOutput::Verdict(v1), DerivedOutput::Number(v2)) | 
+            (DerivedOutput::Number(v2), DerivedOutput::Verdict(v1))
+            => DerivedOutput::Number((if v1.to_bool() == (*v2 != 0) { 1000 } else { 0 }).into()),
             _ => unreachable!("LOOOK HERE IS THE ERROR SEARCH AFTER THIS NUMBER 128937178219378"),
         };
         
@@ -122,6 +144,9 @@ impl<'a> StackValue<'a> {
         self.value = match (self.get_value(), rhs.get_value()) {
             (DerivedOutput::Verdict(v1), DerivedOutput::Verdict(v2)) => 
                 DerivedOutput::Verdict(v1.clone().and(v2.clone())),
+            (DerivedOutput::Number(v1), DerivedOutput::Verdict(v2)) |
+            (DerivedOutput::Verdict(v2), DerivedOutput::Number(v1))
+             => DerivedOutput::Verdict(if *v1 != 0 { v2.clone() } else { Verdict::False }),
             _ => unreachable!()
         };
         self.decided = self.decided.greatest_lower_bound(&rhs.decided);
@@ -132,6 +157,9 @@ impl<'a> StackValue<'a> {
         self.value = match (self.get_value(), rhs.get_value()) {
             (DerivedOutput::Verdict(v1), DerivedOutput::Verdict(v2)) => 
                 DerivedOutput::Verdict(v1.clone().or(v2.clone())),
+            (DerivedOutput::Number(v1), DerivedOutput::Verdict(v2)) | 
+            (DerivedOutput::Verdict(v2), DerivedOutput::Number(v1))
+            => DerivedOutput::Verdict(if *v1 != 0 { Verdict::True } else { v2.clone() }),
             _ => unreachable!()
         };
         self.decided = self.decided.greatest_lower_bound(&rhs.decided);
@@ -256,6 +284,18 @@ impl<'a> From<bool> for StackValue<'a> {
 
 
 
+impl<'a> Not for StackValue<'a> {
+    type Output = StackValue<'a>;
+
+    fn not(mut self) -> Self::Output {
+        self.value = match self.value {
+            DerivedOutput::Verdict(verdict) => DerivedOutput::Verdict(verdict.not()),
+            _ => unreachable!()
+        };
+        self
+    }
+    
+}
 
 
 impl<'a> Mul for StackValue<'a> {

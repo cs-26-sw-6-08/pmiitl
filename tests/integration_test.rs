@@ -316,7 +316,7 @@ fn test8() {
 
     let expected_env = [
         OutputStream::from((
-            LTL::Eventually,
+            LTL::Eventually(false),
             vec![
                 Operation::Foreach { idx: 1 },
                 Operation::Binary {

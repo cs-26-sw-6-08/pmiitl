@@ -1,9 +1,11 @@
+use colored::Colorize;
+
 use crate::{
     monitor::types::Verdict,
     monitor_setup::operation_types::{LTL, Operation},
 };
 
-use colored::*;
+
 
 #[derive(Debug, PartialEq)]
 pub struct OutputStream {

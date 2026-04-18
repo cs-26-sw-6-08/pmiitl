@@ -34,7 +34,10 @@ fn update_bounds(mut operations: Vec<Operation>, idx: usize, bounds: Option<(i12
         
         Operation::TimeFunction { idx, max_bound, .. } => {
             //Update the bounds for sumtime and avgtime
-            *max_bound = bounds.map(|(a,b)| (b - a) as usize);
+            //As time is defined by 1s = 1000, it should be divided by 1000
+            //What's more is that the bound is contains both a and b, e.g. [0,4] => {0,1,2,3,4}
+            //which means that the bound should be increased by 1
+            *max_bound = bounds.map(|(a,b)| (((b - a) / 1000) + 1) as usize);
 
             (vec![*idx], bounds)
         }

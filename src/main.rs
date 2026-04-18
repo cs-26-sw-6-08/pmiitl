@@ -12,6 +12,7 @@ mod errors;
 extern crate hime_redist;
 
 use std::fs;
+use colored::Colorize;
 
 use crate::program::Program;
 
@@ -19,41 +20,44 @@ use crate::program::Program;
 async fn main() {
     let program_str = match fs::read_to_string("program.txt") {
         Ok(program_str) => program_str,
-        Err(err) => return println!("Error: {}", err)
+        Err(err) => return error_print(format!("{}",err))
     };
    
     let mut program = match Program::new(program_str.as_str()) {
         Ok(program) => program,
-        Err(err) => return println!("Error: {}", err),
+        Err(err) => return error_print(format!("{}",err))
     };
 
 
 
     if let Err(err) = program.unit_convert() {
-        return println!("Error: {}", err);
+        return error_print(format!("{}",err));
     };
 
     if let Err(err) = program.unit_check() {
-        return println!("Error: {}", err);
+        return error_print(format!("{}",err));
     }
 
     if let Err(err) = program.equiv_convert() {
-        return println!("Error: {}", err);
+        return error_print(format!("{}",err));
     };
-        println!("Program Tree");
-    println!("{:#?}",program.expressions);
+    
+    #[cfg(debug_assertions)]
+    println!("Program Tree\n{:#?}",program.expressions);
 
     if let Err(err) = program.monitorability_check() {
-        return println!("Error: {}", err);
+        return error_print(format!("{}",err));
     }
 
     if let Err(err) = program.compile_properties() {
-        return println!("Error: {}", err);
+        return error_print(format!("{}",err));
     }
     
-    // println!("{:#?}", program);
-
-    if let Err(err) = program.monitor(1_000).await {
-        return println!("Error: {}", err);
+    if let Err(err) = program.monitor(1_000, false).await {
+        return error_print(format!("{}",err));
     }
+}
+
+fn error_print(err: String) {
+    println!("{}{}",String::from("[Error]: ").bright_red().bold(), err)
 }
