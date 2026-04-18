@@ -148,8 +148,7 @@ fn eval_operations<'a>(
                 idx_stack.extend([(cur_idx, Reduce), (*idx, Deepen)]);
             },
             (Operation::TimeFunction { function_type, history, max_bound, .. }, Reduce) => {
-
-                let res = value_stack.pop().and_then( |v| v.get_value().get_num() ).or_pop_err()?;
+                let val = value_stack.pop().or_pop_err()?.get_value().get_num()?;
                 
                 /*//If bound has already been exceeded we aren't interested in calculating further
                 if let Some(bound) = max_bound && (*t_current - *t_spawn) == (*bound) as i128 {
@@ -160,29 +159,8 @@ fn eval_operations<'a>(
                     continue;
                 }*/
 
-                let arr_idx =  if let Some(bound) = max_bound {
-                    (t_spawn % (*bound as i128)) as usize } 
-                else { *t_spawn as usize };
-
-                let his_val = match history.get_mut(arr_idx) {
-                    Some(HistoryValue { value, spawn_point  }) => {
-                        if *spawn_point == *t_spawn {
-                            *value += res;
-                            
-                        } else {
-                            *value = res;
-                            *spawn_point = *t_spawn;
-                        }
-                        *value
-                    },
-                    None => {
-                        history.resize(arr_idx+1, (0_i128,-1_i128).into());
-                        history[arr_idx] = (res, *t_spawn).into();
-                        res
-                    },
-                };
-                
-                let val: StackValue = compute_function_type(function_type, his_val, *t_spawn, *t_current).into();
+                let val = time_function_reduce_step(val, *t_spawn, *max_bound, history);
+                let val: StackValue = compute_function_type(function_type, val, *t_spawn, *t_current).into();
                 value_stack.push(val.as_undecided());
             },
             
@@ -215,21 +193,15 @@ fn eval_operations<'a>(
             (Operation::LTLBounded { bound, not, ltl_type, .. }, Reduce) => {
                 let (_, b) = bound;
                 let val = value_stack.pop().or_pop_err()?;
-                
-                let val = match ltl_type {
-                    LTL::Always => {
-                        let ver = if *t_current < *t_spawn + *b { Verdict::Undecided } else { Verdict::True };
-                        val.and(ver.into())
-                    },
-                    LTL::Eventually(_) => {
-                        let ver = if *t_current < *t_spawn + *b { Verdict::Undecided } else { Verdict::False };
-                        val.or(ver.into())
-                    }
+                //Check whether it is decideable or not
+                let val = match (ltl_type, *t_current < *t_spawn + *b) {
+                    (LTL::Always, true) => val.and(Verdict::Undecided.into()),
+                    (LTL::Eventually(_), true) => val.or(Verdict::Undecided.into()),
+                    _ => val
                 };
-                value_stack.push(
-                    if *not { !val } 
-                    else { val }
-                );
+                //Not the value if necessary
+                let val = if *not { !val } else { val };
+                value_stack.push(val);
             },
         }
     }
@@ -249,3 +221,35 @@ fn compute_function_type(
     }
 }
 
+///Warning: This function has side effects
+#[inline]
+fn time_function_reduce_step(
+    newest_val: i128,
+    t_spawn: i128,
+    bound: Option<usize>,
+    history_vec: &mut Vec<HistoryValue>
+) -> i128 {
+
+    //Which idx should be overwritten
+    let arr_idx =  if let Some(bound) = bound {
+            (t_spawn % (bound as i128)) as usize } 
+        else { t_spawn as usize };
+
+    //Sum up the value according to the history and update history accordingly
+    match history_vec.get_mut(arr_idx) {
+        Some(HistoryValue { value, spawn_point  }) => {
+            if *spawn_point == t_spawn {
+                *value += newest_val; 
+            } else {
+                *value = newest_val;
+                *spawn_point = t_spawn;
+            }
+            *value
+        },
+        None => {
+            history_vec.resize(arr_idx+1, (0_i128,-1_i128).into());
+            history_vec[arr_idx] = (newest_val, t_spawn).into();
+            newest_val
+        },
+    }
+}

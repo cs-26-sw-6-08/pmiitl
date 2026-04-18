@@ -29,7 +29,8 @@ pub trait OptionExt<T> {
 }
 
 impl<T> OptionExt<T> for Option<T> {
+    #[inline]
     fn or_pop_err(self) -> Result<T, Box<dyn Error>> {
-        self.ok_or(errors::Error::ValueStackError.into())
+        self.ok_or(errors::Error::ValueStackPopError.into())
     }
 }

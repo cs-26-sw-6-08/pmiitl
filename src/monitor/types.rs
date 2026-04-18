@@ -1,6 +1,6 @@
-use std::ops::{Add, Div, Mul, Not, Sub};
+use std::{error::Error, ops::{Add, Div, Mul, Not, Sub}};
 
-use crate::program::operations::{BinaryOperators, UnaryOperators};
+use crate::{errors, program::operations::{BinaryOperators, UnaryOperators}};
 
 
 #[derive(Debug, PartialEq, Clone)]
@@ -235,10 +235,10 @@ impl<'a> DerivedOutput<'a> {
         })
     }
 
-    pub fn get_num(&self) -> Option<i128> {
+    pub fn get_num(&self) -> Result<i128, Box<dyn Error>> {
         match self {
-            DerivedOutput::Number(v) => Some(*v),
-           _ => None
+            DerivedOutput::Number(v) => Ok(*v),
+           _ => Err(errors::Error::ValueStackValError.into())
         }
     }
 }
