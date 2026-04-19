@@ -25,7 +25,16 @@ impl OutputStream {
                         *ver = Verdict::True;
                     }
                 },
-                LTL::Eventually(_) => todo!(),
+                LTL::Eventually(_) => {
+                    // todo: Is this the right logic???
+                    let res = res?;
+                    let res_val = res.get_value().get_verdict().unwrap();
+                    if res_val == Verdict::False {
+                        *ver = Verdict::False;
+                    } else if res.is_decided() {
+                        *ver = Verdict::True;
+                    }
+                },
             }
         }
         Ok(())
@@ -62,7 +71,9 @@ pub(crate) fn eval_operations<'a>(
             (Operation::Member(mem_type), _) => {
                 value_stack.push(match mem_type {
                     MemberType::Active => device_pointer.ok_or(errors::Error::DevicePointer)?.active.into(),
-                    MemberType::Power =>  device_pointer.ok_or(errors::Error::DevicePointer)?.power.into(),
+                    MemberType::Power =>  {let power = device_pointer.ok_or(errors::Error::DevicePointer)?.power;
+                        (power*1000).into()
+                    },
                     MemberType::Name =>  StackValue::from(device_pointer.map(|d| &d.name).ok_or(errors::Error::DevicePointer)?),
                 });
             },
@@ -84,7 +95,7 @@ pub(crate) fn eval_operations<'a>(
             (Operation::Binary { bin_op, .. }, Reduce) => {
                 let v1 = value_stack.pop_or_err()?;
                 let v2 = value_stack.pop_or_err()?;
-
+                println!("{:?}, {:?}",v1,v2);
                 value_stack.push( v2.bin_op(v1, bin_op) );
             },
             (Operation::Unary { idx , ..}, Deepen) => { 

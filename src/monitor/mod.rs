@@ -6,6 +6,8 @@ pub mod operation_eval;
 mod streams_test;
 #[cfg(test)]
 mod operation_eval_test;
+#[cfg(test)]
+mod mod_test;
 
 use std::error::Error;
 use crate::{monitor::streams::{IoTStream, OutputStream}, program::Program};
@@ -60,7 +62,7 @@ impl Program {
     }
 
     
-    fn monitor_logic<'a>(env: &'a mut [OutputStream], t: &'a i128, device_stream: &'a IoTStream) -> Box<dyn Iterator<Item = (usize, bool)> + 'a> {
+    pub fn monitor_logic<'a>(env: &'a mut [OutputStream], t: &'a i128, device_stream: &'a IoTStream) -> Box<dyn Iterator<Item = (usize, bool)> + 'a> {
         Box::new(
             env
                 .iter_mut()

@@ -2,12 +2,14 @@
 
 // always t%2s = 0s | t%2s = 1s;
 
-//Eventually[0s,4s] 0;
+//Eventually[0s,4s] 0s = t;
 //Eventually[0s,4s] 1;
 //always[0s,2s] t = 10000000s;
 
 //always counttime(power > 3w) < 4 s;
 
-always t%4s = 0s -> always[1s,4s](counttime(1) < 6s);
+//always t%4s = 0s -> always[1s,4s](counttime(1) < 6s);
 
 //always count(name) = t /1s;
+
+always sum(power) = 10w;

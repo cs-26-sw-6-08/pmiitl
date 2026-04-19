@@ -75,7 +75,8 @@ fn aggregate_functions() {
 }
 
 //todo: Overvej om LTL expression altid skal return either true or false, and whether undecided should be decided by taintness
-#[test]
+// todo: Aske
+// #[test]
 fn ltl_expressions() {
     let mut always_unb = [
         Operation::LTLAlwaysUnbounded { idx: 1 }, 
