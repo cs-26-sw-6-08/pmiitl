@@ -13,3 +13,5 @@
 //always count(name) = t /1s;
 
 always sum(power) = 10w;
+
+always count(foreach(power > 10w));

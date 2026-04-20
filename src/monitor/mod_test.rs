@@ -1,6 +1,6 @@
 use crate::{
     monitor_setup::operation_types::{AggregateType, LTL, Operation},
-    program::{Program, function_types::FunctionType, member_types::MemberType, operations::BinaryOperators},
+    program::{member_types::MemberType, operations::BinaryOperators},
     utils::monitor_test_helper_func::*,
 };
 

@@ -8,13 +8,12 @@ pub mod utils;
 pub mod monitor_setup;
 pub mod monitor;
 mod errors;
-
 extern crate hime_redist;
-
 use std::fs;
 use colored::Colorize;
-
 use crate::program::Program;
+
+//todo: Remove active
 
 #[tokio::main]
 async fn main() {

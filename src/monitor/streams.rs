@@ -55,6 +55,7 @@ impl OutputStream {
                 .any(|(_, verdict)| *verdict == Verdict::False),
             LTL::Eventually(true) => false,
             LTL::Eventually(false) => {
+                //todo: move to update and change logic accordingly
                 let within_bounds = self.bound.is_some_and(|(_, b)| b <= t);
                 if within_bounds || self.time_verdicts.iter().any(|(_, v)| *v == Verdict::True)   {
                     #[cfg(debug_assertions)] 

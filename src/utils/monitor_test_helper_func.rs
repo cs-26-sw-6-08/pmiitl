@@ -48,26 +48,26 @@ pub fn single_device_stream()->IoTStream{
 pub fn two_device_stream()->IoTStream{
     let temp_iot_stream: IoTStream = (
             vec![
-                ("Roomba".into(), 5, true).into(),
-                ("christian".into(), 10, true).into(),
+                ("Roomba".into(), 5000, true).into(),
+                ("christian".into(), 10000, true).into(),
             ]
         ).into();
     temp_iot_stream
 }
 
-pub fn ten_device_stream()->IoTStream{
+pub fn ten_device_stream() -> IoTStream {
     let temp_iot_stream: IoTStream = (
             vec![
-                ("Roomba0".into(), 10, false).into(),
-                ("Roomba1".into(), 20, true).into(),
-                ("Roomba2".into(), 30, false).into(),
-                ("Roomba3".into(), 40, true).into(),
-                ("Roomba4".into(), 50, false).into(),
-                ("Roomba5".into(), 60, true).into(),
-                ("Roomba6".into(), 70, false).into(),
-                ("Roomba7".into(), 80, true).into(),
-                ("Roomba8".into(), 90, false).into(),
-                ("Roomba9".into(), 100, true).into(),
+                ("Roomba0".into(), 10000, false).into(),
+                ("Roomba1".into(), 20000, true).into(),
+                ("Roomba2".into(), 30000, false).into(),
+                ("Roomba3".into(), 40000, true).into(),
+                ("Roomba4".into(), 50000, false).into(),
+                ("Roomba5".into(), 60000, true).into(),
+                ("Roomba6".into(), 70000, false).into(),
+                ("Roomba7".into(), 80000, true).into(),
+                ("Roomba8".into(), 90000, false).into(),
+                ("Roomba9".into(), 100000, true).into(),
             ]
         ).into();
     temp_iot_stream

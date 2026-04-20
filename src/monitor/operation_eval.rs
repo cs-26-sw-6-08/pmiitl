@@ -1,19 +1,14 @@
 
-
-use hime_redist::utils::bin;
-
 use crate::{errors, monitor::{streams::{IoTDevice, IoTStream, OutputStream}, types::{DerivedOutput, StackValue, Verdict}}, monitor_setup::operation_types::{AggregateType, HistoryValue, LTL, Operation}, program::{member_types::MemberType, operations::BinaryOperators}, utils::vec_helper_funcs::ExtVec};
-
-use std::{error::Error, ops::Add};
+use std::{error::Error};
 
 impl OutputStream {
     // Calculate the verdict for the output stream.
     pub fn update(&mut self, t_current: i128, devices: &IoTStream) -> Result<(), Box<dyn Error>> {
-
         for (t_spawn, ver) in self.time_verdicts.iter_mut() {
             let res = eval_operations(&mut self.operations, devices, &*t_spawn, &t_current);
             
-            match self.ltl {
+            match &mut self.ltl {
                 LTL::Always => {
                     let res = res?;
                     let res_val = res.get_value().get_verdict().unwrap();
@@ -25,12 +20,12 @@ impl OutputStream {
                         *ver = Verdict::True;
                     }
                 },
-                LTL::Eventually(_) => {
-                    // todo: Is this the right logic???
+                LTL::Eventually(v) => {
+                    // todo: Update logic such that last is set 
                     let res = res?;
                     let res_val = res.get_value().get_verdict().unwrap();
                     if res_val == Verdict::False {
-                        *ver = Verdict::False;
+                        *ver = Verdict::Undecided;
                     } else if res.is_decided() {
                         *ver = Verdict::True;
                     }
@@ -43,6 +38,7 @@ impl OutputStream {
 
 #[derive(PartialEq, Debug)]
 enum StepType { Deepen, Reduce, ReducePartial }
+//enum { bottom, look, }
 
 pub(crate) fn eval_operations<'a>(
     operations: &mut [Operation], 
@@ -52,34 +48,33 @@ pub(crate) fn eval_operations<'a>(
 ) -> Result<StackValue<'a>, Box<dyn Error>> {
     use StepType::*;
 
-    let mut idx_stack: Vec<(usize, StepType)> = Vec::with_capacity(50);
+    let mut worklist_stack: Vec<(usize, StepType)> = Vec::with_capacity(50);
     let mut value_stack: Vec<StackValue> = Vec::with_capacity(50);
     let mut device_stack: Vec<&IoTDevice> = Vec::with_capacity(50);
     let mut device_pointer: Option<&IoTDevice> = None;
 
-    idx_stack.push((0usize, StepType::Deepen));
+    worklist_stack.push((0usize, StepType::Deepen));
     
-    while let Some((cur_idx, step_type)) = idx_stack.pop() {
+    while let Some((cur_idx, step_type)) = worklist_stack.pop() {
         // let cur_op = &mut operations[cur_idx] as *mut Operation;
         let cur_op = &mut operations[cur_idx] as *mut Operation;
 
-        match  (unsafe { &mut*cur_op }, step_type)  {
+        match  (unsafe { &mut*cur_op }, step_type)  { 
+            //todo: Sørg for at arithmetic operations er korrekte -> E.g. 1 * 1 = 1 and not 1000
             // Base cases
             (Operation::Number(val), _) => value_stack.push((*val).into()),
-            (Operation::String(val), _) => value_stack.push((&*val).into()),
+            (Operation::String(str), _) => value_stack.push((&*str).into()),
             (Operation::CurrentTime, _) => value_stack.push((*t_spawn * 1_000).into()),
             (Operation::Member(mem_type), _) => {
                 value_stack.push(match mem_type {
                     MemberType::Active => device_pointer.ok_or(errors::Error::DevicePointer)?.active.into(),
-                    MemberType::Power =>  {let power = device_pointer.ok_or(errors::Error::DevicePointer)?.power;
-                        (power*1000).into()
-                    },
+                    MemberType::Power =>  device_pointer.ok_or(errors::Error::DevicePointer)?.power.into(),
                     MemberType::Name =>  StackValue::from(device_pointer.map(|d| &d.name).ok_or(errors::Error::DevicePointer)?),
                 });
             },
             // BinOp / UnOp
             (Operation::Binary { idx_lhs,.. }, Deepen) => {
-                idx_stack.extend([
+                worklist_stack.extend([
                     (cur_idx, ReducePartial),
                     (*idx_lhs, Deepen)
                 ]);
@@ -89,17 +84,16 @@ pub(crate) fn eval_operations<'a>(
                 // Read as: 'or' -> last_val.is_false
                 if !matches!(bin_op, BinaryOperators::Or) 
                 || !value_stack.last().is_some_and(|val| matches!(*val.get_value(), DerivedOutput::Verdict(Verdict::True))) {
-                    idx_stack.extend([(cur_idx, Reduce), (*idx_rhs, Deepen)]);
+                    worklist_stack.extend([(cur_idx, Reduce), (*idx_rhs, Deepen)]);
                 }
             },
             (Operation::Binary { bin_op, .. }, Reduce) => {
-                let v1 = value_stack.pop_or_err()?;
-                let v2 = value_stack.pop_or_err()?;
-                println!("{:?}, {:?}",v1,v2);
-                value_stack.push( v2.bin_op(v1, bin_op) );
+                let v_rhs = value_stack.pop_or_err()?;
+                let v_lhs = value_stack.pop_or_err()?;
+                value_stack.push( v_lhs.bin_op(v_rhs, bin_op) );
             },
             (Operation::Unary { idx , ..}, Deepen) => { 
-                idx_stack.extend([(cur_idx, Reduce),(*idx, Deepen)]); 
+                worklist_stack.extend([(cur_idx, Reduce),(*idx, Deepen)]); 
             },
             (Operation::Unary { un_op, .. }, Reduce) => {
                 let res = value_stack.pop_or_err()?.un_op(un_op);
@@ -108,7 +102,7 @@ pub(crate) fn eval_operations<'a>(
 
             // Aggregate Functions
             (Operation::AggregateFunction { idx, .. }, Deepen) => {
-                idx_stack.extend([
+                worklist_stack.extend([
                     (cur_idx, ReducePartial),
                     (*idx, Deepen),
                 ]);
@@ -127,11 +121,11 @@ pub(crate) fn eval_operations<'a>(
 
                 if let Some(device) = device_stack.pop() {
                     device_pointer = Some(device);
-                    idx_stack.extend([
+                    worklist_stack.extend([
                         (cur_idx, ReducePartial),
                         (*idx, Deepen),
                     ]);
-                } else { idx_stack.push((cur_idx, Reduce)); }
+                } else { worklist_stack.push((cur_idx, Reduce)); }
             }
             (Operation::AggregateFunction { function_type, .. }, Reduce) => {
                 let res  = value_stack.pop_or_err()?;
@@ -143,7 +137,7 @@ pub(crate) fn eval_operations<'a>(
                 );
             },
             (Operation::Foreach { .. }, Deepen) => {
-                idx_stack.push((cur_idx, Reduce));
+                worklist_stack.push((cur_idx, Reduce));
                 device_stack.extend(devices.get_devices());
                 value_stack.push( Verdict::True.into() )
             },
@@ -154,10 +148,10 @@ pub(crate) fn eval_operations<'a>(
                 && !device_stack.is_empty() {
                     let _ = value_stack.pop();
                     device_pointer = device_stack.pop();
-                    idx_stack.extend([(cur_idx, Reduce), (*idx, Deepen)]);
+                    worklist_stack.extend([(cur_idx, Reduce), (*idx, Deepen)]);
                 
                 //If here, then a violation occured or not depending on the last value in value_stack
-                } else { 
+                } else { //todo: Fix --> Ogs fix for nestede aggregate functions 
                     device_stack.clear(); 
                 }
             },
@@ -174,7 +168,7 @@ pub(crate) fn eval_operations<'a>(
                             function_type_computation(function_type, prev_val, *t_spawn, *t_current - 1).into()
                         );
                     },
-                    _ => idx_stack.extend([(cur_idx, Reduce), (*idx, Deepen)])
+                    _ => worklist_stack.extend([(cur_idx, Reduce), (*idx, Deepen)])
                 }                
             },
             (Operation::TimeFunction { function_type, history, bound, .. }, Reduce) => {
@@ -186,7 +180,7 @@ pub(crate) fn eval_operations<'a>(
             
             // LTL 
             (Operation::LTLAlwaysUnbounded { idx }, Deepen) => {
-                idx_stack.extend([(cur_idx, Reduce), (*idx, Deepen)]);
+                worklist_stack.extend([(cur_idx, Reduce), (*idx, Deepen)]);
             },
             (Operation::LTLAlwaysUnbounded { .. }, Reduce) => {
                 let val = value_stack.pop_or_err()?;
@@ -201,7 +195,7 @@ pub(crate) fn eval_operations<'a>(
                 //fst is lowerbound, snd is upperbound
                 match (*a+*t_spawn <= *t_current, *t_current <= *t_spawn + *b ) {
                     (true, true) => {
-                        idx_stack.extend([(cur_idx, Reduce), (*idx, Deepen)]);
+                        worklist_stack.extend([(cur_idx, Reduce), (*idx, Deepen)]);
                     },
                     (true, false) => value_stack.push(
                         match ltl_type {
@@ -229,7 +223,7 @@ pub(crate) fn eval_operations<'a>(
     value_stack.pop_or_err()
 }
 
- #[inline]
+#[inline]
 fn function_type_computation(
     function_type: &AggregateType, 
     cur_val: i128, 
@@ -238,7 +232,7 @@ fn function_type_computation(
 ) -> i128 {
     match function_type {
         AggregateType::Sum => cur_val,
-        AggregateType::Avg => cur_val/ t_current - t_spawn,
+        AggregateType::Avg => cur_val / (t_current - t_spawn),
     }
 }
 
