@@ -90,7 +90,6 @@ fn always_true_unbound() {
 
 #[test]
 fn always_false_bound() {
-    // todo: Vi skal lige dobbelt check intervaled
     let operations: Vec<Operation> = vec![Operation::Number(0)];
     let mut program = always_prop_helper(operations, Some((0, 50)));
     let device_stream = single_device_stream();
