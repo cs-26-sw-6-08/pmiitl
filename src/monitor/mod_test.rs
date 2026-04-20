@@ -16,10 +16,10 @@ fn eventually_true_remove() {
     };
     let result = run_x_monitor_steps(streams, &device_stream, &0, 5);
     println!("{}", format!("{:#?}", result).green());
-    for (idx, value) in result {
+    for (_, value) in result {
         assert!(value.is_empty());
     }
-    assert_eq!(streams.get(0).unwrap().ltl, LTL::Eventually(true));
+    assert_eq!(streams.first().unwrap().ltl, LTL::Eventually(true));
 }
 
 #[test]
@@ -37,7 +37,7 @@ fn eventually_false_remove() {
             assert!(value[0].1);
         }
     }
-    assert_eq!(streams.get(0).unwrap().ltl, LTL::Eventually(true));
+    assert_eq!(streams.first().unwrap().ltl, LTL::Eventually(true));
 }
 
 #[test]
@@ -55,7 +55,7 @@ fn eventually_false_not_removed() {
             assert!(value.is_empty());
         }
     }
-    assert_eq!(streams.get(0).unwrap().ltl, LTL::Eventually(false));
+    assert_eq!(streams.first().unwrap().ltl, LTL::Eventually(false));
 }
 
 #[test]
@@ -68,7 +68,7 @@ fn always_false_unbound() {
     };
     let result = run_x_monitor_steps(streams, &device_stream, &0, 100);
     println!("{}", format!("{:#?}", result).green());
-    for (idx, value) in result {
+    for (_, value) in result {
         assert!(value[0].1);
     }
 }
@@ -82,8 +82,8 @@ fn always_true_unbound() {
         panic!()
     };
     let result = run_x_monitor_steps(streams, &device_stream, &0, 100);
-    println!("{}", format!("{:#?}", result).green());
-    for (idx, value) in result {
+    //println!("{}", format!("{:#?}", result).green());
+    for (_, value) in result {
         assert!(value.is_empty());
     }
 }
@@ -125,7 +125,7 @@ fn always_t_mod_switch() {
         panic!()
     };
     let result = run_x_monitor_steps(streams, &device_stream, &0, 100);
-    println!("{}", format!("{:#?}", result).green());
+    //println!("{}", format!("{:#?}", result).green());
     for (idx, value) in result {
         if idx % 2 == 0 {
             assert!(value[0].1);
@@ -156,8 +156,8 @@ fn always_simple_count_true() {
         panic!()
     };
     let result = run_x_monitor_steps(streams, &device_stream, &0, 100);
-    println!("{}", format!("{:#?}", result).green());
-    for (idx, value) in result {
+    //println!("{}", format!("{:#?}", result).green());
+    for (_, value) in result {
         assert!(value.is_empty());
     }
 }
@@ -183,8 +183,8 @@ fn always_simple_count_false() {
         panic!()
     };
     let result = run_x_monitor_steps(streams, &device_stream, &0, 100);
-    println!("{}", format!("{:#?}", result).green());
-    for (idx, value) in result {
+    //println!("{}", format!("{:#?}", result).green());
+    for (_, value) in result {
         assert!(value[0].1);
     }
 }
@@ -211,7 +211,7 @@ fn always_simple_sum_member_true() {
     };
     let result = run_x_monitor_steps(streams, &device_stream, &0, 10);
     println!("{}", format!("{:#?}", result).green());
-    for (idx, value) in result {
+    for (_, value) in result {
         assert!(value.is_empty());
     }
 }
@@ -238,7 +238,7 @@ fn always_simple_sum_member_true2() {
     };
     let result = run_x_monitor_steps(streams, &device_stream, &0, 10);
     println!("{}", format!("{:#?}", result).green());
-    for (idx, value) in result {
+    for (_, value) in result {
         assert!(value.is_empty());
     }
 }
@@ -265,7 +265,7 @@ fn always_simple_sum_member_false() {
     };
     let result = run_x_monitor_steps(streams, &device_stream, &0, 10);
     println!("{}", format!("{:#?}", result).green());
-    for (idx, value) in result {
+    for (_, value) in result {
         assert!(value[0].1);
     }
 }
@@ -292,7 +292,7 @@ fn always_simple_avg_member_true() {
     };
     let result = run_x_monitor_steps(streams, &device_stream, &0, 10);
     println!("{}", format!("{:#?}", result).green());
-    for (idx, value) in result {
+    for (_, value) in result {
         assert!(value.is_empty());
     }
 }
@@ -319,7 +319,7 @@ fn always_simple_avg_member_false() {
     };
     let result = run_x_monitor_steps(streams, &device_stream, &0, 10);
     println!("{}", format!("{:#?}", result).green());
-    for (idx, value) in result {
+    for (_, value) in result {
         assert!(value[0].1);
     }
 }

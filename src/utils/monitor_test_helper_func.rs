@@ -8,7 +8,7 @@ pub fn run_x_monitor_steps<'a>(env: &'a mut [OutputStream], device_stream: &'a I
     let mut result: HashMap<i128, Vec<(usize, bool)>> = HashMap::new();
     for k in 0..step_amount {
         let current_time = t_start + k;
-        println!("{current_time}");
+        //println!("{current_time}");
         result.insert(t_start+k, vec![]);
         let cur = result.get_mut(&current_time).unwrap();
         for (prop_num, is_violated) in Program::monitor_logic(env, &(current_time), device_stream){

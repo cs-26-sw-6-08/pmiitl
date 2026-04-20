@@ -1,5 +1,5 @@
 
-use crate::{errors, monitor::{streams::{IoTDevice, IoTStream, OutputStream}, types::{DerivedOutput, StackValue, Verdict}}, monitor_setup::operation_types::{AggregateType, HistoryValue, LTL, Operation}, program::{member_types::MemberType, operations::BinaryOperators}, utils::vec_helper_funcs::ExtVec};
+use crate::{errors, monitor::{streams::{IoTDevice, IoTStream, OutputStream}, types::{StackContent, StackValue, Verdict}}, monitor_setup::operation_types::{AggregateType, HistoryValue, LTL, Operation}, program::{member_types::MemberType, operations::BinaryOperators}, utils::vec_helper_funcs::ExtVec};
 use std::{error::Error};
 
 impl OutputStream {
@@ -12,9 +12,8 @@ impl OutputStream {
                 LTL::Always => {
                     let res = res?;
                     let res_val = res.get_value().get_verdict().unwrap();
-
                     //Set verdict
-                    if res_val == Verdict::False {
+                    if !res_val {
                         *ver = Verdict::False;
                     } else if res.is_decided() {
                         *ver = Verdict::True;
@@ -24,7 +23,7 @@ impl OutputStream {
                     // todo: Update logic such that last is set 
                     let res = res?;
                     let res_val = res.get_value().get_verdict().unwrap();
-                    if res_val == Verdict::False {
+                    if !res_val {
                         *ver = Verdict::Undecided;
                     } else if res.is_decided() {
                         *ver = Verdict::True;
@@ -67,7 +66,8 @@ pub(crate) fn eval_operations<'a>(
             (Operation::CurrentTime, _) => value_stack.push((*t_spawn * 1_000).into()),
             (Operation::Member(mem_type), _) => {
                 value_stack.push(match mem_type {
-                    MemberType::Active => device_pointer.ok_or(errors::Error::DevicePointer)?.active.into(),
+                    //todo: Remove active from membertype
+                    MemberType::Active => todo!(),
                     MemberType::Power =>  device_pointer.ok_or(errors::Error::DevicePointer)?.power.into(),
                     MemberType::Name =>  StackValue::from(device_pointer.map(|d| &d.name).ok_or(errors::Error::DevicePointer)?),
                 });
@@ -83,7 +83,7 @@ pub(crate) fn eval_operations<'a>(
                 //If the binary operation is an 'or' and returned true, then the rest shouldn't be evaluated
                 // Read as: 'or' -> last_val.is_false
                 if !matches!(bin_op, BinaryOperators::Or) 
-                || !value_stack.last().is_some_and(|val| matches!(*val.get_value(), DerivedOutput::Verdict(Verdict::True))) {
+                || !value_stack.last().is_some_and(|val| matches!(*val.get_value(), StackContent::Verdict(true))) {
                     worklist_stack.extend([(cur_idx, Reduce), (*idx_rhs, Deepen)]);
                 }
             },
@@ -139,12 +139,12 @@ pub(crate) fn eval_operations<'a>(
             (Operation::Foreach { .. }, Deepen) => {
                 worklist_stack.push((cur_idx, Reduce));
                 device_stack.extend(devices.get_devices());
-                value_stack.push( Verdict::True.into() )
+                value_stack.push( true.into() )
             },
             (Operation::Foreach { idx }, Reduce) => {
                 //Violation didn't occur and not all devices have been looked at
                 //todo: Figure out if undecided should be here as well
-                if value_stack.last().is_some_and(|v| matches!(*v.get_value(), DerivedOutput::Verdict(Verdict::True) | DerivedOutput::Verdict(Verdict::Undecided)))
+                if value_stack.last().is_some_and(|v| matches!(*v.get_value(), StackContent::Verdict(true)))
                 && !device_stack.is_empty() {
                     let _ = value_stack.pop();
                     device_pointer = device_stack.pop();
@@ -185,7 +185,7 @@ pub(crate) fn eval_operations<'a>(
             (Operation::LTLAlwaysUnbounded { .. }, Reduce) => {
                 let val = value_stack.pop_or_err()?;
                 value_stack.push(
-                    val.and(Verdict::Undecided.into())
+                    val.to_undecided()
                 );
             },
             //todo: Write fucking test-cases. this shit is not helping anyone
@@ -199,20 +199,17 @@ pub(crate) fn eval_operations<'a>(
                     },
                     (true, false) => value_stack.push(
                         match ltl_type {
-                            LTL::Always | LTL::Eventually(true) => Verdict::True.into(),
-                            LTL::Eventually(false) => Verdict::False.into(),
+                            LTL::Always | LTL::Eventually(true) => true.into(),
+                            LTL::Eventually(false) => false.into(),
                         }
                     ),
                     _ => ()
                 }
             },
-            (Operation::LTLBounded { not, ltl_type, .. }, Reduce) => {
+            (Operation::LTLBounded { not, .. }, Reduce) => {
                 let val = value_stack.pop_or_err()?;
-                //Undecideable when here
-                let val = match ltl_type {
-                    LTL::Always => val.and(Verdict::Undecided.into()),
-                    LTL::Eventually(_) => val.or(Verdict::Undecided.into())
-                };
+                //Undecideable when here -> As the bound haven't been reached yet
+                let val = val.to_undecided();
                 //Not the value if necessary
                 let val = if *not { !val } else { val };
                 value_stack.push(val);

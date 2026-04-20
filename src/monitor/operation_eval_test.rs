@@ -43,12 +43,14 @@ fn aggregate_functions() {
     ];
     let mut foreach = [
         Operation::Foreach { idx: 1 },
-        Operation::Member(MemberType::Active)
+        Operation::Binary { bin_op: BinaryOperators::Equal, idx_lhs: 2, idx_rhs: 3 },
+        Operation::Member(MemberType::Power),
+        Operation::Number(10)
     ];
     let (spawn_t, cur_t) = (0, 1);
     let devices: IoTStream = mock_devices(3).into();
-    let devices_all_active: IoTStream = mock_devices(3).into_iter().map(|mut device| { 
-        device.active = true;
+    let devices_power_all_10: IoTStream = mock_devices(3).into_iter().map(|mut device| { 
+        device.power = 10;
         device
      }).collect::<Vec<_>>().into(); 
 
@@ -65,12 +67,12 @@ fn aggregate_functions() {
         eval_operations(&mut avg, &devices, &spawn_t, &cur_t).unwrap()
     );
     assert_eq!(
-        StackValue::from(Verdict::False),    
+        StackValue::from(false),    
         eval_operations(&mut foreach, &devices, &spawn_t, &cur_t).unwrap()
     );
     assert_eq!(
-        StackValue::from(Verdict::True),    
-        eval_operations(&mut foreach, &devices_all_active, &spawn_t, &cur_t).unwrap()
+        StackValue::from(true),    
+        eval_operations(&mut foreach, &devices_power_all_10, &spawn_t, &cur_t).unwrap()
     );
 }
 
@@ -86,10 +88,10 @@ fn ltl_expressions() {
     ];
     let devices: IoTStream = mock_devices(3).into();
     assert_eq!(
-        StackValue::from(Verdict::True),
+        StackValue::from(true),
         eval_operations(&mut always_unb, &devices, &0, &10).unwrap()
     );
     assert!(
-        (0..10).all(|t_spawn| eval_operations(&mut always_unb, &devices, &t_spawn, &10).unwrap() == StackValue::from(Verdict::True) )
+        (0..10).all(|t_spawn| eval_operations(&mut always_unb, &devices, &t_spawn, &10).unwrap() == StackValue::from(true) )
     )
 }
