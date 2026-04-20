@@ -3,7 +3,7 @@
 // always t%2s = 0s | t%2s = 1s;
 
 //Eventually[0s,4s] 0s = t;
-//Eventually[0s,4s] 1;
+Eventually[0s,4s] 0;
 //always[0s,2s] t = 10000000s;
 
 //always counttime(power > 3w) < 4 s;
@@ -12,6 +12,6 @@
 
 //always count(name) = t /1s;
 
-always sum(power) = 10w;
+//always sum(power) = 10w;
 
-always count(foreach(power > 10w));
+//always count(foreach(power > 10w));
