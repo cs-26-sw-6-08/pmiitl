@@ -23,9 +23,10 @@ impl OutputStream {
                     }
                 },
                 LTL::Eventually(_) => {                  
-                    let res = res?.get_value().get_verdict().unwrap();
+                    let res = res?;
+                    let res_value = res.get_value().get_verdict().unwrap();
                     let within_bounds = self.bound.is_some_and(|(_, b)| b <= t_current*1_000);
-                    if res {
+                    if res_value && res.is_decided()  {
                      //   #[cfg(debug_assertions)] 
                        // println!("{}", "\t--- Removed a property ---".yellow().bold().italic().underline());
                         self.ltl = LTL::Eventually(true);
@@ -35,7 +36,7 @@ impl OutputStream {
                     //    println!("{}", "\t--- Removed a property ---".yellow().bold().italic().underline());
                         self.ltl = LTL::Eventually(true);
                         *ver = Verdict::False;
-                    } else if !res {
+                    } else if !res_value {
                         *ver = Verdict::False; 
                     }
                 },
