@@ -1,10 +1,15 @@
 
+use colored::Colorize;
+
 use crate::{errors, monitor::{streams::{IoTDevice, IoTStream, OutputStream}, types::{DerivedOutput, StackValue, Verdict}}, monitor_setup::operation_types::{AggregateType, HistoryValue, LTL, Operation}, program::{member_types::MemberType, operations::BinaryOperators}, utils::vec_helper_funcs::ExtVec};
 use std::{error::Error};
 
 impl OutputStream {
     // Calculate the verdict for the output stream.
     pub fn update(&mut self, t_current: i128, devices: &IoTStream) -> Result<(), Box<dyn Error>> {
+        if self.ltl == LTL::Eventually(true) {
+            return Ok(());
+        }
         for (t_spawn, ver) in self.time_verdicts.iter_mut() {
             let res = eval_operations(&mut self.operations, devices, &*t_spawn, &t_current);
             
@@ -20,14 +25,21 @@ impl OutputStream {
                         *ver = Verdict::True;
                     }
                 },
-                LTL::Eventually(v) => {
-                    // todo: Update logic such that last is set 
-                    let res = res?;
-                    let res_val = res.get_value().get_verdict().unwrap();
-                    if res_val == Verdict::False {
-                        *ver = Verdict::Undecided;
-                    } else if res.is_decided() {
+                LTL::Eventually(_) => {                  
+                    let res = res?.get_value().get_verdict().unwrap();
+                    let within_bounds = self.bound.is_some_and(|(_, b)| b <= t_current*1_000);
+                    if res == Verdict::True {
+                        #[cfg(debug_assertions)] 
+                        println!("{}", "\t--- Removed a property ---".yellow().bold().italic().underline());
+                        self.ltl = LTL::Eventually(true);
                         *ver = Verdict::True;
+                    } else if within_bounds {
+                        #[cfg(debug_assertions)] 
+                        println!("{}", "\t--- Removed a property ---".yellow().bold().italic().underline());
+                        self.ltl = LTL::Eventually(true);
+                        *ver = Verdict::False;
+                    } else if res == Verdict::False {
+                        *ver = Verdict::False; 
                     }
                 },
             }

@@ -1,5 +1,3 @@
-use colored::Colorize;
-
 use crate::{
     monitor::types::Verdict,
     monitor_setup::operation_types::{LTL, Operation},
@@ -34,7 +32,7 @@ impl OutputStream {
 
     // Insert a time point into the output stream.
     pub fn insert(&mut self, t: i128) {
-        if !(self.ltl == LTL::Eventually(true)) || self.bound.is_none_or(|(a, b)| a <= t && t <= b) {
+        if !(self.ltl == LTL::Eventually(true)) && self.bound.is_none_or(|(a, b)| a <= t && t <= b) {
             self.time_verdicts.push((t, Verdict::Undecided))
         }
     }
@@ -53,17 +51,12 @@ impl OutputStream {
                 .time_verdicts
                 .iter()
                 .any(|(_, verdict)| *verdict == Verdict::False),
-            LTL::Eventually(true) => false,
-            LTL::Eventually(false) => {
-                //todo: move to update and change logic accordingly
-                let within_bounds = self.bound.is_some_and(|(_, b)| b <= t);
-                if within_bounds || self.time_verdicts.iter().any(|(_, v)| *v == Verdict::True)   {
-                    #[cfg(debug_assertions)] 
-                    println!("{}", "\t--- Removed a property ---".yellow().bold().italic().underline());
-                    self.ltl = LTL::Eventually(true);
-                    within_bounds
-                } else { false }
-            },
+            LTL::Eventually(true) => !self
+                .time_verdicts.is_empty() && self
+                .time_verdicts
+                .iter()
+                .any(|(_, verdict)| *verdict == Verdict::False),
+            LTL::Eventually(false) => false
         }
     }
 
