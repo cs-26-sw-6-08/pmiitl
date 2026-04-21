@@ -1,8 +1,5 @@
-use crate::{monitor::{operation_eval::eval_operations, streams::IoTStream, types::StackValue}, monitor_setup::operation_types::{AggregateType, LTL, Operation}, program::{function_types::FunctionType, member_types::MemberType, operations::BinaryOperators}, utils::test_helper_func::mock_devices};
+use crate::{monitor::{operation_eval::eval_operations, streams::IoTStream, types::StackValue}, monitor_setup::operation_types::{AggregateType, LTL, Operation}, program::{member_types::MemberType, operations::{BinaryOperators, UnaryOperators}}, utils::test_helper_func::mock_devices};
 
-
-
-//todo: bin op, unary op, Random tests
 #[test]
 fn test_constants() {
     let mut operations = [
@@ -244,8 +241,6 @@ fn binary_operations_test() {
         StackValue::from(0), // %,
         StackValue::from(true), // ||
     ];  
-
-
     for (op, expected_val) in bin_ops.into_iter().zip(expected_results) {
         let mut operations =  [ 
             Operation::Binary { bin_op: op, idx_lhs: 1, idx_rhs: 2 },
@@ -257,6 +252,26 @@ fn binary_operations_test() {
             eval_operations(&mut operations, &devices, &0, &0).unwrap()
         );
     }
-
 }
 
+#[test]
+fn unary_operations_test() {
+    let devices = mock_devices(3).into();
+    
+    let mut negate_ops =  [ 
+        Operation::Unary { un_op: UnaryOperators::Negative, idx: 1 },
+        Operation::Number(10_000), 
+    ];
+     let mut not_ops =  [ 
+        Operation::Unary { un_op: UnaryOperators::Not, idx: 1 },
+        Operation::Number(1_000), 
+    ];
+    assert_eq!(
+        StackValue::from(-10_000),
+        eval_operations(&mut negate_ops, &devices, &0, &0).unwrap()
+    );
+     assert_eq!(
+        StackValue::from(false),
+        eval_operations(&mut not_ops, &devices, &0, &0).unwrap()
+    );
+}

@@ -187,7 +187,7 @@ impl<'a> StackValue<'a> {
         self.value = match (self.value, un_op) {
             (StackContent::Verdict(verdict), UnaryOperators::Not) => StackContent::Verdict(verdict.not()),
             (StackContent::Number(v), UnaryOperators::Negative) => StackContent::Number(-v),
-            (StackContent::Number(v), UnaryOperators::Not) => StackContent::Verdict(v != 0),
+            (StackContent::Number(v), UnaryOperators::Not) => StackContent::Verdict(!(v != 0)),
             (StackContent::Verdict(_), UnaryOperators::Negative) |
             (StackContent::String(_), UnaryOperators::Not) |
             (StackContent::String(_), UnaryOperators::Negative) => unreachable!(),
