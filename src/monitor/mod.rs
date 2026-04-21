@@ -76,12 +76,12 @@ impl Program {
                     // Calculate the new state of the streams
                     //todo: potentially add error handling
                     let _ = output_stream.update(t, device_stream); 
+                    #[cfg(debug_assertions)]
+                    println!("{:#?}", output_stream);
 
                     // Give verdicts
                     let is_violated = output_stream.get_violated_verdict_single(t);
                     
-                    //#[cfg(debug_assertions)]
-                    //println!("{:#?}", output_stream);
                     output_stream.clean_up();
 
                     (prop_num, is_violated)

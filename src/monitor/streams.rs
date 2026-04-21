@@ -2,7 +2,7 @@ use crate::{
     monitor::types::Verdict,
     monitor_setup::operation_types::{LTL, Operation},
 };
-
+use colored::Colorize;
 
 
 #[derive(Debug, PartialEq)]
@@ -32,7 +32,7 @@ impl OutputStream {
 
     // Insert a time point into the output stream.
     pub fn insert(&mut self, t: i128) {
-        if !(self.ltl == LTL::Eventually(true)) && self.bound.is_none_or(|(a, b)| a <= t && t <= b) {
+        if self.ltl == LTL::Eventually(false) && self.bound.is_none_or(|(a, b)| a <= t && t <= b) {
             self.time_verdicts.push((t, Verdict::Undecided))
         }
     }

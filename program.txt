@@ -16,4 +16,6 @@
 
 //always count(foreach(power > 10w));
 
-always t * 1 = t;
+//always sum(power) / 2w = 2.5;
+
+Eventually[2s,6s]0;

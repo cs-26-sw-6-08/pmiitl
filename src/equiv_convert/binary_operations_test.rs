@@ -20,6 +20,7 @@ fn divide() {
         (binary_expr(custom_number_expr(123), custom_number_expr(5), BinaryOperators::Divide), Expr::Number(24)),
         (binary_expr(custom_number_expr(5), custom_number_expr(-0), BinaryOperators::Divide), Expr::Number(0)),
         (binary_expr(number_expr(), custom_number_expr(0), BinaryOperators::Divide), Expr::Number(0)),
+        (binary_expr(custom_number_expr(5_000), custom_number_expr(2_000), BinaryOperators::Divide), Expr::Number(2_500))
     ] {
         assert!(expr.equiv_convert().is_ok());
         println!("{}", expr);
