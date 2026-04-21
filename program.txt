@@ -1,3 +1,5 @@
 //always count(foreach(1)) = 5;
 
-always foreach(power = 5w);
+//always foreach(power = 5w);
+
+always t%24s = 0s -> always[0h,24h] sumtime(power) < 1kwh/1000;

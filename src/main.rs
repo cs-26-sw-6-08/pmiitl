@@ -51,7 +51,7 @@ async fn main() {
     #[cfg(debug_assertions)]
     println!("{}",format!("Program Env\n{:#?}",program.environment).bright_blue());
     
-    if let Err(err) = program.monitor(1_000, false).await {
+    if let Err(err) = program.monitor(1_000, true).await {
         return error_print(format!("{}",err));
     }
 }
