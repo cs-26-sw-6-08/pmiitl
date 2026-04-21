@@ -13,7 +13,6 @@ use std::fs;
 use colored::Colorize;
 use crate::program::Program;
 
-//todo: Remove active
 
 #[tokio::main]
 async fn main() {

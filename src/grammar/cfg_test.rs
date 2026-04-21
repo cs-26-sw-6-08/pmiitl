@@ -29,7 +29,7 @@ fn tree_to_str<'a>(node: AstNode<'_, '_, 'a>, crossings: Vec<bool>) -> String {
 #[test]
 fn property1() {
     let actual: String = tree_to_str(
-        cfg::parse_string("always (t % 24h = 0) -> always[0h,24h] sumtime(active * power) <10 kWh;".to_lowercase())
+        cfg::parse_string("always (t % 24h = 0) -> always[0h,24h] sumtime(1 * power) <10 kWh;".to_lowercase())
             .get_ast()
             .get_root(),
         Vec::<bool>::new(),
@@ -40,7 +40,7 @@ fn property1() {
 #[test]
 fn property2() {
     let actual: String = tree_to_str(
-        cfg::parse_string("! eventually count(active) > 5;".to_lowercase())
+        cfg::parse_string("! eventually count(1) > 5;".to_lowercase())
             .get_ast()
             .get_root(),
         Vec::<bool>::new(),
@@ -51,7 +51,7 @@ fn property2() {
 #[test]
 fn property3() {
     let actual: String = tree_to_str(
-        cfg::parse_string("always foreach(active -> eventually[0h,6h] !active);".to_lowercase())
+        cfg::parse_string("always foreach(1 -> eventually[0h,6h] !1);".to_lowercase())
             .get_ast()
             .get_root(),
         Vec::<bool>::new(),
@@ -62,7 +62,7 @@ fn property3() {
 #[test]
 fn property4() {
     let actual: String = tree_to_str(
-        cfg::parse_string("always count(name=fridge & active);".to_lowercase())
+        cfg::parse_string("always count(name=fridge & 1);".to_lowercase())
             .get_ast()
             .get_root(),
         Vec::<bool>::new(),
@@ -73,7 +73,7 @@ fn property4() {
 #[test]
 fn property5() {
     let actual: String = tree_to_str(
-        cfg::parse_string("always count(active) >= 5 -> eventually[0h,6h] count(active) < 5;".to_lowercase())
+        cfg::parse_string("always count(1) >= 5 -> eventually[0h,6h] count(1) < 5;".to_lowercase())
             .get_ast()
             .get_root(),
         Vec::<bool>::new(),
@@ -84,7 +84,7 @@ fn property5() {
 #[test]
 fn property6() {
     let actual: String = tree_to_str(
-        cfg::parse_string("always sum(active * power) <= 100 W;".to_lowercase())
+        cfg::parse_string("always sum(1 * power) <= 100 W;".to_lowercase())
             .get_ast()
             .get_root(),
         Vec::<bool>::new(),

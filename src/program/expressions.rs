@@ -177,7 +177,7 @@ impl Expr {
                     Expr::UnaryOperations { operand, operator }
                 }
             }
-            "active" | "power" | "name" => {
+            "power" | "name" => {
                 let access_type = MemberType::new(node.get_value().ok_or_else(|| {
                     errors::Error::ASTNodeValueInvalid(node.get_symbol().name.into())
                 })?)?;

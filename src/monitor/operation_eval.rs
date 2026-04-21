@@ -74,8 +74,6 @@ pub(crate) fn eval_operations<'a>(
             (Operation::CurrentTime, _) => value_stack.push((*t_spawn * 1_000).into()),
             (Operation::Member(mem_type), _) => {
                 value_stack.push(match mem_type {
-                    //todo: Remove active from membertype
-                    MemberType::Active => todo!(),
                     MemberType::Power =>  device_pointer.ok_or(errors::Error::DevicePointer)?.power.into(),
                     MemberType::Name =>  StackValue::from(device_pointer.map(|d| &d.name).ok_or(errors::Error::DevicePointer)?),
                 });

@@ -18,11 +18,6 @@ fn constant_rules() {
     let yes_expr = expr.compile_expression();
     assert!(yes_expr.is_ok());
     assert_eq!(yes_expr.unwrap(), vec![Operation::CurrentTime]);
-
-    let expr = member_expr(MemberType::Active);
-    let yes_expr = expr.compile_expression();
-    assert!(yes_expr.is_ok());
-    assert_eq!(yes_expr.unwrap(), vec![Operation::Member(MemberType::Active)]);
     
     let expr = member_expr(MemberType::Name);
     let yes_expr = expr.compile_expression();

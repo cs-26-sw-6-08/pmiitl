@@ -132,7 +132,6 @@ impl Expr {
                 }
             }
             Expr::Member { access_type } => match access_type {
-                MemberType::Active => Ok(Type::Number),
                 MemberType::Power => Ok(Type::Watt),
                 MemberType::Name => Ok(Type::String),
             },

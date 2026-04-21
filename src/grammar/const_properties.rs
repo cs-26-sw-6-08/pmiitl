@@ -17,7 +17,7 @@ r#"Program
             +-> < = <
                 +-> sumtime = sumtime
                 |   +-> * = *
-                |       +-> active = active
+                |       +-> NUMBER = 1
                 |       +-> power = power
                 +-> POWERUNIT = kwh
                     +-> NUMBER = 10
@@ -29,7 +29,7 @@ r#"Program
     +-> ! = !
     +-> > = >
         +-> count = count
-        |   +-> active = active
+        |   +-> NUMBER = 1
         +-> NUMBER = 5
 "#;
 
@@ -38,7 +38,7 @@ r#"Program
 +-> always = always
     +-> foreach = foreach
         +-> -> = ->
-            +-> active = active
+            +-> NUMBER = 1
             +-> eventually = eventually
                 +-> Interval
                 |   +-> TIMEUNIT = h
@@ -46,7 +46,7 @@ r#"Program
                 |   +-> TIMEUNIT = h
                 |       +-> NUMBER = 6
                 +-> ! = !
-                    +-> active = active
+                    +-> NUMBER = 1
 "#;
 
 pub const PROPERTY4: &str =
@@ -57,7 +57,7 @@ r#"Program
             +-> = = =
             |   +-> name = name
             |   +-> STRING = fridge
-            +-> active = active
+            +-> NUMBER = 1
 "#;
 
 pub const PROPERTY5: &str =
@@ -66,7 +66,7 @@ r#"Program
     +-> -> = ->
         +-> >= = >=
         |   +-> count = count
-        |   |   +-> active = active
+        |   |   +-> NUMBER = 1
         |   +-> NUMBER = 5
         +-> eventually = eventually
             +-> Interval
@@ -76,7 +76,7 @@ r#"Program
             |       +-> NUMBER = 6
             +-> < = <
                 +-> count = count
-                |   +-> active = active
+                |   +-> NUMBER = 1
                 +-> NUMBER = 5
 "#;
 
@@ -86,7 +86,7 @@ r#"Program
     +-> <= = <=
         +-> sum = sum
         |   +-> * = *
-        |       +-> active = active
+        |       +-> NUMBER = 1
         |       +-> power = power
         +-> POWERUNIT = w
             +-> NUMBER = 100
