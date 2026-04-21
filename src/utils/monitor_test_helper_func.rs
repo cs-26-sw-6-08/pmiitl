@@ -37,7 +37,7 @@ pub fn always_prop_helper(operations: Vec<Operation>, bound: Option<(i128,i128)>
 pub fn single_device_stream()->IoTStream{
     let temp_iot_stream: IoTStream = (
             vec![
-                ("Roomba".into(), 5_000, true).into(),
+                ("Roomba".into(), 5_000).into(),
             ]
         ).into();
         temp_iot_stream
@@ -46,8 +46,8 @@ pub fn single_device_stream()->IoTStream{
 pub fn two_device_stream()->IoTStream{
     let temp_iot_stream: IoTStream = (
             vec![
-                ("Roomba".into(), 5_000, true).into(),
-                ("christian".into(), 1_0000, true).into(),
+                ("Roomba".into(), 5_000).into(),
+                ("christian".into(), 1_0000).into(),
             ]
         ).into();
     temp_iot_stream
@@ -56,16 +56,16 @@ pub fn two_device_stream()->IoTStream{
 pub fn ten_device_stream() -> IoTStream {
     let temp_iot_stream: IoTStream = (
             vec![
-                ("Roomba0".into(), 1_0000, false).into(),
-                ("Roomba1".into(), 2_0000, true).into(),
-                ("Roomba2".into(), 3_0000, false).into(),
-                ("Roomba3".into(), 4_0000, true).into(),
-                ("Roomba4".into(), 5_0000, false).into(),
-                ("Roomba5".into(), 6_0000, true).into(),
-                ("Roomba6".into(), 7_0000, false).into(),
-                ("Roomba7".into(), 8_0000, true).into(),
-                ("Roomba8".into(), 9_0000, false).into(),
-                ("Roomba9".into(), 1_00000, true).into(),
+                ("Roomba0".into(), 1_000).into(),
+                ("Roomba1".into(), 2_000).into(),
+                ("Roomba2".into(), 3_000).into(),
+                ("Roomba3".into(), 4_000).into(),
+                ("Roomba4".into(), 5_000).into(),
+                ("Roomba5".into(), 6_000).into(),
+                ("Roomba6".into(), 7_000).into(),
+                ("Roomba7".into(), 8_000).into(),
+                ("Roomba8".into(), 9_000).into(),
+                ("Roomba9".into(), 10_000).into(),
             ]
         ).into();
     temp_iot_stream

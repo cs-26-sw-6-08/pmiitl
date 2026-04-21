@@ -71,19 +71,17 @@ impl OutputStream {
 pub struct IoTDevice {
     pub name: String,
     pub power: i128,
-    pub active: bool,
 }
 
 
 
-impl From<(String, i128, bool)> for IoTDevice {
-    fn from(value: (String, i128, bool)) -> Self {
-        let (mut name, power, active) = value;
+impl From<(String, i128)> for IoTDevice {
+    fn from(value: (String, i128)) -> Self {
+        let (mut name, power) = value;
         name = name.to_lowercase();
         Self {
             name,
             power,
-            active,
         }
     }
 }

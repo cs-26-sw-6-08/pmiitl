@@ -187,18 +187,22 @@ impl<'a> StackValue<'a> {
     
 
 
+    // TODO: Udfyld alle de muligde man kan ramme
     pub fn un_op(mut self, un_op: &UnaryOperators) -> Self {
         self.value = match (self.value, un_op) {
             (StackContent::Verdict(verdict), UnaryOperators::Not) => StackContent::Verdict(verdict.not()),
             (StackContent::Number(v), UnaryOperators::Negative) => StackContent::Number(-v),
-            _ => unreachable!()
-        };
+            (StackContent::Verdict(_), UnaryOperators::Negative) => todo!(),
+            (StackContent::Number(_), UnaryOperators::Not) => todo!(),
+            (StackContent::String(_), UnaryOperators::Not) => todo!(),
+            (StackContent::String(_), UnaryOperators::Negative) => todo!(),
+                    };
         self
     }
 
     pub fn mul_op(self, other: StackValue) -> Self {
-        let StackContent::Number(m) = self.get_value() else {todo!()};
-        let StackContent::Number(n) = other.get_value() else {todo!()};
+        let StackContent::Number(m) = self.get_value() else {panic!("Expected a number")};
+        let StackContent::Number(n) = other.get_value() else {panic!("Expected a number")};
 
         let m_int = m / 1000;
         let m_frac = m % 1000;
@@ -209,8 +213,8 @@ impl<'a> StackValue<'a> {
     }
 
     pub fn div_op(self, other: StackValue) -> Self {    
-        let StackContent::Number(m) = self.get_value() else {todo!()};
-        let StackContent::Number(n) = other.get_value() else {todo!()};
+        let StackContent::Number(m) = self.get_value() else {panic!("Expected a number")};
+        let StackContent::Number(n) = other.get_value() else {panic!("Expected a number")};
 
         let m_int = m / 1000;
         let m_frac = m % 1000;

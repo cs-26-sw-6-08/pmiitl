@@ -96,18 +96,18 @@ pub fn operations_vec_with_sumtime() -> Vec<Operation> {
 
 pub fn mock_devices(amt: usize) -> Vec<IoTDevice> {
     [
-        ("Roomba".into(), 5, true).into(),
-        ("christian".into(), 15, false).into(),
-        ("Fridge".into(), 10, true).into(),
-        ("christian0".into(), 10, false).into(),
-        ("christian1".into(), 20, true).into(),
-        ("christian2".into(), 30, false).into(),
-        ("christian3".into(), 40, true).into(),
-        ("christian4".into(), 50, false).into(),
-        ("christian5".into(), 60, true).into(),
-        ("christian6".into(), 70, false).into(),
-        ("christian7".into(), 80, true).into(),
-        ("christian8".into(), 90, false).into(),
-        ("christian9".into(), 100, true).into(),
+        ("Roomba".into(), 5).into(),
+        ("christian".into(), 15).into(),
+        ("Fridge".into(), 10).into(),
+        ("christian0".into(), 10).into(),
+        ("christian1".into(), 20).into(),
+        ("christian2".into(), 30).into(),
+        ("christian3".into(), 40).into(),
+        ("christian4".into(), 50).into(),
+        ("christian5".into(), 60).into(),
+        ("christian6".into(), 70).into(),
+        ("christian7".into(), 80).into(),
+        ("christian8".into(), 90).into(),
+        ("christian9".into(), 100).into(),
     ].into_iter().take(amt).collect()
 }

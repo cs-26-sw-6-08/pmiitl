@@ -255,7 +255,7 @@ fn always_simple_sum_member_true2() {
             function_type: AggregateType::Sum,
         },
         Operation::Member(MemberType::Power),
-        Operation::Number(550000),
+        Operation::Number(55_000),
     ];
     let mut program = always_prop_helper(operations, None);
     let device_stream = ten_device_stream();
@@ -309,7 +309,7 @@ fn always_simple_avg_member_true() {
             function_type: AggregateType::Avg,
         },
         Operation::Member(MemberType::Power),
-        Operation::Number(55000),
+        Operation::Number(5500),
     ];
     let mut program = always_prop_helper(operations, None);
     let device_stream = ten_device_stream();

@@ -30,7 +30,7 @@ impl Program {
         
         let temp_iot_stream: IoTStream = (
             vec![
-                ("Roomba".into(), 5, true).into(),
+                ("Roomba".into(), 5).into(),
                 //("christian".into(), 5, true).into(),
             ]
         ).into();

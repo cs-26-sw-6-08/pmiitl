@@ -46,16 +46,6 @@ fn plus_minus_mod_operations() {
             .unwrap(),
             Type::WattSeconds,
         );
-        assert_eq!(
-            binary_expr(
-                member_expr(MemberType::Active),
-                number_expr(),
-                operator.clone(),
-            )
-            .unit_check()
-            .unwrap(),
-            Type::Number,
-        );
 
         assert!(binary_expr(string_expr(), string_expr(), operator.clone())
             .unit_check().is_err());
@@ -463,7 +453,6 @@ fn negative_operation() {
 
 #[test]
 fn member() {
-    assert_eq!(member_expr(MemberType::Active).unit_check().unwrap(), Type::Number);
     assert_eq!(member_expr(MemberType::Name).unit_check().unwrap(), Type::String);
     assert_eq!(member_expr(MemberType::Power).unit_check().unwrap(), Type::Watt);
 }

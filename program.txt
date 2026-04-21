@@ -18,4 +18,4 @@
 
 //always sum(power) / 2w = 2.5;
 
-Eventually[2s,6s]0;
+always foreach(power/1w -> eventually[0h,6h] !(power/1w));

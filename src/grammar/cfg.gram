@@ -68,7 +68,7 @@ grammar cfg
     FunctionExprV7 -> '('! FunctionExpr^ ')'! | FunctionExprV8^;
     FunctionExprV8 -> (NUMBER (TIMEUNIT | POWERUNIT) | NUMBER | Member | STRING | Function | BOOL | TIME)^;
 
-    Member -> 'active'^ | 'power'^ | 'name'^;
+    Member -> 'power'^ | 'name'^;
     
   }
 }
