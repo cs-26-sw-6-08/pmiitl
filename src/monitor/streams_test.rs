@@ -1,6 +1,6 @@
 use crate::{
     monitor_setup::operation_types::{AggregateType, LTL, Operation},
-    program::{function_types::FunctionType, member_types::MemberType, operations::BinaryOperators},
+    program::{member_types::MemberType, operations::BinaryOperators},
     utils::monitor_test_helper_func::*,
 };
 
@@ -374,7 +374,7 @@ fn always_mul_check() {
     };
     let result = run_x_monitor_steps(streams, &device_stream, &0, 5);
     println!("{}", format!("{:#?}", result).green());
-    for (idx, value) in result {
+    for (_, value) in result {
         assert!(value.is_empty());
     }
 }
@@ -404,7 +404,7 @@ fn always_div_check() {
     };
     let result = run_x_monitor_steps(streams, &device_stream, &0, 5);
     println!("{}", format!("{:#?}", result).green());
-    for (idx, value) in result {
+    for (_, value) in result {
         assert!(value.is_empty());
     }
 }
@@ -433,7 +433,7 @@ fn always_minus_check() {
     };
     let result = run_x_monitor_steps(streams, &device_stream, &0, 5);
     println!("{}", format!("{:#?}", result).green());
-    for (idx, value) in result {
+    for (_, value) in result {
         assert!(value.is_empty());
     }
 }

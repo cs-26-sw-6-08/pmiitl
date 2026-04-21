@@ -1,7 +1,7 @@
 
 use colored::Colorize;
 
-use crate::{errors, monitor::{streams::{IoTDevice, IoTStream, OutputStream}, types::{StackContent, StackValue, Verdict}}, monitor_setup::operation_types::{AggregateType, HistoryValue, LTL, Operation}, program::{member_types::MemberType, operations::BinaryOperators}, utils::{monitor_test_helper_func::ten_device_stream, vec_helper_funcs::ExtVec}};
+use crate::{errors, monitor::{streams::{IoTDevice, IoTStream, OutputStream}, types::{StackContent, StackValue, Verdict}}, monitor_setup::operation_types::{AggregateType, HistoryValue, LTL, Operation}, program::{member_types::MemberType, operations::BinaryOperators}, utils::vec_helper_funcs::ExtVec};
 use std::{error::Error};
 
 impl OutputStream {
@@ -76,6 +76,7 @@ pub(crate) fn eval_operations<'a>(
             (Operation::CurrentTime, _) => value_stack.push((*t_spawn * 1_000).into()),
             (Operation::Member(mem_type), _) => {
                 value_stack.push(match mem_type {
+                    //todo: Remove active from membertype
                     MemberType::Power =>  device_pointer.ok_or(errors::Error::DevicePointer)?.power.into(),
                     MemberType::Name =>  StackValue::from(device_pointer.map(|d| &d.name).ok_or(errors::Error::DevicePointer)?),
                 });

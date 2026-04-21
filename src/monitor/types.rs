@@ -107,11 +107,11 @@ impl<'a> StackValue<'a> {
 
     pub fn equals(mut self, rhs: Self) -> Self {
         let value = match (self.get_value(),rhs.get_value()){
-            (StackContent::Number(val1), StackContent::Number(val2)) => StackContent::Verdict((val1 == val2).into()),
-            (StackContent::Verdict(val1), StackContent::Verdict(val2)) => StackContent::Verdict((val1 == val2).into()),
-            (StackContent::String(val1), StackContent::String(val2)) => StackContent::Verdict((val1 == val2).into()),
+            (StackContent::Number(val1), StackContent::Number(val2)) => StackContent::Verdict(val1 == val2),
+            (StackContent::Verdict(val1), StackContent::Verdict(val2)) => StackContent::Verdict(val1 == val2),
+            (StackContent::String(val1), StackContent::String(val2)) => StackContent::Verdict(val1 == val2),
             (StackContent::Verdict(v1), StackContent::Number(v2)) | 
-            (StackContent::Number(v2), StackContent::Verdict(v1)) => StackContent::Verdict((if *v1 == (*v2 != 0) { true } else { false }).into()),
+            (StackContent::Number(v2), StackContent::Verdict(v1)) => StackContent::Verdict(*v1 == (*v2 != 0)),
             _ => unreachable!()
         };
         
@@ -122,11 +122,11 @@ impl<'a> StackValue<'a> {
 
     pub fn not_equals(mut self, rhs: Self) -> Self {
         let value = match (self.get_value(),rhs.get_value()){
-            (StackContent::Number(val1), StackContent::Number(val2)) => StackContent::Verdict((val1 != val2).into()),
-            (StackContent::Verdict(val1), StackContent::Verdict(val2)) => StackContent::Verdict((val1 != val2).into()),
-            (StackContent::String(val1), StackContent::String(val2)) => StackContent::Verdict((val1 != val2).into()),
+            (StackContent::Number(val1), StackContent::Number(val2)) => StackContent::Verdict(val1 != val2),
+            (StackContent::Verdict(val1), StackContent::Verdict(val2)) => StackContent::Verdict(val1 != val2),
+            (StackContent::String(val1), StackContent::String(val2)) => StackContent::Verdict(val1 != val2),
             (StackContent::Verdict(v1), StackContent::Number(v2)) | 
-            (StackContent::Number(v2), StackContent::Verdict(v1)) => StackContent::Verdict((if *v1 != (*v2 != 0) { true } else { false }).into()),
+            (StackContent::Number(v2), StackContent::Verdict(v1)) => StackContent::Verdict(*v1 != (*v2 != 0)),
             _ => unreachable!(),
         };
         
@@ -167,7 +167,7 @@ impl<'a> StackValue<'a> {
         println!("{}", format!("{:?},{:?}", self, rhs).bright_green());
         self.value = match (self.get_value(), rhs.get_value()) {
             (StackContent::Number(v1), StackContent::Number(v2)) => 
-                StackContent::Verdict((v1 < v2).into()),
+                StackContent::Verdict(v1 < v2),
             _ => unreachable!()
         };
         self.decided = self.decided.greatest_lower_bound(&rhs.decided);
@@ -177,7 +177,7 @@ impl<'a> StackValue<'a> {
     pub fn less_equal(mut self, rhs: Self) -> Self {
          self.value = match (self.get_value(), rhs.get_value()) {
             (StackContent::Number(v1), StackContent::Number(v2)) => 
-                StackContent::Verdict((v1 <= v2).into()),
+                StackContent::Verdict(v1 <= v2),
                 _ => unreachable!()
         };
         self.decided = self.decided.greatest_lower_bound(&rhs.decided);
@@ -188,7 +188,7 @@ impl<'a> StackValue<'a> {
         self.value = match (self.value, un_op) {
             (StackContent::Verdict(verdict), UnaryOperators::Not) => StackContent::Verdict(verdict.not()),
             (StackContent::Number(v), UnaryOperators::Negative) => StackContent::Number(-v),
-            (StackContent::Number(v), UnaryOperators::Not) => StackContent::Verdict(v != 0),
+            (StackContent::Number(v), UnaryOperators::Not) => StackContent::Verdict(v == 0),
             (StackContent::Verdict(_), UnaryOperators::Negative) |
             (StackContent::String(_), UnaryOperators::Not) |
             (StackContent::String(_), UnaryOperators::Negative) => unreachable!(),
