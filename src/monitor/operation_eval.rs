@@ -1,4 +1,6 @@
 
+use colored::Colorize;
+
 use crate::{errors, monitor::{streams::{IoTDevice, IoTStream, OutputStream}, types::{StackContent, StackValue, Verdict}}, monitor_setup::operation_types::{AggregateType, HistoryValue, LTL, Operation}, program::{member_types::MemberType, operations::BinaryOperators}, utils::vec_helper_funcs::ExtVec};
 use std::{error::Error};
 
@@ -25,18 +27,17 @@ impl OutputStream {
                 LTL::Eventually(_) => {                  
                     let res = res?;
                     let res_value = res.get_value().get_verdict().unwrap();
-                    let within_bounds = self.bound.is_some_and(|(_, b)| b <= t_current*1_000);
                     if res_value && res.is_decided()  {
-                     //   #[cfg(debug_assertions)] 
-                       // println!("{}", "\t--- Removed a property ---".yellow().bold().italic().underline());
+                        #[cfg(debug_assertions)] 
+                        println!("{}", "\t--- Removed a property ---".yellow().bold().italic().underline());
                         self.ltl = LTL::Eventually(true);
                         *ver = Verdict::True;
-                    } else if within_bounds {
-                      //  #[cfg(debug_assertions)] 
-                    //    println!("{}", "\t--- Removed a property ---".yellow().bold().italic().underline());
+                    } else if self.bound.is_some_and(|(_, b)| b <= t_current*1_000) { // Todo: er det b plus spawn time?
+                        #[cfg(debug_assertions)] 
+                        println!("{}", "\t--- Removed a property ---".yellow().bold().italic().underline());
                         self.ltl = LTL::Eventually(true);
                         *ver = Verdict::False;
-                    } else if !res_value {
+                    } else if !res_value && res.is_decided() {
                         *ver = Verdict::False; 
                     }
                 },

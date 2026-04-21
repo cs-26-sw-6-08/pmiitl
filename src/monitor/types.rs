@@ -196,6 +196,13 @@ impl<'a> StackValue<'a> {
         self
     }
 
+    pub fn mul_op(mut self, other: StackValue) -> Self {
+        let StackContent::Number(lhs) = self.get_value() else {todo!()};
+        let StackContent::Number(rhs) = other.get_value() else {todo!()};
+
+        todo!()
+    }
+
     pub fn bin_op(self, rhs: Self, bin_op: &BinaryOperators) -> Self {
         match bin_op {
             BinaryOperators::Equal => self.equals(rhs),

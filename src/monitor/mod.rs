@@ -10,7 +10,7 @@ mod operation_eval_test;
 mod mod_test;
 
 use std::error::Error;
-use crate::{monitor::streams::{IoTStream, OutputStream}, program::Program};
+use crate::{errors, monitor::streams::{IoTStream, OutputStream}, program::Program};
 use tokio::time::{Duration, interval};
 use std::time::Instant;
 
@@ -22,11 +22,11 @@ impl Program {
     pub async fn monitor(&mut self, time_interval: i128, speed: bool) -> Result<(), Box<dyn Error>> {
         println!("Monitor has started...");
         
-        let Some(streams) = &mut self.environment else { todo!() }; //Overvej custom error
+        let Some(streams) = &mut self.environment else { return Err(errors::Error::EnvironmentNotPresent.into()); };
         let mut interval = interval(Duration::from_millis(time_interval as u64));
 
         let mut t = 0;
-        println!("{:#?}", streams);
+        println!("{}",format!("{:#?}", streams).red());
         
         let temp_iot_stream: IoTStream = (
             vec![

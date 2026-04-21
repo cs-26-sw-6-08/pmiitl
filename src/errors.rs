@@ -36,7 +36,9 @@ pub enum Error {
     #[error("Value Stack Error: Not the correct value type")]
     ValueStackVal,
     #[error("Illegal operation during evaluation")]
-    IllegalOperation
+    IllegalOperation,
+    #[error("The environment have not been set for the program")]
+    EnvironmentNotPresent
 }
 
 impl PartialEq for Error {

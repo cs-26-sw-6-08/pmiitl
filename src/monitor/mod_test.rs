@@ -90,7 +90,6 @@ fn always_true_unbound() {
 
 #[test]
 fn always_false_bound() {
-    // todo: Vi skal lige dobbelt check intervaled
     let operations: Vec<Operation> = vec![Operation::Number(0)];
     let mut program = always_prop_helper(operations, Some((0, 50)));
     let device_stream = single_device_stream();
@@ -100,8 +99,11 @@ fn always_false_bound() {
     let result = run_x_monitor_steps(streams, &device_stream, &0, 100);
     println!("{}", format!("{:#?}", result).green());
     for (idx, value) in result {
-        if idx < 50 { assert!(value[0].1); } 
-        else { assert!(value.is_empty()); }
+        if idx <= 50 {
+            assert!(value[0].1);
+        } else {
+            assert!(value.is_empty());
+        }
     }
 }
 
@@ -318,5 +320,34 @@ fn always_simple_avg_member_false() {
     println!("{}", format!("{:#?}", result).green());
     for (_, value) in result {
         assert!(value[0].1);
+    }
+}
+
+#[test]
+fn always_mul_check() {
+    let operations: Vec<Operation> = vec![
+        Operation::Binary {
+            bin_op: BinaryOperators::Equal,
+            idx_lhs: 1,
+            idx_rhs: 4,
+        },
+        Operation::Binary {
+            bin_op: BinaryOperators::Times,
+            idx_lhs: 2,
+            idx_rhs: 3,
+        },
+        Operation::CurrentTime,
+        Operation::Number(1000),
+        Operation::CurrentTime
+    ];
+    let mut program = always_prop_helper(operations, None);
+    let device_stream = ten_device_stream();
+    let Some(streams) = &mut program.environment else {
+        panic!()
+    };
+    let result = run_x_monitor_steps(streams, &device_stream, &0, 5);
+    println!("{}", format!("{:#?}", result).green());
+    for (idx, value) in result {
+        assert!(value.is_empty());
     }
 }
