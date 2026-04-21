@@ -46,7 +46,9 @@ impl OutputStream {
 
 #[derive(PartialEq, Debug)]
 enum StepType { Deepen, Reduce, ReducePartial }
-//enum { bottom, look, }
+enum DeviceStackElements { element(IoTDevice), layer_shift}
+
+
 
 pub(crate) fn eval_operations<'a>(
     operations: &mut [Operation], 

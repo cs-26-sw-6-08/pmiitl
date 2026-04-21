@@ -26,8 +26,6 @@ async fn main() {
         Err(err) => return error_print(format!("{}",err))
     };
 
-
-
     if let Err(err) = program.unit_convert() {
         return error_print(format!("{}",err));
     };
