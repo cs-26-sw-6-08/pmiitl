@@ -100,11 +100,8 @@ fn always_false_bound() {
     let result = run_x_monitor_steps(streams, &device_stream, &0, 100);
     println!("{}", format!("{:#?}", result).green());
     for (idx, value) in result {
-        if idx < 50 {
-            assert!(value[0].1);
-        } else {
-            assert!(value.is_empty());
-        }
+        if idx < 50 { assert!(value[0].1); } 
+        else { assert!(value.is_empty()); }
     }
 }
 

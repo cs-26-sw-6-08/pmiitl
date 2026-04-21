@@ -74,8 +74,6 @@ pub struct IoTDevice {
     pub active: bool,
 }
 
-
-
 impl From<(String, i128, bool)> for IoTDevice {
     fn from(value: (String, i128, bool)) -> Self {
         let (mut name, power, active) = value;
