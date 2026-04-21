@@ -186,13 +186,7 @@ pub(crate) fn eval_operations<'a>(
             
             // LTL 
             (Operation::LTLAlwaysUnbounded { idx }, Deepen) => {
-                worklist_stack.extend([(cur_idx, Reduce), (*idx, Deepen)]);
-            },
-            (Operation::LTLAlwaysUnbounded { .. }, Reduce) => {
-                let val = value_stack.pop_or_err()?;
-                value_stack.push(
-                    val.to_undecided()
-                );
+                worklist_stack.push((*idx, Deepen));
             },
             //todo: Write fucking test-cases. this shit is not helping anyone
             (Operation::LTLBounded { idx, bound, ltl_type, .. }, Deepen) => {
@@ -209,7 +203,14 @@ pub(crate) fn eval_operations<'a>(
                             LTL::Eventually(false) => false.into(),
                         }
                     ),
-                    _ => ()
+                    (false, true) => 
+                        value_stack.push(
+                            match ltl_type {
+                                LTL::Always | LTL::Eventually(true) => StackValue::from(true).to_undecided(),
+                                LTL::Eventually(false) => StackValue::from(false).to_undecided(),
+                            }
+                        ),
+                    _ => unreachable!()
                 }
             },
             (Operation::LTLBounded { not, .. }, Reduce) => {
@@ -235,7 +236,7 @@ fn function_type_computation(
 ) -> i128 {
     match function_type {
         AggregateType::Sum => cur_val,
-        AggregateType::Avg => cur_val / (t_current - t_spawn),
+        AggregateType::Avg => cur_val / (t_current - t_spawn + 1),
     }
 }
 

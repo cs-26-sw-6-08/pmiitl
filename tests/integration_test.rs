@@ -337,7 +337,7 @@ fn test8() {
                 Operation::Member(MemberType::Power),
                 Operation::Number(5_000),
             ],
-            Some((5_000, 10_000)),
+            Some((5, 10)),
         )),
         OutputStream::from((
             LTL::Always,
