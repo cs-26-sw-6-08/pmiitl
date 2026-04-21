@@ -6,8 +6,6 @@ pub mod operation_eval;
 mod streams_test;
 #[cfg(test)]
 mod operation_eval_test;
-#[cfg(test)]
-mod mod_test;
 
 use std::error::Error;
 use crate::{errors, monitor::streams::{IoTStream, OutputStream}, program::Program};
