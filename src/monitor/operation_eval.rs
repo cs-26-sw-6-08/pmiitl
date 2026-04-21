@@ -76,7 +76,6 @@ pub(crate) fn eval_operations<'a>(
             (Operation::CurrentTime, _) => value_stack.push((*t_spawn * 1_000).into()),
             (Operation::Member(mem_type), _) => {
                 value_stack.push(match mem_type {
-                    //todo: Remove active from membertype
                     MemberType::Power =>  device_pointer.ok_or(errors::Error::DevicePointer)?.power.into(),
                     MemberType::Name =>  StackValue::from(device_pointer.map(|d| &d.name).ok_or(errors::Error::DevicePointer)?),
                 });
@@ -152,7 +151,6 @@ pub(crate) fn eval_operations<'a>(
             },
             (Operation::Foreach { idx }, Reduce) => {
                 //Violation didn't occur and not all devices have been looked at
-                //todo: Figure out if undecided should be here as well
                 if value_stack.last().is_some_and(|v| matches!(*v.get_value(), StackContent::Verdict(true)))
                 && !device_stack.is_empty() {
                     let _ = value_stack.pop();
