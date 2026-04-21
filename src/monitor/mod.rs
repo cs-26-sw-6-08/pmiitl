@@ -16,7 +16,6 @@ use std::time::Instant;
 use colored::Colorize;
 
 impl Program {
-
     pub async fn monitor(&mut self, time_interval: i128, speed: bool) -> Result<(), Box<dyn Error>> {
         println!("Monitor has started...");
         
@@ -48,12 +47,15 @@ impl Program {
             println!("--- Interval {:<4}", format!("{}",t).blue().bold());
             //todo: await devices
             async {
-                for (prop_num, _) in Self::monitor_logic(streams, &t, &temp_iot_stream) {
+                for el in Self::monitor_logic(streams, &t, &temp_iot_stream) {
+                    let (prop_num, _ )=  el?; 
                     let msg = format!("Prop {} violated", prop_num + 1);
                     println!("\t{} at time: {}", msg.red().bold().underline(), format!("{}s",t).on_bright_red().blue().bold());
                 }
                 t += time_interval / 1000;
-            }.await;
+                
+                Ok::<(), Box<dyn Error>>(())
+            }.await?;
 
             let elapsed = start.elapsed();
             let colored_time = if elapsed.as_millis() > time_interval as u128 { format!("{:?}",elapsed).red().bold() } 
@@ -65,7 +67,7 @@ impl Program {
     }
 
     
-    pub fn monitor_logic<'a>(env: &'a mut [OutputStream], t: &'a i128, device_stream: &'a IoTStream) -> Box<dyn Iterator<Item = (usize, bool)> + 'a> {
+    pub fn monitor_logic<'a>(env: &'a mut [OutputStream], t: &'a i128, device_stream: &'a IoTStream) -> Box<dyn Iterator<Item = Result<(usize, bool), Box<dyn Error>>> + 'a> {
         Box::new(
             env
                 .iter_mut()
@@ -87,8 +89,8 @@ impl Program {
                     
                     output_stream.clean_up();
 
-                    (prop_num, is_violated)
-                }).filter(|(_, v)| *v)
+                    Ok((prop_num, is_violated))
+                }).filter(|el| el.as_ref().map(|(_, v)| *v).unwrap_or(true))
         )
     }
 }
