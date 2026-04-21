@@ -7,7 +7,8 @@ pub fn run_x_monitor_steps<'a>(env: &'a mut [OutputStream], device_stream: &'a I
     for k in *t_start..(step_amount+t_start) {
         result.insert(k, vec![]);
         let cur = result.get_mut(&k).unwrap();
-        for (prop_num, is_violated) in Program::monitor_logic(env, &(k), device_stream){
+        for el in Program::monitor_logic(env, &(k), device_stream) {
+            let (prop_num, is_violated) = el.unwrap();
             cur.push((prop_num,is_violated));
         }
     }

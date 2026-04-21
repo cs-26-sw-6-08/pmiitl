@@ -191,7 +191,6 @@ pub(crate) fn eval_operations<'a>(
             (Operation::LTLAlwaysUnbounded { idx }, Deepen) => {
                 worklist_stack.push((*idx, Deepen));
             },
-            //todo: Write fucking test-cases. this shit is not helping anyone
             (Operation::LTLBounded { idx, bound, ltl_type, .. }, Deepen) => {
                 let (a,b) = bound;
                 //If over bound, should add verdict to stack and move back up
