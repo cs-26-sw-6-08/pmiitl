@@ -238,7 +238,7 @@ fn function_type_computation(
 ) -> i128 {
     match function_type {
         AggregateType::Sum => cur_val,
-        AggregateType::Avg => cur_val / (t_current - t_spawn),
+        AggregateType::Avg => cur_val / (t_current - t_spawn + 1),
     }
 }
 

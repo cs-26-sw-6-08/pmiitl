@@ -1,4 +1,4 @@
-use crate::{monitor::{operation_eval::eval_operations, streams::IoTStream, types::{StackValue, Verdict}}, monitor_setup::operation_types::{AggregateType, LTL, Operation}, program::{function_types::FunctionType, member_types::MemberType, operations::BinaryOperators}, utils::test_helper_func::mock_devices};
+use crate::{monitor::{operation_eval::eval_operations, streams::IoTStream, types::StackValue}, monitor_setup::operation_types::{AggregateType, LTL, Operation}, program::{function_types::FunctionType, member_types::MemberType, operations::BinaryOperators}, utils::test_helper_func::mock_devices};
 
 
 
@@ -144,7 +144,7 @@ fn ltl_expressions_bounded_ltl() {
 }
 
 #[test] 
-fn time_functions() {
+fn time_functions_unbounded() {
     let devices = mock_devices(5).into();
     let mut sumtime_unbounded = [
         Operation::TimeFunction { idx: 1, function_type: AggregateType::Sum, history: Vec::new(), bound: None },
@@ -164,8 +164,61 @@ fn time_functions() {
             eval_operations(&mut sumtime_unbounded, &devices, &0, &val).unwrap()
         )
     });
+    //Test length of history array
     assert_eq!(
         1,
         if let Operation::TimeFunction { history, .. } = &sumtime_unbounded[0] { history.len() } else { 0 }
+    );
+    assert_eq!(
+        StackValue::from(5_000).to_undecided(),
+        eval_operations(&mut sumtime_unbounded, &devices, &4, &4).unwrap()
+    );
+    //Test length of history array
+    assert_eq!(
+        5,
+        if let Operation::TimeFunction { history, .. } = &sumtime_unbounded[0] { history.len() } else { 0 }
+    );
+    let mut avg_time = [
+        Operation::TimeFunction { idx: 1, function_type: AggregateType::Avg, history: Vec::new(), bound: None },
+        Operation::AggregateFunction { idx: 2, function_type: AggregateType::Sum }, 
+        Operation::Number(1_000)
+    ];
+    let eval_res = (0..=2).try_fold(StackValue::from(0), |_, t_c| {
+         eval_operations(&mut avg_time, &devices, &0, &t_c)
+    });
+    assert_eq!(
+        StackValue::from(15_000/3).to_undecided(),
+        eval_res.unwrap()
+    );
+    (3..100).for_each(|val| {
+        assert_eq!(
+            StackValue::from((val*5000 + 5000)/(val+1)).to_undecided(),
+            eval_operations(&mut avg_time, &devices, &0, &val).unwrap()
+        )
+    });
+}
+
+
+#[test] 
+fn time_functions_bounded() {
+    let devices = mock_devices(5).into();
+    let mut sumtime_bounded = [
+        Operation::TimeFunction { idx: 1, function_type: AggregateType::Sum, history: Vec::new(), bound: Some((0,5)) },
+        Operation::AggregateFunction { idx: 2, function_type: AggregateType::Sum }, 
+        Operation::Number(1_000)
+    ];
+    //check whether value become decided when out of bounds
+    let eval_res = (0..=6).try_fold(StackValue::from(0), |_, t_c| {
+         eval_operations(&mut sumtime_bounded, &devices, &0, &t_c)
+    });
+    assert_eq!( StackValue::from(30_000), eval_res.unwrap() );
+
+    //Check whether history array keeps growing 
+    let _ = (0..=100).try_fold(StackValue::from(0), |_, t_c|
+        eval_operations(&mut sumtime_bounded, &devices, &t_c, &t_c)
+    );
+    assert_eq!(
+        6,
+        if let Operation::TimeFunction { history, .. } = &sumtime_bounded[0] { history.len() } else { 0 }
     );
 }
