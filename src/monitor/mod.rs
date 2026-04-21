@@ -26,7 +26,7 @@ impl Program {
         let mut interval = interval(Duration::from_millis(time_interval as u64));
 
         let mut t = 0;
-        println!("{:#?}", streams);
+        println!("{}",format!("{:#?}", streams).red());
         
         let temp_iot_stream: IoTStream = (
             vec![
