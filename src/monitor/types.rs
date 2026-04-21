@@ -96,9 +96,8 @@ impl<'a> StackValue<'a> {
 
     pub fn modulo(mut self, rhs: Self) -> Self {
         let value = match (self.get_value(),rhs.get_value()){
-            (StackContent::Number(val1), StackContent::Number(val2)) => {
-                //println!("{} % {} = {:?}",val1, val2, DerivedOutput::Number(val1 % val2));
-                StackContent::Number((val1 % val2)*1000)},
+            (StackContent::Number(val1), StackContent::Number(val2)) => 
+                StackContent::Number((val1 % val2)*1000),
             _ => unreachable!()
         };
         self.value = value;
@@ -111,7 +110,9 @@ impl<'a> StackValue<'a> {
             (StackContent::Number(val1), StackContent::Number(val2)) => StackContent::Verdict((val1 == val2).into()),
             (StackContent::Verdict(val1), StackContent::Verdict(val2)) => StackContent::Verdict((val1 == val2).into()),
             (StackContent::String(val1), StackContent::String(val2)) => StackContent::Verdict((val1 == val2).into()),
-            _ => unreachable!("Died in equals :)")
+            (StackContent::Verdict(v1), StackContent::Number(v2)) | 
+            (StackContent::Number(v2), StackContent::Verdict(v1)) => StackContent::Verdict((if *v1 == (*v2 != 0) { true } else { false }).into()),
+            _ => unreachable!()
         };
         
         self.value = value;
@@ -121,16 +122,12 @@ impl<'a> StackValue<'a> {
 
     pub fn not_equals(mut self, rhs: Self) -> Self {
         let value = match (self.get_value(),rhs.get_value()){
-            (StackContent::Number(val1), StackContent::Number(val2)) => {
-                //println!("{val1}, {val2}"); 
-                StackContent::Verdict((val1 != val2).into())},
+            (StackContent::Number(val1), StackContent::Number(val2)) => StackContent::Verdict((val1 != val2).into()),
             (StackContent::Verdict(val1), StackContent::Verdict(val2)) => StackContent::Verdict((val1 != val2).into()),
             (StackContent::String(val1), StackContent::String(val2)) => StackContent::Verdict((val1 != val2).into()),
             (StackContent::Verdict(v1), StackContent::Number(v2)) | 
-            (StackContent::Number(v2), StackContent::Verdict(v1))
-            //todo: Check logic here
-            => StackContent::Number((if *v1 != (*v2 != 0) { 1000 } else { 0 }).into()),
-            _ => unreachable!("LOOOK HERE IS THE ERROR SEARCH AFTER THIS NUMBER 128937178219378"),
+            (StackContent::Number(v2), StackContent::Verdict(v1)) => StackContent::Verdict((if *v1 != (*v2 != 0) { true } else { false }).into()),
+            _ => unreachable!(),
         };
         
         self.value = value;
@@ -145,8 +142,9 @@ impl<'a> StackValue<'a> {
             (StackContent::Number(v1), StackContent::Verdict(v2)) |
             (StackContent::Verdict(v2), StackContent::Number(v1))
              => StackContent::Verdict(*v1 != 0 && *v2),
-            _ => unreachable!()
-        };
+             (StackContent::Number(v2), StackContent::Number(v1)) => StackContent::Verdict(*v1 != 0 && *v2 != 0),
+             _ => unreachable!()
+                     };
         self.decided = self.decided.greatest_lower_bound(&rhs.decided);
         self
     }
@@ -158,6 +156,7 @@ impl<'a> StackValue<'a> {
             (StackContent::Number(v1), StackContent::Verdict(v2)) | 
             (StackContent::Verdict(v2), StackContent::Number(v1))
             => StackContent::Verdict((*v1 != 0) || *v2),
+            (StackContent::Number(v2), StackContent::Number(v1)) => StackContent::Verdict(*v1 != 0 || *v2 != 0),
             _ => unreachable!()
         };
         self.decided = self.decided.greatest_lower_bound(&rhs.decided);
@@ -178,24 +177,20 @@ impl<'a> StackValue<'a> {
          self.value = match (self.get_value(), rhs.get_value()) {
             (StackContent::Number(v1), StackContent::Number(v2)) => 
                 StackContent::Verdict((v1 <= v2).into()),
-            _ => unreachable!()
+                _ => unreachable!()
         };
         self.decided = self.decided.greatest_lower_bound(&rhs.decided);
         self
     }
 
-    
-
-
-    // TODO: Udfyld alle de muligde man kan ramme
     pub fn un_op(mut self, un_op: &UnaryOperators) -> Self {
         self.value = match (self.value, un_op) {
             (StackContent::Verdict(verdict), UnaryOperators::Not) => StackContent::Verdict(verdict.not()),
             (StackContent::Number(v), UnaryOperators::Negative) => StackContent::Number(-v),
-            (StackContent::Verdict(_), UnaryOperators::Negative) => todo!(),
-            (StackContent::Number(_), UnaryOperators::Not) => todo!(),
-            (StackContent::String(_), UnaryOperators::Not) => todo!(),
-            (StackContent::String(_), UnaryOperators::Negative) => todo!(),
+            (StackContent::Number(v), UnaryOperators::Not) => StackContent::Verdict(v != 0),
+            (StackContent::Verdict(_), UnaryOperators::Negative) |
+            (StackContent::String(_), UnaryOperators::Not) |
+            (StackContent::String(_), UnaryOperators::Negative) => unreachable!(),
                     };
         self
     }

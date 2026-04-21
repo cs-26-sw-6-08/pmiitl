@@ -123,8 +123,7 @@ fn test3() {
         }],
         environment: None,
     };
-    println!("{}",format!("{:#?}",program).on_blue());
-    println!("{}",format!("{:#?}",expected_program).on_bright_green().red().bold());
+
 
     assert_eq!(program, expected_program);
 }
@@ -322,17 +321,13 @@ fn test8() {
                 Operation::Binary {
                     bin_op: BinaryOperators::Or,
                     idx_lhs: 2,
-                    idx_rhs: 4,
+                    idx_rhs: 3,
                 },
-                Operation::Unary {
-                    un_op: UnaryOperators::Not,
-                    idx: 3,
-                },
-                Operation::Number(1_000),
+                Operation::Number(0),
                 Operation::Binary {
                     bin_op: BinaryOperators::Greater,
-                    idx_lhs: 5,
-                    idx_rhs: 6,
+                    idx_lhs: 4,
+                    idx_rhs: 5,
                 },
                 Operation::Member(MemberType::Power),
                 Operation::Number(5_000),
@@ -375,5 +370,8 @@ fn test8() {
             None,
         )),
     ];
+
+        println!("{}",format!("{:#?}",program.environment).blue());
+    println!("{}",format!("{:#?}",expected_env).green().bold());
     assert_eq!(program.environment.unwrap().as_slice(), expected_env);
 }
