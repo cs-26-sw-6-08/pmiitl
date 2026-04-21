@@ -78,7 +78,7 @@ impl Program {
                     println!("{:#?}", output_stream);
 
                     // Give verdicts
-                    let is_violated = output_stream.get_violated_verdict_single(t);
+                    let is_violated = output_stream.get_violated_verdict_single();
                     
                     output_stream.clean_up();
 

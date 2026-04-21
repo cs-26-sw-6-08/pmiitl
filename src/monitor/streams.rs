@@ -2,7 +2,6 @@ use crate::{
     monitor::types::Verdict,
     monitor_setup::operation_types::{LTL, Operation},
 };
-use colored::Colorize;
 
 
 #[derive(Debug, PartialEq)]
@@ -45,7 +44,7 @@ impl OutputStream {
             .collect()
     }
 
-    pub fn get_violated_verdict_single(&mut self, t: i128) -> bool /* True means violation */ {
+    pub fn get_violated_verdict_single(&mut self) -> bool /* True means violation */ {
         match self.ltl {
             LTL::Always => self
                 .time_verdicts

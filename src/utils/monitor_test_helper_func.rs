@@ -2,8 +2,6 @@ use std::collections::HashMap;
 
 use crate::{monitor::streams::{IoTStream, OutputStream}, monitor_setup::operation_types::{LTL, Operation}, program::Program};
 
-use colored::Colorize;
-
 pub fn run_x_monitor_steps<'a>(env: &'a mut [OutputStream], device_stream: &'a IoTStream, t_start: &'a i128, step_amount: i128) -> HashMap<i128, Vec<(usize, bool)>> {
     let mut result: HashMap<i128, Vec<(usize, bool)>> = HashMap::new();
     for k in *t_start..(step_amount+t_start) {
@@ -36,9 +34,7 @@ pub fn always_prop_helper(operations: Vec<Operation>, bound: Option<(i128,i128)>
 
 pub fn single_device_stream()->IoTStream{
     let temp_iot_stream: IoTStream = (
-            vec![
-                ("Roomba".into(), 5_000).into(),
-            ]
+            vec![ ("Roomba".into(), 5_000).into() ]
         ).into();
         temp_iot_stream
 }
