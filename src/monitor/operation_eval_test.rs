@@ -1,8 +1,8 @@
-use crate::{monitor::{operation_eval::eval_operations, streams::IoTStream, types::{StackValue, Verdict}}, monitor_setup::operation_types::{AggregateType, LTL, Operation}, program::{member_types::MemberType, operations::BinaryOperators}, utils::test_helper_func::mock_devices};
+use crate::{monitor::{operation_eval::eval_operations, streams::IoTStream, types::{StackValue, Verdict}}, monitor_setup::operation_types::{AggregateType, LTL, Operation}, program::{function_types::FunctionType, member_types::MemberType, operations::BinaryOperators}, utils::test_helper_func::mock_devices};
 
 
 
-//todo: Ltl expressions, time functions, bin op, unary op, Random tests
+//todo: time functions, bin op, unary op, Random tests
 #[test]
 fn test_constants() {
     let mut operations = [
@@ -98,22 +98,74 @@ fn ltl_expressions_always_unbounded() {
 #[test]
 fn ltl_expressions_bounded_ltl() {
     //1,2,3,4
-    let mut always = [
-        Operation::LTLBounded { bound: (1,4), idx: 1, not: false, ltl_type: LTL::Always }, 
-        Operation::Binary { bin_op: BinaryOperators::NotEqual, idx_lhs: 2, idx_rhs: 3 },
+    let ops = [
+         Operation::Binary { bin_op: BinaryOperators::NotEqual, idx_lhs: 2, idx_rhs: 3 },
         Operation::CurrentTime, 
         Operation::Number(2000)
     ];
+    let mut always = [
+        Operation::LTLBounded { bound: (1,4), idx: 1, not: false, ltl_type: LTL::Always }, 
+    ].into_iter().chain(ops.clone()).collect::<Vec<_>>();
+    
+    let mut eventually = [
+        Operation::LTLBounded { bound: (1,4), idx: 1, not: false, ltl_type: LTL::Eventually(false) }, 
+    ].into_iter().chain(ops.clone()).collect::<Vec<_>>();
     let devices: IoTStream = mock_devices(3).into();
 
     assert_eq!(
         StackValue::from(true).to_undecided(),
         eval_operations(&mut always, &devices, &0, &1).unwrap()
     );
-
     assert_eq!(
         StackValue::from(true).to_undecided(),
         eval_operations(&mut always, &devices, &2, &2).unwrap()
     );
+    assert_eq!(
+        StackValue::from(false).to_undecided(),
+        eval_operations(&mut always, &devices, &2, &3).unwrap()
+    );
+    assert_eq!(
+        StackValue::from(true),
+        eval_operations(&mut always, &devices, &3, &8).unwrap()
+    );
+    assert_eq!(
+        StackValue::from(false).to_undecided(),
+        eval_operations(&mut eventually, &devices, &2, &2).unwrap()
+    );
+    assert_eq!(
+        StackValue::from(false).to_undecided(),
+        eval_operations(&mut eventually, &devices, &2, &2).unwrap()
+    );
+    //todo: Make it such that this doesn't give false (Aka fix current time rule)
+    assert_eq!(
+        StackValue::from(false),
+        eval_operations(&mut eventually, &devices, &2, &7).unwrap()
+    );    
 }
 
+#[test] 
+fn time_functions() {
+    let devices = mock_devices(5).into();
+    let mut sumtime_unbounded = [
+        Operation::TimeFunction { idx: 1, function_type: AggregateType::Sum, history: Vec::new(), bound: None },
+        Operation::AggregateFunction { idx: 2, function_type: AggregateType::Sum }, 
+        Operation::Number(1_000)
+    ];
+    let eval_res = (0..=2).try_fold(StackValue::from(0), |_, t_c| {
+         eval_operations(&mut sumtime_unbounded, &devices, &0, &t_c)
+    });
+    assert_eq!(
+        StackValue::from(15_000).to_undecided(),
+        eval_res.unwrap()
+    );
+    (3..100).for_each(|val| {
+        assert_eq!(
+            StackValue::from(val*5000 + 5000).to_undecided(),
+            eval_operations(&mut sumtime_unbounded, &devices, &0, &val).unwrap()
+        )
+    });
+    assert_eq!(
+        1,
+        if let Operation::TimeFunction { history, .. } = &sumtime_unbounded[0] { history.len() } else { 0 }
+    );
+}
