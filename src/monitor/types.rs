@@ -299,7 +299,6 @@ impl From<bool> for StackValue<'_> {
     }
 }
 
-//todo: Change these
 impl<'a> Not for StackValue<'a> {
     type Output = StackValue<'a>;
     fn not(mut self) -> Self::Output {

@@ -15,6 +15,9 @@ use std::time::Instant;
 
 use colored::Colorize;
 
+
+type MonitorElement = Result<(usize, bool), Box<dyn Error>>;
+
 impl Program {
     pub async fn monitor(&mut self, time_interval: i128, speed: bool) -> Result<(), Box<dyn Error>> {
         println!("Monitor has started...");
@@ -65,8 +68,7 @@ impl Program {
         }
     }
 
-    
-    pub fn monitor_logic<'a>(env: &'a mut [OutputStream], t: &'a i128, device_stream: &'a IoTStream) -> Box<dyn Iterator<Item = Result<(usize, bool), Box<dyn Error>>> + 'a> {
+    pub fn monitor_logic<'a>(env: &'a mut [OutputStream], t: &'a i128, device_stream: &'a IoTStream) -> Box<dyn Iterator<Item = MonitorElement> + 'a> {
         Box::new(
             env
                 .iter_mut()
@@ -78,8 +80,7 @@ impl Program {
                     output_stream.insert(t); 
 
                     // Calculate the new state of the streams
-                    //todo: potentially add error handling
-                    let _ = output_stream.update(t, device_stream); 
+                    output_stream.update(t, device_stream)?; 
                     #[cfg(debug_assertions)]
                     println!("{:#?}", output_stream);
 
