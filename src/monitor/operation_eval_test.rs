@@ -2,7 +2,7 @@ use crate::{monitor::{operation_eval::eval_operations, streams::IoTStream, types
 
 
 
-//todo: time functions, bin op, unary op, Random tests
+//todo: bin op, unary op, Random tests
 #[test]
 fn test_constants() {
     let mut operations = [
@@ -213,7 +213,7 @@ fn time_functions_bounded() {
     });
     assert_eq!( StackValue::from(30_000), eval_res.unwrap() );
 
-    //Check whether history array keeps growing 
+    //Check whether history array stops growing
     let _ = (0..=100).try_fold(StackValue::from(0), |_, t_c|
         eval_operations(&mut sumtime_bounded, &devices, &t_c, &t_c)
     );
@@ -222,3 +222,41 @@ fn time_functions_bounded() {
         if let Operation::TimeFunction { history, .. } = &sumtime_bounded[0] { history.len() } else { 0 }
     );
 }
+
+#[test]
+fn binary_operations_test() {
+    let devices = mock_devices(3).into();
+    let bin_ops = { 
+        use BinaryOperators::*;
+        [ Equal, Less, Greater, LessEqual, GreaterEqual, NotEqual, Plus, Minus, Times, Divide, Mod,Or ] 
+    };
+    let expected_results = [
+        StackValue::from(false), // ==
+        StackValue::from(false), //<
+        StackValue::from(true), //>
+        StackValue::from(false), //<=
+        StackValue::from(true), //>=
+        StackValue::from(true), //_ !=
+        StackValue::from(12_000), // +
+        StackValue::from(8_000), // - 
+        StackValue::from(20_000), //_ * 
+        StackValue::from(5_000), // / 
+        StackValue::from(0), // %,
+        StackValue::from(true), // ||
+    ];  
+
+
+    for (op, expected_val) in bin_ops.into_iter().zip(expected_results) {
+        let mut operations =  [ 
+            Operation::Binary { bin_op: op, idx_lhs: 1, idx_rhs: 2 },
+            Operation::Number(10_000), 
+            Operation::Number(2_000)
+        ];
+        assert_eq!(
+            expected_val,
+            eval_operations(&mut operations, &devices, &0, &0).unwrap()
+        );
+    }
+
+}
+
