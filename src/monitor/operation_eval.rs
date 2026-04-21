@@ -1,15 +1,12 @@
 
 use colored::Colorize;
 
-use crate::{errors, monitor::{streams::{IoTDevice, IoTStream, OutputStream}, types::{StackContent, StackValue, Verdict}}, monitor_setup::operation_types::{AggregateType, HistoryValue, LTL, Operation}, program::{member_types::MemberType, operations::BinaryOperators}, utils::vec_helper_funcs::ExtVec};
+use crate::{errors, monitor::{streams::{IoTDevice, IoTStream, OutputStream}, types::{StackContent, StackValue, Verdict}}, monitor_setup::operation_types::{AggregateType, HistoryValue, LTL, Operation}, program::{member_types::MemberType, operations::BinaryOperators}, utils::{monitor_test_helper_func::ten_device_stream, vec_helper_funcs::ExtVec}};
 use std::{error::Error};
 
 impl OutputStream {
     // Calculate the verdict for the output stream.
     pub fn update(&mut self, t_current: i128, devices: &IoTStream) -> Result<(), Box<dyn Error>> {
-        if self.ltl == LTL::Eventually(true) {
-            return Ok(());
-        }
         for (t_spawn, ver) in self.time_verdicts.iter_mut() {
             let res = eval_operations(&mut self.operations, devices, &*t_spawn, &t_current);
             
@@ -32,7 +29,7 @@ impl OutputStream {
                         println!("{}", "\t--- Removed a property ---".yellow().bold().italic().underline());
                         self.ltl = LTL::Eventually(true);
                         *ver = Verdict::True;
-                    } else if self.bound.is_some_and(|(_, b)| b <= t_current*1_000) { // Todo: er det b plus spawn time?
+                    } else if self.bound.is_some_and(|(_, b)| b <= t_current) {
                         #[cfg(debug_assertions)] 
                         println!("{}", "\t--- Removed a property ---".yellow().bold().italic().underline());
                         self.ltl = LTL::Eventually(true);
@@ -71,7 +68,6 @@ pub(crate) fn eval_operations<'a>(
         let cur_op = &mut operations[cur_idx] as *mut Operation;
 
         match  (unsafe { &mut*cur_op }, step_type)  { 
-            //todo: Sørg for at arithmetic operations er korrekte -> E.g. 1 * 1 = 1 and not 1000
             // Base cases
             (Operation::Number(val), _) => value_stack.push((*val).into()),
             (Operation::String(str), _) => value_stack.push((&*str).into()),

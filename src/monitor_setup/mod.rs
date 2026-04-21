@@ -26,7 +26,7 @@ impl Program {
                                 _ =>                   LTL::Eventually(false),
                             },
                             expr.compile_expression()?,
-                            interval.as_deref().map(Expr::get_bound).transpose()?
+                            interval.as_deref().map(Expr::get_bound).transpose()?.map(|(a,b)| (a/1000, b/1000))
                         ).into()),
                     _ => Err(errors::Error::InvalidCompileExpr.into()) 
                 }

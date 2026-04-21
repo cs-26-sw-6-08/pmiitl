@@ -196,11 +196,28 @@ impl<'a> StackValue<'a> {
         self
     }
 
-    pub fn mul_op(mut self, other: StackValue) -> Self {
-        let StackContent::Number(lhs) = self.get_value() else {todo!()};
-        let StackContent::Number(rhs) = other.get_value() else {todo!()};
+    pub fn mul_op(self, other: StackValue) -> Self {
+        let StackContent::Number(m) = self.get_value() else {todo!()};
+        let StackContent::Number(n) = other.get_value() else {todo!()};
 
-        todo!()
+        let m_int = m / 1000;
+        let m_frac = m % 1000;
+
+        let int = n*m_int;
+        let frac = (n*m_frac) / 1000;
+        StackValue::from(int + frac)
+    }
+
+    pub fn div_op(self, other: StackValue) -> Self {    
+        let StackContent::Number(m) = self.get_value() else {todo!()};
+        let StackContent::Number(n) = other.get_value() else {todo!()};
+
+        let m_int = m / 1000;
+        let m_frac = m % 1000;
+
+        let int = n.checked_div(m_int).unwrap_or(0);
+        let frac = n.checked_div(m_frac).unwrap_or(0);
+        StackValue::from(int + frac)
     }
 
     pub fn bin_op(self, rhs: Self, bin_op: &BinaryOperators) -> Self {
@@ -213,8 +230,8 @@ impl<'a> StackValue<'a> {
             BinaryOperators::GreaterEqual => rhs.less_equal(self),
             BinaryOperators::Plus => self + rhs,
             BinaryOperators::Minus => self - rhs,
-            BinaryOperators::Times => self * rhs,
-            BinaryOperators::Divide => self / rhs,
+            BinaryOperators::Times => self.mul_op(rhs),
+            BinaryOperators::Divide => rhs.div_op(self),
             BinaryOperators::Mod => self.modulo(rhs),
             BinaryOperators::Or => self.or(rhs),
             _ => unreachable!()
