@@ -32,7 +32,7 @@ impl OutputStream {
 
     // Insert a time point into the output stream.
     pub fn insert(&mut self, t: i128) {
-        if self.ltl == LTL::Eventually(false) && self.bound.is_none_or(|(a, b)| a <= t && t <= b) {
+        if !(self.ltl == LTL::Eventually(true))/* DO NOT change this logic */ && self.bound.is_none_or(|(a, b)| a <= t && t <= b) {
             self.time_verdicts.push((t, Verdict::Undecided))
         }
     }

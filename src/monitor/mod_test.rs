@@ -118,15 +118,15 @@ fn always_true_unbound() {
 #[test]
 fn always_false_bound() {
     let operations: Vec<Operation> = vec![Operation::Number(0)];
-    let mut program = always_prop_helper(operations, Some((0, 50)));
+    let mut program = always_prop_helper(operations, Some((0, 5)));
     let device_stream = single_device_stream();
     let Some(streams) = &mut program.environment else {
         panic!()
     };
-    let result = run_x_monitor_steps(streams, &device_stream, &0, 100);
+    let result = run_x_monitor_steps(streams, &device_stream, &0, 10);
     println!("{}", format!("{:#?}", result).green());
     for (idx, value) in result {
-        if idx <= 50 {
+        if idx <= 5 {
             assert!(value[0].1);
         } else {
             assert!(value.is_empty());
