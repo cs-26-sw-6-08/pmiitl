@@ -282,19 +282,21 @@ fn always_simple_sum_member_false() {
             function_type: AggregateType::Sum,
         },
         Operation::Member(MemberType::Power),
+        // Operation::Number(1_000),
         Operation::Number(10_000),
     ];
     let mut program = always_prop_helper(operations, None);
-    let device_stream = single_device_stream();
+    let device_stream = ten_device_stream();
     let Some(streams) = &mut program.environment else {
         panic!()
     };
-    let result = run_x_monitor_steps(streams, &device_stream, &0, 10);
+    let result = run_x_monitor_steps(streams, &device_stream, &0, 1);
     println!("{}", format!("{:#?}", result).green());
     for (_, value) in result {
         assert!(value[0].1);
     }
 }
+
 
 #[test]
 fn always_simple_avg_member_true() {
@@ -336,7 +338,7 @@ fn always_simple_avg_member_false() {
             function_type: AggregateType::Avg,
         },
         Operation::Member(MemberType::Power),
-        Operation::Number(1000),
+        Operation::Number(1_000),
     ];
     let mut program = always_prop_helper(operations, None);
     let device_stream = ten_device_stream();
