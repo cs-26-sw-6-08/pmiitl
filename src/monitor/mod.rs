@@ -24,21 +24,20 @@ impl Program {
 
         let mut t = 0;
         #[cfg(debug_assertions)]
-        println!("{}",format!("{:#?}", streams).red());
+        println!("{}",format!("{:#?}", streams).bright_red());
         
         let temp_iot_stream: IoTStream = (
             vec![
-                ("Roomba".into(), 5).into(),
-                ("Roomba".into(), 5).into(),
-                ("Roomba".into(), 5).into(),
-                ("Roomba".into(), 5).into(),
-                ("Roomba".into(), 5).into(),
+                ("Roomba".into(), 5_000).into(),
+                ("Roomba".into(), 5_000).into(),
+                ("Roomba".into(), 5_000).into(),
+                ("Roomba".into(), 5_000).into(),
+                ("Roomba".into(), 5_000).into(),
                 //("christian".into(), 5, true).into(),
             ]
         ).into();
 
         loop {
-            //#[cfg(not(debug_assertions))]
             if !speed{
                 interval.tick().await;
             }

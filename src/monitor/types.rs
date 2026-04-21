@@ -164,7 +164,7 @@ impl<'a> StackValue<'a> {
     }
 
     pub fn less_than(mut self, rhs: Self) -> Self {
-        println!("{}", format!("{:?},{:?}", self, rhs).bright_green());
+        // println!("{}", format!("{:?},{:?}", self, rhs).bright_green());
         self.value = match (self.get_value(), rhs.get_value()) {
             (StackContent::Number(v1), StackContent::Number(v2)) => 
                 StackContent::Verdict(v1 < v2),
@@ -331,7 +331,7 @@ impl<'a> Add for StackValue<'a> {
     type Output = StackValue<'a>;
 
     fn add(mut self, rhs: Self) -> Self::Output {
-        println!("{:?},{:?}", self, rhs);
+        // println!("{:?},{:?}", self, rhs);
         let value = match (self.get_value(),rhs.get_value()){
             (StackContent::Number(val1), StackContent::Number(val2)) => StackContent::Number(val1 + val2),
             (StackContent::Verdict(v1), StackContent::Verdict(v2)) => StackContent::Number(*v1 as i128 * 1_000 + *v2 as i128 * 1_000),
