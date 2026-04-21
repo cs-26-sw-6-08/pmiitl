@@ -81,7 +81,6 @@ impl Program {
                     output_stream.insert(t); 
 
                     // Calculate the new state of the streams
-                    //todo: potentially add error handling
                     output_stream.update(t, device_stream)?; 
                     #[cfg(debug_assertions)]
                     println!("{:#?}", output_stream);
