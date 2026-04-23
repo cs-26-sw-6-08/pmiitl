@@ -46,7 +46,7 @@ async fn main() {
         return error_print(format!("{}",err));
     }
     
-    if let Err(err) = program.monitor(1_000, true).await {
+    if let Err(err) = program.monitor(1_000, false).await {
         return error_print(format!("{}",err));
     }
 }

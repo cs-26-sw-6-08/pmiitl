@@ -22,6 +22,7 @@ impl OutputStream {
                     let res_val = res.get_value().get_verdict().unwrap(); //TODO: unwrap
                     //Set verdict
                     if !res_val {
+                    // if !res_val && res.is_decided() {
                         *ver = Verdict::False;
                     } else if res.is_decided() {
                         *ver = Verdict::True;
@@ -242,18 +243,18 @@ pub(crate) fn eval_operations<'a>(
                 //If over bound, should add verdict to stack and move back up
                 //fst is lowerbound, snd is upperbound
                 match (*a + *t_spawn <= *t_current, *t_current <= *t_spawn + *b) {
+                    //Within Bound
                     (true, true) => {
                         worklist_stack.extend([(cur_idx, Reduce), (*idx, Deepen)]);
                     }
+                    //Bound has not been entered yet
+                    (false, true) => value_stack.push(
+                        StackValue::from(true).to_undecided()
+                    ),
+                    //Bound has been passed
                     (true, false) => value_stack.push(match ltl_type {
                         LTL::Always | LTL::Eventually(true) => true.into(),
                         LTL::Eventually(false) => false.into(),
-                    }),
-                    (false, true) => value_stack.push(match ltl_type {
-                        LTL::Always | LTL::Eventually(true) => {
-                            StackValue::from(true).to_undecided()
-                        }
-                        LTL::Eventually(false) => StackValue::from(false).to_undecided(),
                     }),
                     _ => unreachable!(),
                 }

@@ -1,10 +1,9 @@
+
 use crate::{
     monitor_setup::operation_types::{AggregateType, LTL, Operation},
-    program::{member_types::MemberType, operations::BinaryOperators},
+    program::{member_types::MemberType, operations::{BinaryOperators, UnaryOperators}},
     utils::monitor_test_helper_func::*,
 };
-
-use colored::Colorize;
 
 #[test]
 fn eventually_true_remove() {
@@ -509,3 +508,143 @@ fn always_nested_device_stack_false() {
         assert!(value[0].1);
     }
 }
+
+#[test]
+fn time_behaviour_test() {
+    let operations = { 
+        use Operation::*;
+        vec![
+            Binary { bin_op: BinaryOperators::Or, idx_lhs: 1, idx_rhs: 7, },
+            Unary { un_op: UnaryOperators::Not, idx: 2, },
+            Binary { bin_op: BinaryOperators::Equal, idx_lhs: 3, idx_rhs: 6, },
+            Binary { bin_op: BinaryOperators::Mod, idx_lhs: 4, idx_rhs: 5, },
+            CurrentTime,
+            Number( 24000, ),
+            Number( 0, ),
+            LTLBounded { bound: ( 0, 24, ), idx: 8, not: false, ltl_type: LTL::Always, },
+            Binary { bin_op: BinaryOperators::LessEqual, idx_lhs: 9, idx_rhs: 12, },
+            TimeFunction {
+                idx: 10,
+                function_type: AggregateType::Sum,
+                history: Vec::new(),
+                bound: Some((0,24,),),
+            },
+            AggregateFunction {
+                idx: 11,
+                function_type: AggregateType::Sum,
+            },
+            Number(1000,),
+            Number(24000,),
+        ] 
+    };
+    // Always t%24s = 0S -> always[0,24] sumtime(1) < 24s;
+    let program = always_prop_helper(operations, None);
+    let device_stream = single_device_stream();
+    let streams = &mut program.environment.unwrap();
+    let result = run_x_monitor_steps(streams, &device_stream, &0, 100);
+    println!("{:#?}",result);
+    for (idx, value) in result {
+        if idx == 24 || idx == 48 || idx == 72 || idx == 96{
+            assert!(value[0].1);
+        } else {
+            assert!(value.is_empty());
+        }
+    }
+    // Test for violation at 23_000
+    //Reset the property and set number as 23
+    streams[0].operations[12] = Operation::Number(23_000);
+    streams[0].operations[9] = Operation::TimeFunction { idx: 10, function_type: AggregateType::Sum, history: Vec::new(), bound: Some((0,24,),),};
+    streams[0].time_verdicts.clear();
+    let result = run_x_monitor_steps(streams, &device_stream, &0, 100);
+    for (idx, value) in result {
+        if idx == 23 || idx == 47 || idx == 71 || idx == 95{
+            assert!(value[0].1);
+        } else {
+            assert!(value.is_empty());
+        }
+    }
+
+    // Test no violation
+    streams[0].operations[12] = Operation::Number(25_000);
+    streams[0].operations[9] = Operation::TimeFunction { idx: 10, function_type: AggregateType::Sum, history: Vec::new(), bound: Some((0,24,),),};
+    streams[0].time_verdicts.clear();
+    let result = run_x_monitor_steps(streams, &device_stream, &0, 100);
+    
+    for (_, value) in result { assert!(value.is_empty()) }
+
+    // assert!(false);
+}
+
+#[test]
+fn eventually_expr_true() {
+    let operations = vec![
+        Operation::LTLBounded { bound: (1,1), idx: 1, not: false, ltl_type: LTL::Eventually(false) },
+        Operation::Number(1_000)
+    ];
+    let program = always_prop_helper(operations, None);
+    let device_stream = single_device_stream();
+    let streams = &mut program.environment.unwrap();
+    let result = run_x_monitor_steps(streams, &device_stream, &0, 100);
+    
+    for (_, value) in result {
+        assert!(value.is_empty());
+    }
+}
+
+#[test]
+fn eventually_expr_false() {
+    let operations = vec![
+            Operation::LTLBounded { bound: (1,1), idx: 1, not: false, ltl_type: LTL::Eventually(false) },
+            Operation::Number(0)
+        ] ;
+    let program = always_prop_helper(operations, None);
+    let device_stream = single_device_stream();
+    let streams = &mut program.environment.unwrap();
+    let result = run_x_monitor_steps(streams, &device_stream, &0, 100);
+    
+    for (idx, value) in result {
+        if idx == 0{
+            assert!(value.is_empty());
+        } else {
+            assert!(value[0].1);
+        }
+    }
+}
+
+#[test]
+fn eventually_expr_time_true() {
+    let operations = {
+        use Operation::*;
+        vec![
+            LTLBounded {
+                bound: (
+                    2,
+                    5,
+                ),
+                idx: 1,
+                not: false,
+                ltl_type: LTL::Eventually(
+                    false,
+                ),
+            },
+            Binary {
+                bin_op: BinaryOperators::NotEqual,
+                idx_lhs: 2,
+                idx_rhs: 3,
+            },
+            CurrentTime,
+            Number(
+                2_000,
+            ),
+        ]};
+        
+    let program = always_prop_helper(operations, None);
+    let device_stream = single_device_stream();
+    let streams = &mut program.environment.unwrap();
+    let result = run_x_monitor_steps(streams, &device_stream, &0, 100);
+    
+    for value in result.values() {
+        assert!(value.is_empty());
+    }
+}
+

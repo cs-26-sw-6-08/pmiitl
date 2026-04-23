@@ -3,7 +3,8 @@ use crate::{
     monitor_setup::operation_types::{LTL, Operation},
 };
 
-
+//todo: fix streams such that it works with t_current
+//todo: Let eventually expression have a history like time functions
 #[derive(Debug, PartialEq)]
 pub struct OutputStream {
     pub(crate) ltl: LTL,

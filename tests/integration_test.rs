@@ -14,7 +14,6 @@ use rv_iot::{
         string_expr, unary_expr,
     },
 };
-use colored::Colorize;
 
 #[test]
 fn test1() {
@@ -372,3 +371,5 @@ fn test8() {
     ];
     assert_eq!(program.environment.unwrap().as_slice(), expected_env);
 }
+
+//todo: make integration test for monitor

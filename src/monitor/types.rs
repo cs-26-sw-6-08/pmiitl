@@ -2,7 +2,6 @@ use std::{error::Error, ops::{Add, Div, Mul, Not, Sub}};
 
 use crate::{errors, program::operations::{BinaryOperators, UnaryOperators}};
 
-use colored::Colorize;
 #[derive(Debug, PartialEq, Clone)]
 pub enum Verdict { True, False, Undecided }
 

@@ -275,3 +275,4 @@ fn unary_operations_test() {
         eval_operations(&mut not_ops, &devices, &0, &0).unwrap()
     );
 }
+

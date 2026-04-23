@@ -36,6 +36,8 @@ impl Program {
                 //("christian".into(), 5, true).into(),
             ]
         ).into();
+        
+        println!("{:#?}", streams);
 
         loop {
             if !speed{
@@ -47,7 +49,7 @@ impl Program {
             println!("--- Interval {:<4}", format!("{}",t).blue().bold());
             if t % 1000 == 0 {
                 #[cfg(not(debug_assertions))]
-                println!("--- Interval {}", format!("{}",t).blue().bold());
+                println!("--- Interval {}", format!("[{}, {}]",t,t+999).blue().bold());
             }
             //todo: await devices
             async {
