@@ -12,6 +12,7 @@ use crate::{
 };
 use std::{error::Error, fmt::format};
 
+//todo: Remove print statements
 impl OutputStream {
     // Calculate the verdict for the output stream.
     pub fn update(&mut self, t_current: i128, devices: &IoTStream) -> Result<(), Box<dyn Error>> {
