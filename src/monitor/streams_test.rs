@@ -439,3 +439,73 @@ fn always_minus_check() {
         assert!(value.is_empty());
     }
 }
+
+
+#[test]
+fn always_nested_device_stack() {
+    let operations: Vec<Operation> = vec![
+        Operation::Binary {
+            bin_op: BinaryOperators::Equal,
+            idx_lhs: 1,
+            idx_rhs: 6,
+        },
+        Operation::AggregateFunction {
+            idx: 2,
+            function_type: AggregateType::Sum,
+        },
+        Operation::Binary {
+            bin_op: BinaryOperators::NotEqual,
+            idx_lhs: 3,
+            idx_rhs: 5,
+        },
+        Operation::Foreach { idx: 4 },
+        Operation::Number(1_000),
+        Operation::Number(0),
+        Operation::Number(10_000),
+    ];
+    let mut program = always_prop_helper(operations, None);
+    let device_stream = ten_device_stream();
+    let Some(streams) = &mut program.environment else {
+        panic!()
+    };
+    let result = run_x_monitor_steps(streams, &device_stream, &0, 10);
+    println!("{}", format!("{:#?}", result).green());
+    for (_, value) in result {
+        assert!(value.is_empty());
+    }
+}
+
+
+#[test]
+fn always_nested_device_stack_false() {
+    let operations: Vec<Operation> = vec![
+        Operation::Binary {
+            bin_op: BinaryOperators::Equal,
+            idx_lhs: 1,
+            idx_rhs: 6,
+        },
+        Operation::AggregateFunction {
+            idx: 2,
+            function_type: AggregateType::Sum,
+        },
+        Operation::Binary {
+            bin_op: BinaryOperators::NotEqual,
+            idx_lhs: 3,
+            idx_rhs: 5,
+        },
+        Operation::Foreach { idx: 4 },
+        Operation::Number(1_000),
+        Operation::Number(0),
+        Operation::Number(1_000),
+    ];
+    let mut program = always_prop_helper(operations, None);
+    let device_stream = ten_device_stream();
+    let Some(streams) = &mut program.environment else {
+        panic!()
+    };
+    let result = run_x_monitor_steps(streams, &device_stream, &0, 10);
+    println!("{}", format!("{:#?}", result).green());
+    for (_, value) in result {
+        assert!(value[0].1);
+    }
+}

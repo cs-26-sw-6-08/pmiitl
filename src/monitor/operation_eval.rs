@@ -10,7 +10,7 @@ use crate::{
     program::{member_types::MemberType, operations::BinaryOperators},
     utils::vec_helper_funcs::ExtVec,
 };
-use std::error::Error;
+use std::{error::Error, fmt::format};
 
 //todo: Remove print statements
 impl OutputStream {
@@ -101,7 +101,8 @@ pub(crate) fn eval_operations<'a>(
     worklist_stack.push((0usize, StepType::Deepen));
 
     while let Some((cur_idx, step_type)) = worklist_stack.pop() {
-        println!("{}",format!("{:#?}, {cur_idx}, {:?}", device_stack,step_type).on_bright_cyan());
+        // println!("{}",format!("{:#?}, {cur_idx}, {:?}", device_stack,step_type).on_bright_cyan());
+        // println!("{}",format!("{:#?}",device_pointer).on_bright_magenta());
         // let cur_op = &mut operations[cur_idx] as *mut Operation;
         let cur_op = &mut operations[cur_idx] as *mut Operation;
 
@@ -112,16 +113,8 @@ pub(crate) fn eval_operations<'a>(
             (Operation::CurrentTime, _) => value_stack.push((*t_spawn * 1_000).into()),
             (Operation::Member(mem_type), _) => {
                 value_stack.push(match mem_type {
-                    //todo: Remove active from membertype
-                    MemberType::Power => device_pointer
-                        .ok_or(errors::Error::DevicePointer)?
-                        .power
-                        .into(),
-                    MemberType::Name => StackValue::from(
-                        device_pointer
-                            .map(|d| &d.name)
-                            .ok_or(errors::Error::DevicePointer)?,
-                    ),
+                    MemberType::Power =>  device_pointer.ok_or(errors::Error::DevicePointer)?.power.into(),
+                    MemberType::Name =>  StackValue::from(device_pointer.map(|d| &d.name).ok_or(errors::Error::DevicePointer)?),
                 });
             }
             // BinOp / UnOp
@@ -159,13 +152,7 @@ pub(crate) fn eval_operations<'a>(
 
             // Aggregate Functions
             (Operation::AggregateFunction { idx, .. }, Deepen) => {
-                // worklist_stack.extend([(cur_idx, ReducePartial)]);
-                worklist_stack.extend([
-                    (cur_idx, ReducePartial),
-                    (*idx, Deepen),
-                ]);
-
-                
+                worklist_stack.extend([(cur_idx, ReducePartial)]);
 
                 //Put devices on device stack and pop the first
                 device_stack.push(DeviceStack::LayerShift);
@@ -174,13 +161,14 @@ pub(crate) fn eval_operations<'a>(
                 }
                 //Accumulation starts at zero
                 value_stack.push(0.into());
+                value_stack.push(0.into());
             }
             (Operation::AggregateFunction { idx, .. }, ReducePartial) => {
                 //Pop the accumulated value and newest value on the stack and add them
+                // println!("{}",format!("HEHHERHEH").on_bright_red());
                 let res = value_stack.pop_or_err()? + value_stack.pop_or_err()?;
                 value_stack.push(res);
 
-                println!("{}",format!("HEHHERHEH").on_bright_red());
 
                 match device_stack.pop() {
                     Some(DeviceStack::Element(device)) => {
@@ -193,7 +181,7 @@ pub(crate) fn eval_operations<'a>(
                 }
             }
             (Operation::AggregateFunction { function_type, .. }, Reduce) => {
-                println!("{}",format!("HEHHERHEH").on_bright_red());
+                // println!("{}",format!("HEHHERHEH").on_bright_red());
 
                 let res = value_stack.pop_or_err()?;
                 value_stack.push(match function_type {
@@ -215,12 +203,11 @@ pub(crate) fn eval_operations<'a>(
                 if value_stack
                     .last()
                     .is_some_and(|v| matches!(*v.get_value(), StackContent::Verdict(true)))
-                    && !device_stack.is_empty()
-                {
+                    && !device_stack.last().is_some_and(|v| matches!(v, DeviceStack::LayerShift)) {
                     let _ = value_stack.pop();
                     device_pointer = match device_stack.pop() {
                         Some(DeviceStack::Element(v)) => Some(v),
-                        Some(DeviceStack::LayerShift) | None => None,
+                        Some(DeviceStack::LayerShift) | None => unreachable!(),
                     };
                     worklist_stack.extend([(cur_idx, Reduce), (*idx, Deepen)]);
 
