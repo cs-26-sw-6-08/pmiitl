@@ -20,14 +20,11 @@ type MonitorElement = Result<(usize, bool), Box<dyn Error>>;
 
 impl Program {
     pub async fn monitor(&mut self, time_interval: i128, speed: bool) -> Result<(), Box<dyn Error>> {
-        println!("Monitor has started...");
         
         let Some(streams) = &mut self.environment else { return Err(errors::Error::EnvironmentNotPresent.into()); };
         let mut interval = interval(Duration::from_millis(time_interval as u64));
 
         let mut t = 0;
-        #[cfg(debug_assertions)]
-        println!("{}",format!("{:#?}", streams).bright_red());
         
         let temp_iot_stream: IoTStream = (
             vec![
@@ -46,13 +43,18 @@ impl Program {
             }
 
             let start = Instant::now();
+            #[cfg(debug_assertions)]
             println!("--- Interval {:<4}", format!("{}",t).blue().bold());
+            if t % 1000 == 0 {
+                #[cfg(not(debug_assertions))]
+                println!("--- Interval {}", format!("{}",t).blue().bold());
+            }
             //todo: await devices
             async {
                 for el in Self::monitor_logic(streams, &t, &temp_iot_stream) {
                     let (prop_num, _ )=  el?; 
                     let msg = format!("Prop {} violated", prop_num + 1);
-                    println!("\t{} at time: {}", msg.red().bold().underline(), format!("{}s",t).on_bright_red().blue().bold());
+                    println!("\t{} at time: {}", msg.red().bold().underline(), format!("{}s",t).red().bold());
                 }
                 t += time_interval / 1000;
                 
@@ -62,7 +64,7 @@ impl Program {
             let elapsed = start.elapsed();
             let colored_time = if elapsed.as_millis() > time_interval as u128 { format!("{:?}",elapsed).red().bold() } 
                 else { format!("{:?}",elapsed).bright_green().bold() };
-            // println!("--- Interval {:<4} | Execution Time: {:>10} ---", format!("{}",t/1000).blue().bold(), colored_time);
+            #[cfg(debug_assertions)]
             println!("\tExecution Time: {}", colored_time);
 
         }
@@ -81,8 +83,6 @@ impl Program {
 
                     // Calculate the new state of the streams
                     output_stream.update(t, device_stream)?; 
-                    #[cfg(debug_assertions)]
-                    println!("{:#?}", output_stream);
 
                     // Give verdicts
                     let is_violated = output_stream.get_violated_verdict_single();

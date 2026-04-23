@@ -38,9 +38,6 @@ async fn main() {
         return error_print(format!("{}",err));
     };
     
-    #[cfg(debug_assertions)]
-    println!("{}",format!("Program Tree\n{:#?}",program.expressions).bright_magenta());
-
     if let Err(err) = program.monitorability_check() {
         return error_print(format!("{}",err));
     }
@@ -48,8 +45,6 @@ async fn main() {
     if let Err(err) = program.compile_properties() {
         return error_print(format!("{}",err));
     }
-    #[cfg(debug_assertions)]
-    println!("{}",format!("Program Env\n{:#?}",program.environment).bright_blue());
     
     if let Err(err) = program.monitor(1_000, true).await {
         return error_print(format!("{}",err));

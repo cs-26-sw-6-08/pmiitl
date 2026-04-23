@@ -23,11 +23,8 @@ fn divide() {
         (binary_expr(custom_number_expr(5_000), custom_number_expr(2_000), BinaryOperators::Divide), Expr::Number(2_500))
     ] {
         assert!(expr.equiv_convert().is_ok());
-        println!("{}", expr);
         assert!(expr.eq(&expected))
     }
-
-    
 }
 
 #[test]

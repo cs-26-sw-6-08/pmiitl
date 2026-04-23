@@ -33,27 +33,9 @@ impl OutputStream {
                     let res = res?;
                     let res_value = res.get_value().get_verdict().unwrap(); //TODO: unwrap
                     if res_value && res.is_decided() {
-                        #[cfg(debug_assertions)]
-                        println!(
-                            "{}",
-                            "\t--- Removed a property ---"
-                                .yellow()
-                                .bold()
-                                .italic()
-                                .underline()
-                        );
                         self.ltl = LTL::Eventually(true);
                         *ver = Verdict::True;
                     } else if self.bound.is_some_and(|(_, b)| b <= t_current) {
-                        #[cfg(debug_assertions)]
-                        println!(
-                            "{}",
-                            "\t--- Removed a property ---"
-                                .yellow()
-                                .bold()
-                                .italic()
-                                .underline()
-                        );
                         self.ltl = LTL::Eventually(true);
                         *ver = Verdict::False;
                     } else if !res_value && res.is_decided() {
@@ -100,9 +82,6 @@ pub(crate) fn eval_operations<'a>(
     worklist_stack.push((0usize, StepType::Deepen));
 
     while let Some((cur_idx, step_type)) = worklist_stack.pop() {
-        // println!("{}",format!("{:#?}, {cur_idx}, {:?}", device_stack,step_type).on_bright_cyan());
-        // println!("{}",format!("{:#?}",device_pointer).on_bright_magenta());
-        // let cur_op = &mut operations[cur_idx] as *mut Operation;
         let cur_op = &mut operations[cur_idx] as *mut Operation;
 
         match (unsafe { &mut *cur_op }, step_type) {
@@ -164,7 +143,6 @@ pub(crate) fn eval_operations<'a>(
             }
             (Operation::AggregateFunction { idx, .. }, ReducePartial) => {
                 //Pop the accumulated value and newest value on the stack and add them
-                // println!("{}",format!("HEHHERHEH").on_bright_red());
                 let res = value_stack.pop_or_err()? + value_stack.pop_or_err()?;
                 value_stack.push(res);
 
@@ -180,8 +158,6 @@ pub(crate) fn eval_operations<'a>(
                 }
             }
             (Operation::AggregateFunction { function_type, .. }, Reduce) => {
-                // println!("{}",format!("HEHHERHEH").on_bright_red());
-
                 let res = value_stack.pop_or_err()?;
                 value_stack.push(match function_type {
                     AggregateType::Sum => res,
@@ -198,7 +174,6 @@ pub(crate) fn eval_operations<'a>(
             }
             (Operation::Foreach { idx }, Reduce) => {
                 //Violation didn't occur and not all devices have been looked at
-                //todo: Figure out if undecided should be here as well
                 if value_stack
                     .last()
                     .is_some_and(|v| matches!(*v.get_value(), StackContent::Verdict(true)))
@@ -226,7 +201,6 @@ pub(crate) fn eval_operations<'a>(
                 Deepen,
             ) => {
                 //If bound has already been exceeded we aren't interested in calculating further
-                //todo: Can be optimized by adding this check when the bound is just about to be overstepped
                 match bound {
                     //The difference between t_c and t_s is the time the bound has been active.
                     //If it exceeds the end (b) (added 1 because of it the num being inclusive), then it shouldn't evaluate the expression and it is decided (or untainted)

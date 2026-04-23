@@ -15,7 +15,7 @@ fn eventually_true_remove() {
         panic!()
     };
     let result = run_x_monitor_steps(streams, &device_stream, &0, 5);
-    println!("{}", format!("{:#?}", result).green());
+    
     for (_, value) in result {
         assert!(value.is_empty());
     }
@@ -31,7 +31,7 @@ fn eventually_false_remove() {
         panic!()
     };
     let result = run_x_monitor_steps(streams, &device_stream, &0, 5);
-    println!("{}", format!("{:#?}", result).green());
+    
     for (idx, value) in result {
         if idx == 2 {
             assert!(value[0].1);
@@ -49,14 +49,14 @@ fn eventually_true_remove_hard_challange_mode() {
         panic!()
     };
     let result = run_x_monitor_steps(streams, &device_stream, &0, 5);
-    println!("{}", format!("{:#?}", result).green());
+    
     for (_, value) in result {
         assert!(value.is_empty());
     }
     assert_eq!(streams.first().unwrap().ltl, LTL::Eventually(false));
 
     let result = run_x_monitor_steps(streams, &device_stream, &5, 4);
-    println!("{}", format!("{:#?}", result).green());
+    
     for (idx, value) in result {
         if idx == 6 {
             assert!(value[0].1);
@@ -76,7 +76,7 @@ fn eventually_false_not_removed() {
         panic!()
     };
     let result = run_x_monitor_steps(streams, &device_stream, &0, 3);
-    println!("{}", format!("{:#?}", result).green());
+    
     for (idx, value) in result {
         if idx == 2 {
             assert!(value.is_empty());
@@ -94,7 +94,7 @@ fn always_false_unbound() {
         panic!()
     };
     let result = run_x_monitor_steps(streams, &device_stream, &0, 100);
-    println!("{}", format!("{:#?}", result).green());
+    
     for (_, value) in result {
         assert!(value[0].1);
     }
@@ -109,7 +109,7 @@ fn always_true_unbound() {
         panic!()
     };
     let result = run_x_monitor_steps(streams, &device_stream, &0, 100);
-    //println!("{}", format!("{:#?}", result).green());
+    //
     for (_, value) in result {
         assert!(value.is_empty());
     }
@@ -124,7 +124,7 @@ fn always_false_bound() {
         panic!()
     };
     let result = run_x_monitor_steps(streams, &device_stream, &0, 10);
-    println!("{}", format!("{:#?}", result).green());
+    
     for (idx, value) in result {
         if idx <= 5 {
             assert!(value[0].1);
@@ -151,7 +151,7 @@ fn always_t_mod_switch() {
         panic!()
     };
     let result = run_x_monitor_steps(streams, &device_stream, &0, 100);
-    //println!("{}", format!("{:#?}", result).green());
+    //
     for (idx, value) in result {
         if idx % 2 == 0 {
             assert!(value[0].1);
@@ -182,7 +182,7 @@ fn always_simple_count_true() {
         panic!()
     };
     let result = run_x_monitor_steps(streams, &device_stream, &0, 100);
-    //println!("{}", format!("{:#?}", result).green());
+    //
     for (_, value) in result {
         assert!(value.is_empty());
     }
@@ -209,7 +209,7 @@ fn always_simple_count_false() {
         panic!()
     };
     let result = run_x_monitor_steps(streams, &device_stream, &0, 100);
-    //println!("{}", format!("{:#?}", result).green());
+    //
     for (_, value) in result {
         assert!(value[0].1);
     }
@@ -236,7 +236,7 @@ fn always_simple_sum_member_true() {
         panic!()
     };
     let result = run_x_monitor_steps(streams, &device_stream, &0, 10);
-    println!("{}", format!("{:#?}", result).green());
+    
     for (_, value) in result {
         assert!(value.is_empty());
     }
@@ -263,7 +263,7 @@ fn always_simple_sum_member_true2() {
         panic!()
     };
     let result = run_x_monitor_steps(streams, &device_stream, &0, 10);
-    println!("{}", format!("{:#?}", result).green());
+    
     for (_, value) in result {
         assert!(value.is_empty());
     }
@@ -291,7 +291,7 @@ fn always_simple_sum_member_false() {
         panic!()
     };
     let result = run_x_monitor_steps(streams, &device_stream, &0, 1);
-    println!("{}", format!("{:#?}", result).green());
+    
     for (_, value) in result {
         assert!(value[0].1);
     }
@@ -319,7 +319,7 @@ fn always_simple_avg_member_true() {
         panic!()
     };
     let result = run_x_monitor_steps(streams, &device_stream, &0, 10);
-    println!("{}", format!("{:#?}", result).green());
+    
     for (_, value) in result {
         assert!(value.is_empty());
     }
@@ -346,7 +346,7 @@ fn always_simple_avg_member_false() {
         panic!()
     };
     let result = run_x_monitor_steps(streams, &device_stream, &0, 10);
-    println!("{}", format!("{:#?}", result).green());
+    
     for (_, value) in result {
         assert!(value[0].1);
     }
@@ -375,7 +375,7 @@ fn always_mul_check() {
         panic!()
     };
     let result = run_x_monitor_steps(streams, &device_stream, &0, 5);
-    println!("{}", format!("{:#?}", result).green());
+    
     for (_, value) in result {
         assert!(value.is_empty());
     }
@@ -405,7 +405,7 @@ fn always_div_check() {
         panic!()
     };
     let result = run_x_monitor_steps(streams, &device_stream, &0, 5);
-    println!("{}", format!("{:#?}", result).green());
+    
     for (_, value) in result {
         assert!(value.is_empty());
     }
@@ -434,7 +434,7 @@ fn always_minus_check() {
         panic!()
     };
     let result = run_x_monitor_steps(streams, &device_stream, &0, 5);
-    println!("{}", format!("{:#?}", result).green());
+    
     for (_, value) in result {
         assert!(value.is_empty());
     }
@@ -469,7 +469,7 @@ fn always_nested_device_stack() {
         panic!()
     };
     let result = run_x_monitor_steps(streams, &device_stream, &0, 10);
-    println!("{}", format!("{:#?}", result).green());
+    
     for (_, value) in result {
         assert!(value.is_empty());
     }
@@ -504,7 +504,7 @@ fn always_nested_device_stack_false() {
         panic!()
     };
     let result = run_x_monitor_steps(streams, &device_stream, &0, 10);
-    println!("{}", format!("{:#?}", result).green());
+    
     for (_, value) in result {
         assert!(value[0].1);
     }

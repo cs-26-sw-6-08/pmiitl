@@ -370,8 +370,5 @@ fn test8() {
             None,
         )),
     ];
-
-        println!("{}",format!("{:#?}",program.environment).blue());
-    println!("{}",format!("{:#?}",expected_env).green().bold());
     assert_eq!(program.environment.unwrap().as_slice(), expected_env);
 }

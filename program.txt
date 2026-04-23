@@ -2,4 +2,7 @@
 
 //always foreach(power = 5w);
 
-always t%24s = 0s -> always[0h,24h] sumtime(power) < 1kwh/1000;
+// always t%24s = 0s -> always[0h,24h] sumtime(power) < 0.00000001 kwh;
+
+
+eventually[0s,5s] t = 7s; 
