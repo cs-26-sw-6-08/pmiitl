@@ -1,5 +1,3 @@
-use colored::Colorize;
-
 use crate::{
     errors,
     monitor::{
@@ -10,9 +8,8 @@ use crate::{
     program::{member_types::MemberType, operations::BinaryOperators},
     utils::vec_helper_funcs::ExtVec,
 };
-use std::{error::Error, fmt::format};
+use std::{error::Error};
 
-//todo: Remove print statements
 impl OutputStream {
     // Calculate the verdict for the output stream.
     pub fn update(&mut self, t_current: i128, devices: &IoTStream) -> Result<(), Box<dyn Error>> {
