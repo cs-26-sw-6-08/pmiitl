@@ -177,7 +177,7 @@ impl Expr {
                     Expr::UnaryOperations { operand, operator }
                 }
             }
-            "active" | "power" | "name" => {
+            "power" | "name" => {
                 let access_type = MemberType::new(node.get_value().ok_or_else(|| {
                     errors::Error::ASTNodeValueInvalid(node.get_symbol().name.into())
                 })?)?;
@@ -207,6 +207,12 @@ impl Expr {
         };
 
         Ok(expr)
+    }
+
+    pub fn get_bound(&self) -> Result<(i128,i128), Box<dyn Error>> {
+        let Expr::Interval{ start, end} = self else { return Err(errors::Error::InvalidIntervalExpr.into()) };
+        let (Expr::Number(start), Expr::Number(end)) = (start.as_ref(), end.as_ref()) else { return Err(errors::Error::InvalidIntervalExpr.into()) };
+        Ok((*start, *end))
     }
 
     

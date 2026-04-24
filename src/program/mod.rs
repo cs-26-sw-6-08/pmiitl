@@ -2,7 +2,7 @@ use std::error::Error;
 
 use hime_redist::{ast::AstNode, errors::ParseErrorDataTrait};
 
-use crate::{errors, grammar::cfg, program::expressions::SpannedExpr};
+use crate::{errors, grammar::cfg, monitor::streams::PropertyStream, program::expressions::SpannedExpr};
 pub mod expressions;
 pub mod units;
 pub mod operations;
@@ -11,13 +11,13 @@ pub mod member_types;
 #[cfg(test)]
 mod program_test;
 
-#[derive(Debug, PartialEq)]
+#[derive(PartialEq, Debug)]
 pub struct Program {
-    pub expressions: Vec<SpannedExpr>
+    pub expressions: Vec<SpannedExpr>,
+    pub environment: Option<Vec<PropertyStream>>,
 }
 
 impl Program {
-
     pub fn new(programstr: &str) -> Result<Self, Box<dyn Error>>{
         let parsed = cfg::parse_string(programstr.to_lowercase());
         let mut exprs : Vec<SpannedExpr> = Vec::new();
@@ -30,21 +30,20 @@ impl Program {
         let ast = parsed.get_ast();
         let root = ast.get_root();
 
-        /* TODO: Slet */
-        print(root, Vec::<bool>::new());
+        // print(root, Vec::new());
 
         for node in root.children(){
             exprs.push(SpannedExpr::new(node)?);
 
         }
 
-        let program = Program { expressions: exprs};
+        let program = Program { expressions: exprs, environment: None };
         Ok(program)
     }
-
 }
 
-fn print<'a>(node: AstNode<'_,'_,'a>, crossings: Vec<bool>) {
+#[allow(dead_code)]
+fn print(node: AstNode<'_,'_,'_>, crossings: Vec<bool>) {
     let mut i = 0;
     if !crossings.is_empty() {
         while i < crossings.len() - 1 {

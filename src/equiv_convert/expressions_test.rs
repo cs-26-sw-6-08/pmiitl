@@ -7,14 +7,14 @@ use crate::utils::test_helper_func::{always_expr, always_negated_expr, always_in
 fn count(){
     let mut expr = function_expr(FunctionType::Count, number_expr());
     assert!(expr.equiv_convert().is_ok());
-    assert_eq!(expr, function_expr(FunctionType::Sum, number_expr()));
+    assert_eq!(expr, function_expr(FunctionType::Sum, custom_number_expr(1000)));
 }
 
 #[test]
 fn counttime(){
     let mut expr = function_expr(FunctionType::Counttime, number_expr());
     assert!(expr.equiv_convert().is_ok());
-    assert_eq!(expr, function_expr(FunctionType::Sumtime, number_expr()));
+    assert_eq!(expr, function_expr(FunctionType::Sumtime, custom_number_expr(1000)));
 }
 
 #[test]

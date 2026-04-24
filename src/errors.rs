@@ -19,10 +19,26 @@ pub enum Error {
     IntervalBelowZero(i128, i128),
     #[error("interval start value: {0} is greater than end value: {1}")]
     IntervalStartGreaterThanEnd(i128, i128),
-    #[error(" Property is not monitorable: {0}")]
+    #[error("Property is not monitorable: {0}")]
     Unmonitorable(Expr),
-    #[error(" Property at line {0} is not monitorable")]
+    #[error("Property at line {0} is not monitorable")]
     UnmonitorableLine(usize),
+
+    #[error("Invalid Interval Expression")]
+    InvalidIntervalExpr,
+    #[error("Invalid Expression for compilation")]
+    InvalidCompileExpr,
+
+    #[error("Value Stack error: Not enough values in stack")]
+    ValueStackPop,
+    #[error("Invalid Device Pointer Assignment")]
+    DevicePointer,
+    #[error("Value Stack Error: Not the correct value type")]
+    ValueStackVal,
+    #[error("Illegal operation during evaluation")]
+    IllegalOperation,
+    #[error("The environment have not been set for the program")]
+    EnvironmentNotPresent
 }
 
 impl PartialEq for Error {

@@ -12,10 +12,15 @@ grammar cfg
   {
     WHITE_SPACE -> U+0020 | U+0009 | U+000B | U+000C | U+000A
                   | U+000D | U+0085 | U+2028 | U+2029 | U+0009 | U+2424;
-    SEPARATOR   -> WHITE_SPACE+;
 
-    INTEGER     -> [1-9] [0-9]* | '0' ;
-    REAL        -> INTEGER? '.' INTEGER;
+    COMMENT_MULTI -> '/*' ( .* - (.* '*/' .*) ) '*/';
+    COMMENT_SINGLE -> '//' [^\r\n]*;
+
+    SEPARATOR   -> WHITE_SPACE+ | COMMENT_MULTI | COMMENT_SINGLE;
+
+    INTEGER     -> [1-9] [0-9]* | '0';
+    DECIMAL     -> [0-9]+;
+    REAL        -> INTEGER? '.' DECIMAL;
     NUMBER      -> INTEGER | REAL ;
 
     STRING -> [a-zA-Z]+;
@@ -64,7 +69,7 @@ grammar cfg
     FunctionExprV7 -> '('! FunctionExpr^ ')'! | FunctionExprV8^;
     FunctionExprV8 -> (NUMBER (TIMEUNIT | POWERUNIT) | NUMBER | Member | STRING | Function | BOOL | TIME)^;
 
-    Member -> 'active'^ | 'power'^ | 'name'^;
+    Member -> 'power'^ | 'name'^;
     
   }
 }

@@ -1,4 +1,6 @@
 use rv_iot::{
+    monitor::{streams::PropertyStream},
+    monitor_setup::operation_types::{AggregateType, Operation, PropLTL},
     program::{
         Program,
         expressions::SpannedExpr,
@@ -12,10 +14,11 @@ use rv_iot::{
         string_expr, unary_expr,
     },
 };
+
 #[test]
 fn test1() {
     let mut program =
-        Program::new("always (t % 24h = 0s) -> always[0h,24h] sumtime(active * power) < 10 kWh;")
+        Program::new("always (t % 24h = 0s) -> always[0h,24h] sumtime(power) < 10 kWh;")
             .unwrap();
 
     assert!(program.unit_convert().is_ok());
@@ -44,11 +47,7 @@ fn test1() {
                     binary_expr(
                         function_expr(
                             FunctionType::Sumtime,
-                            binary_expr(
-                                member_expr(MemberType::Active),
-                                member_expr(MemberType::Power),
-                                BinaryOperators::Times,
-                            ),
+                            member_expr(MemberType::Power)
                         ),
                         custom_number_expr(36_000_000_000),
                         BinaryOperators::Less,
@@ -57,6 +56,7 @@ fn test1() {
                 BinaryOperators::Or,
             )),
         }],
+        environment: None,
     };
 
     assert_eq!(program, expected_program);
@@ -64,7 +64,7 @@ fn test1() {
 
 #[test]
 fn test2() {
-    let mut program = Program::new("! eventually count(active) > 5;").unwrap();
+    let mut program = Program::new("! eventually count(power) > 5;").unwrap();
 
     assert!(program.unit_convert().is_ok());
     assert!(program.unit_check().is_ok());
@@ -76,13 +76,21 @@ fn test2() {
             line: 1,
             expr: always_expr(unary_expr(
                 binary_expr(
-                    function_expr(FunctionType::Sum, member_expr(MemberType::Active)),
+                    function_expr(
+                        FunctionType::Sum,
+                        binary_expr(
+                            member_expr(MemberType::Power),
+                            custom_number_expr(0),
+                            BinaryOperators::NotEqual,
+                        ),
+                    ),
                     number_expr(),
                     BinaryOperators::Greater,
                 ),
                 UnaryOperators::Not,
             )),
         }],
+        environment: None,
     };
 
     assert_eq!(program, expected_program);
@@ -90,7 +98,7 @@ fn test2() {
 
 #[test]
 fn test3() {
-    let mut program = Program::new("always foreach(active -> eventually[0h,6h] !active);").unwrap();
+    let mut program = Program::new("always foreach(power/1w -> eventually[0h,6h] !(power/1w));").unwrap();
 
     assert!(program.unit_convert().is_ok());
     assert!(program.unit_check().is_ok());
@@ -103,23 +111,25 @@ fn test3() {
             expr: always_expr(function_expr(
                 FunctionType::Foreach,
                 binary_expr(
-                    unary_expr(member_expr(MemberType::Active), UnaryOperators::Not),
+                    unary_expr(binary_expr(member_expr(MemberType::Power),custom_number_expr(1_000),BinaryOperators::Divide), UnaryOperators::Not),
                     eventually_interval_expr(
                         interval_expr(custom_number_expr(0), custom_number_expr(21_600_000)),
-                        unary_expr(member_expr(MemberType::Active), UnaryOperators::Not),
+                        unary_expr(binary_expr(member_expr(MemberType::Power),custom_number_expr(1_000),BinaryOperators::Divide), UnaryOperators::Not),
                     ),
                     BinaryOperators::Or,
                 ),
             )),
         }],
+        environment: None,
     };
+
 
     assert_eq!(program, expected_program);
 }
 
 #[test]
 fn test4() {
-    let mut program = Program::new("always count(name=christian & active);").unwrap();
+    let mut program = Program::new("always count(name=christian & power);").unwrap();
 
     assert!(program.unit_convert().is_ok());
     assert!(program.unit_check().is_ok());
@@ -131,23 +141,28 @@ fn test4() {
             line: 1,
             expr: always_expr(function_expr(
                 FunctionType::Sum,
-                unary_expr(
-                    binary_expr(
-                        unary_expr(
-                            binary_expr(
-                                member_expr(MemberType::Name),
-                                string_expr(),
-                                BinaryOperators::Equal,
+                binary_expr(
+                    unary_expr(
+                        binary_expr(
+                            unary_expr(
+                                binary_expr(
+                                    member_expr(MemberType::Name),
+                                    string_expr(),
+                                    BinaryOperators::Equal,
+                                ),
+                                UnaryOperators::Not,
                             ),
-                            UnaryOperators::Not,
+                            unary_expr(member_expr(MemberType::Power), UnaryOperators::Not),
+                            BinaryOperators::Or,
                         ),
-                        unary_expr(member_expr(MemberType::Active), UnaryOperators::Not),
-                        BinaryOperators::Or,
+                        UnaryOperators::Not,
                     ),
-                    UnaryOperators::Not,
+                    custom_number_expr(0),
+                    BinaryOperators::NotEqual,
                 ),
             )),
         }],
+        environment: None,
     };
 
     assert_eq!(program, expected_program);
@@ -156,7 +171,7 @@ fn test4() {
 #[test]
 fn test5() {
     let mut program =
-        Program::new("always count(active) >= 5 -> eventually[0h,6h] count(active) < 5;").unwrap();
+        Program::new("always count(power) >= 5 -> eventually[0h,6h] count(power) < 5;").unwrap();
 
     assert!(program.unit_convert().is_ok());
     assert!(program.unit_check().is_ok());
@@ -169,7 +184,14 @@ fn test5() {
             expr: always_expr(binary_expr(
                 unary_expr(
                     binary_expr(
-                        function_expr(FunctionType::Sum, member_expr(MemberType::Active)),
+                        function_expr(
+                            FunctionType::Sum,
+                            binary_expr(
+                                member_expr(MemberType::Power),
+                                custom_number_expr(0),
+                                BinaryOperators::NotEqual,
+                            ),
+                        ),
                         number_expr(),
                         BinaryOperators::GreaterEqual,
                     ),
@@ -178,7 +200,14 @@ fn test5() {
                 eventually_interval_expr(
                     interval_expr(custom_number_expr(0), custom_number_expr(21_600_000)),
                     binary_expr(
-                        function_expr(FunctionType::Sum, member_expr(MemberType::Active)),
+                        function_expr(
+                            FunctionType::Sum,
+                            binary_expr(
+                                member_expr(MemberType::Power),
+                                custom_number_expr(0),
+                                BinaryOperators::NotEqual,
+                            ),
+                        ),
                         number_expr(),
                         BinaryOperators::Less,
                     ),
@@ -186,6 +215,7 @@ fn test5() {
                 BinaryOperators::Or,
             )),
         }],
+        environment: None,
     };
 
     assert_eq!(program, expected_program);
@@ -193,7 +223,7 @@ fn test5() {
 
 #[test]
 fn test6() {
-    let mut program = Program::new("always sum(active * power) <= 100 W;").unwrap();
+    let mut program = Program::new("always sum(1 * power) <= 100 W;").unwrap();
 
     assert!(program.unit_convert().is_ok());
     assert!(program.unit_check().is_ok());
@@ -207,7 +237,7 @@ fn test6() {
                 function_expr(
                     FunctionType::Sum,
                     binary_expr(
-                        member_expr(MemberType::Active),
+                        custom_number_expr(1_000),
                         member_expr(MemberType::Power),
                         BinaryOperators::Times,
                     ),
@@ -216,6 +246,7 @@ fn test6() {
                 BinaryOperators::LessEqual,
             )),
         }],
+        environment: None,
     };
 
     assert_eq!(program, expected_program);
@@ -261,7 +292,87 @@ fn test7() {
                 expr: always_expr(custom_number_expr(0)),
             },
         ],
+        environment: None,
     };
 
     assert_eq!(program, expected_program);
 }
+
+#[test]
+fn test8() {
+    let mut program = Program::new(
+        "eventually[5s,10s] foreach( 1 -> power > 5 W);
+        always sumtime(power * (name = Roomba)) < 200Ws;",
+    )
+    .unwrap();
+
+    assert!(program.unit_convert().is_ok());
+    assert!(program.unit_check().is_ok());
+    assert!(program.equiv_convert().is_ok());
+    assert!(program.monitorability_check().is_ok());
+    assert!(program.compile_properties().is_ok());
+
+    let expected_env = [
+        PropertyStream::from((
+            PropLTL::Eventually(false),
+            vec![
+                Operation::Foreach { idx: 1 },
+                Operation::Binary {
+                    bin_op: BinaryOperators::Or,
+                    idx_lhs: 2,
+                    idx_rhs: 3,
+                },
+                Operation::Number(0),
+                Operation::Binary {
+                    bin_op: BinaryOperators::Greater,
+                    idx_lhs: 4,
+                    idx_rhs: 5,
+                },
+                Operation::Member(MemberType::Power),
+                Operation::Number(5_000),
+            ],
+            Some((5, 10)),
+        )),
+        PropertyStream::from((
+            PropLTL::Always,
+            vec![
+                Operation::Binary {
+                    bin_op: BinaryOperators::Less,
+                    idx_lhs: 1,
+                    idx_rhs: 8,
+                },
+                Operation::TimeFunction {
+                    idx: 2,
+                    function_type: AggregateType::Sum,
+                    history: Vec::new(),
+                    bound: None,
+                },
+                Operation::AggregateFunction {
+                    idx: 3,
+                    function_type: AggregateType::Sum,
+                },
+                Operation::Binary {
+                    bin_op: BinaryOperators::Times,
+                    idx_lhs: 4,
+                    idx_rhs: 5,
+                },
+                Operation::Member(MemberType::Power),
+                Operation::Binary {
+                    bin_op: BinaryOperators::Equal,
+                    idx_lhs: 6,
+                    idx_rhs: 7,
+                },
+                Operation::Member(MemberType::Name),
+                Operation::String("roomba".to_owned()),
+                Operation::Number(200_000),
+            ],
+            None,
+        )),
+    ];
+    assert_eq!(program.environment.unwrap().as_slice(), expected_env);
+}
+
+/*
+    Because of the functionality of running the monitor, 
+    this is tested within streams_test
+*/
