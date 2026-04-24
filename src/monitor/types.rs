@@ -247,12 +247,12 @@ pub enum StackContent<'a> {
 }
 
 impl StackContent<'_> {
-    pub fn get_verdict(&self) -> Option<bool> {
-        Some(match self {
-            StackContent::Verdict(verdict) => *verdict,
-            StackContent::Number(v) => *v != 0,
-            _ => unreachable!("Fail in return")
-        })
+    pub fn get_verdict(&self) -> Result<bool, Box<dyn Error>> {
+        match self {
+            StackContent::Verdict(verdict) => Ok(*verdict),
+            StackContent::Number(v) => Ok(*v != 0),
+            _ => Err(errors::Error::ValueStackVal.into())
+        }
     }
 
     pub fn get_num(&self) -> Result<i128, Box<dyn Error>> {

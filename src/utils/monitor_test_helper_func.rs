@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::{monitor::{streams::{IoTStream, PropertyStream}, types::Verdict}, monitor_setup::operation_types::{Operation, PropLTL}, program::Program};
+use crate::{monitor::streams::{IoTStream, PropertyStream}, monitor_setup::operation_types::{Operation, PropLTL}, program::Program};
 
 pub fn run_x_monitor_steps<'a>(env: &'a mut [PropertyStream], device_stream: &'a IoTStream, t_start: i128, step_amount: i128) -> HashMap<i128, Vec<(usize, bool)>> {
     let mut result: HashMap<i128, Vec<(usize, bool)>> = HashMap::new();

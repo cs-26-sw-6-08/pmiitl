@@ -225,8 +225,7 @@ pub(crate) fn eval_operations<'a>(
             ) => {
                 let val = value_stack.pop_or_err()?.get_value().get_num()?;
                 let val = time_function_reduce_step(val, *t_spawn, *bound, history);
-                let val: StreamOutput =
-                    function_type_computation(function_type, val, *t_spawn, *t_current).into();
+                let val: StreamOutput = function_type_computation(function_type, val, *t_spawn, *t_current).into();
                 value_stack.push(val.to_undecided());
             }
 
@@ -238,31 +237,81 @@ pub(crate) fn eval_operations<'a>(
                 let (a,b) = bound;
                 //If over bound, should add verdict to stack and move back up
                 //fst is lowerbound, snd is upperbound
-                match (*a + *t_spawn <= *t_current, *t_current <= *t_spawn + *b) {
-                    //Within Bound
-                    (true, true) => {
-                        worklist_stack.extend([(cur_idx, Reduce), (*idx, Deepen)]);
-                    }
+                match (*a + *t_spawn <= *t_current, *t_current <= *t_spawn + *b, ltl_type) {
                     //Bound has not been entered yet
-                    (false, true) => value_stack.push(
-                        StreamOutput::from(true).to_undecided()
-                    ),
-                    //Bound has been passed
-                    //todo change logic here
-                    (true, false) => value_stack.push(match ltl_type {
-                        ExprLTL::Eventually(_) => false.into(),
-                        _ => true.into(),
-                    }),
-                    _ => unreachable!(),
+                    (false, true, _) => value_stack.push(StreamOutput::from(true).to_undecided()),
+                    //Within Bound For Always
+                    (true, true, ExprLTL::Always) => worklist_stack.extend([(cur_idx, Reduce), (*idx, Deepen)]),
+                    //Bound has been passed For always
+                    (true, false, ExprLTL::Always) => value_stack.push(true.into()),
+                    
+                    //Within Bound For Eventually
+                    (true, true, ExprLTL::Eventually(his)) => {
+                        let his_idx = (*t_spawn % (*b - *a + 1)) as usize;
+                        match his.get(his_idx) {
+                            //If previous value that corresponds to the spawn point gave true previously, 
+                            //then we shouldn't look further down in the tree
+                            Some(val) if val.value && val.spawn_point == *t_spawn => value_stack.push(true.into()),
+                            None | Some(_) =>  worklist_stack.extend([(cur_idx, Reduce), (*idx, Deepen)]),
+                        }
+                    },
+                    //Bound has been passed For Eventually
+                    (true, false, ExprLTL::Eventually(his)) => {
+                        let his_idx = (*t_spawn % (*b - *a + 1)) as usize;
+                        match his.get(his_idx) {
+                            //If beyond the bound and the history is still corresponding to the spawn point with value being false, 
+                            //then a violation should be propogated upwards
+                            Some(val) if !val.value && val.spawn_point == *t_spawn => value_stack.push(false.into()),
+                            None | Some(_) =>  value_stack.push(true.into()),
+                        }
+                    },
+                    //Unreachable case -> Can't be below bound and above bound at same time
+                    (false, false, _) => unreachable!()
+
                 }
             }
-            (Operation::LTLBounded { not, .. }, Reduce) => {
-                let val = value_stack.pop_or_err()?;
-                //Undecideable when here -> As the bound haven't been reached yet
-                let val = val.to_undecided();
-                //Not the value if necessary
-                let val = if *not { !val } else { val };
-                value_stack.push(val);
+            (Operation::LTLBounded { not, bound, ltl_type, .. }, Reduce) => {
+                match ltl_type {
+                    ExprLTL::Always => {
+                        let val = value_stack.pop_or_err()?;
+                        //Undecideable when here -> As the bound haven't been reached yet
+                        let val = val.to_undecided();
+                        //Not the value if necessary
+                        let val = if *not { !val } else { val };
+                        value_stack.push(val);
+                    },
+                    //Getting here means that the previous value of history false or didn't match spawn point
+                    ExprLTL::Eventually(his) => {
+                        //Get value as a boolean
+                        let val = value_stack.pop_or_err()?.get_value().get_verdict()?;
+                        
+                        //Update history
+                        let (a, b) = bound;
+                        let his_idx = (*t_spawn % (*b - *a + 1)) as usize;
+                        match his.get_mut(his_idx) {
+                            Some(his_val) => {
+                                //If Spawn point matches, then only update value
+                                if his_val.spawn_point == *t_spawn {
+                                    his_val.value = val;
+                                //Else update the entire value
+                                } else {
+                                    *his_val = (val, *t_spawn).into();
+                                }
+                            },
+                            None => { 
+                                his.resize(his_idx + 1, (false, -1_i128).into());
+                                his[his_idx] = (val, *t_spawn).into();
+                            },
+                        }
+
+                        //If true, then the property has been satisfied and by extension decided
+                        // If false and the interval has been active for less time than the bound allows, then undecided
+                        value_stack.push(
+                            if !val && (*t_current) < *b + *t_spawn  { StreamOutput::from(val).to_undecided() } 
+                            else { StreamOutput::from(val) }
+                        )
+                    },
+                }
             }
             _ => Err(errors::Error::IllegalOperation)?,
         }
@@ -289,7 +338,7 @@ fn time_function_reduce_step(
     newest_val: i128,
     t_spawn: i128,
     bound: Option<(i128, i128)>,
-    history_vec: &mut Vec<HistoryValue>,
+    history_vec: &mut Vec<HistoryValue<i128>>,
 ) -> i128 {
     //Which idx should be overwritten
     let arr_idx = if let Some((a, b)) = bound {

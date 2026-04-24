@@ -1,7 +1,7 @@
 
 use std::error::Error;
 use crate::{
-    errors, monitor::types::Verdict, monitor_setup::operation_types::{AggregateType, ExprLTL, Operation}, program::{expressions::Expr,function_types::FunctionType}, utils::vec_helper_funcs::ExtVec
+    errors, monitor_setup::operation_types::{AggregateType, ExprLTL, Operation}, program::{expressions::Expr,function_types::FunctionType}, utils::vec_helper_funcs::ExtVec
 };
 use crate::program::operations::BinaryOperators::*;
 

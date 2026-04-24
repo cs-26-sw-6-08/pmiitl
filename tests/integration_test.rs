@@ -1,5 +1,5 @@
 use rv_iot::{
-    monitor::{streams::PropertyStream, types::Verdict},
+    monitor::{streams::PropertyStream},
     monitor_setup::operation_types::{AggregateType, Operation, PropLTL},
     program::{
         Program,

@@ -1,4 +1,4 @@
-use crate::{monitor::streams::PropertyStream, monitor_setup::operation_types::{AggregateType, ExprLTL, Operation, PropLTL}, utils::test_helper_func::operations_vec_with_sumtime};
+use crate::{monitor::streams::PropertyStream, monitor_setup::operation_types::{AggregateType, Operation, PropLTL}, utils::test_helper_func::operations_vec_with_sumtime};
 
 //(LTL, Vec<Operation>, Option<(i128, i128)>)
 

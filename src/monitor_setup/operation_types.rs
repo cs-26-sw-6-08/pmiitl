@@ -1,5 +1,5 @@
 
-use crate::{monitor::types::{StreamOutput, Verdict}, program::{member_types::MemberType, operations::{BinaryOperators, UnaryOperators}}};
+use crate::{program::{member_types::MemberType, operations::{BinaryOperators, UnaryOperators}}};
 
 
 #[derive(Debug, PartialEq, Clone)]
@@ -12,28 +12,35 @@ pub enum Operation {
     String(String),
     Member(MemberType),
     SpawnTime,
-    TimeFunction { idx:usize, function_type: AggregateType, history: Vec<HistoryValue>, bound: Option<(i128,i128)> },
+    TimeFunction { idx:usize, function_type: AggregateType, history: Vec<HistoryValue<i128>>, bound: Option<(i128,i128)> },
     AggregateFunction { idx:usize, function_type: AggregateType },
     Foreach { idx:usize }
 }
 
 #[derive(Debug, PartialEq, Clone)]
-pub struct HistoryValue {
-    pub(crate) value: i128, 
+pub struct HistoryValue<T> {
+    pub(crate) value: T, 
     pub(crate) spawn_point: i128
 } 
 
-impl From<(i128, i128)> for HistoryValue {
+impl From<(i128, i128)> for HistoryValue<i128> {
     fn from(value: (i128, i128)) -> Self {
         let (value, spawn_point) = value;
         Self { value, spawn_point }
     }
 }
 
+impl From<(bool, i128)> for HistoryValue<bool> {
+    fn from(value: (bool, i128)) -> Self {
+        let (value, spawn_point) = value;
+        Self { value, spawn_point }
+    }
+}
+
 #[derive(Debug, PartialEq, Clone)]
-pub enum AggregateType { Sum,  Avg }
+pub enum AggregateType { Sum, Avg }
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum PropLTL { Always, Eventually(bool) }
 #[derive(Debug, PartialEq, Clone)]
-pub enum ExprLTL { Always, Eventually(Vec<(bool, i128)>) }
+pub enum ExprLTL { Always, Eventually(Vec<HistoryValue<bool>>) }

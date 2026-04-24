@@ -1,4 +1,4 @@
-use crate::{monitor::{operation_eval::eval_operations, streams::IoTStream, types::{StreamOutput, Verdict}}, monitor_setup::operation_types::{AggregateType, ExprLTL, Operation}, program::{member_types::MemberType, operations::{BinaryOperators, UnaryOperators}}, utils::test_helper_func::mock_devices};
+use crate::{monitor::{operation_eval::eval_operations, streams::IoTStream, types::StreamOutput}, monitor_setup::operation_types::{AggregateType, ExprLTL, Operation}, program::{member_types::MemberType, operations::{BinaryOperators, UnaryOperators}}, utils::test_helper_func::mock_devices};
 
 #[test]
 fn test_constants() {
@@ -93,7 +93,7 @@ fn ltl_expressions_always_unbounded() {
 }
 
 #[test]
-fn ltl_expressions_bounded_ltl() {
+fn ltl_expressions_bounded() {
     //1,2,3,4
     let ops = [
          Operation::Binary { bin_op: BinaryOperators::NotEqual, idx_lhs: 2, idx_rhs: 3 },
@@ -129,10 +129,20 @@ fn ltl_expressions_bounded_ltl() {
         StreamOutput::from(true).to_undecided(),
         eval_operations(&mut eventually, &devices, &2, &2).unwrap()
     );
+    //Within bound -> Should be undecided
+    assert_eq!(
+        StreamOutput::from(false).to_undecided(),
+        eval_operations(&mut eventually, &devices, &2, &5).unwrap()
+    );
+    //Outside bound --> Should be decided
+    assert_eq!(
+        StreamOutput::from(false),
+        eval_operations(&mut eventually, &devices, &2, &6).unwrap()
+    );
     assert_eq!(
         StreamOutput::from(false),
         eval_operations(&mut eventually, &devices, &2, &7).unwrap()
-    );    
+    );
 }
 
 #[test] 

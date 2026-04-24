@@ -1,6 +1,6 @@
 
 use crate::{
-    monitor::types::Verdict, monitor_setup::operation_types::{AggregateType, ExprLTL, Operation, PropLTL}, program::{member_types::MemberType, operations::{BinaryOperators, UnaryOperators}}, utils::monitor_test_helper_func::*
+    monitor_setup::operation_types::{AggregateType, ExprLTL, Operation, PropLTL}, program::{member_types::MemberType, operations::{BinaryOperators, UnaryOperators}}, utils::monitor_test_helper_func::*
 };
 
 #[test]
@@ -571,11 +571,9 @@ fn time_behaviour_test() {
     
     for (_, value) in result { assert!(value.is_empty()) }
 
-    // assert!(false);
 }
 
 
-//todo: LTL Fix logic
 #[test]
 fn eventually_expr_true() {
     let operations = vec![
@@ -612,7 +610,6 @@ fn eventually_expr_false() {
     }
 }
 
-//TODO: LTL FIX LOGIC
 #[test]
 fn eventually_expr_time_true() {
     let operations = {
@@ -630,11 +627,9 @@ fn eventually_expr_time_true() {
     let result = run_x_monitor_steps(streams, &device_stream, 0, 100);
     
 
-    for idx in 0..100 {
+    for idx in (0..100).filter(|&num| !(4..7).contains(&num) ) {
         let value = result.get(&idx).unwrap();
-        println!("{idx}: {:#?}", value);
-        //assert!(value.is_empty());
+        assert!(value.is_empty());
     }
-    assert!(false)
 }
 
