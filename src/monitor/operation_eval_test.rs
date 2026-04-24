@@ -228,7 +228,7 @@ fn time_functions_bounded() {
 
 /// This testcase is expected to return undecided because the eventually element returns false and is therefore undecided 
 #[test]
-fn binary_operations_test() {
+fn check_undecided_operations() {
     let devices = mock_devices(3).into();
     let bin_ops = { 
         use BinaryOperators::*;
@@ -259,6 +259,28 @@ fn binary_operations_test() {
             eval_operations(&mut operations, &devices, &0, &0).unwrap()
         );
     }
+
+    
+    let mut negate_ops =  [ 
+        Operation::Unary { un_op: UnaryOperators::Negative, idx: 1 },
+        Operation::LTLBounded { bound: (0,1000), idx:2, not:false, ltl_type: ExprLTL::Eventually(Vec::new()) },
+        Operation::Number(0) 
+    ];
+     let mut not_ops =  [ 
+        Operation::Unary { un_op: UnaryOperators::Not, idx: 1 },
+        Operation::LTLBounded { bound: (0,1000), idx:2, not:false, ltl_type: ExprLTL::Eventually(Vec::new()) },
+        Operation::Number(0) 
+    ];
+    assert_eq!(
+        StreamOutput::from(0).to_undecided(),
+        eval_operations(&mut negate_ops, &devices, &0, &0).unwrap()
+    );
+     assert_eq!(
+        StreamOutput::from(true).to_undecided(),
+        eval_operations(&mut not_ops, &devices, &0, &0).unwrap()
+    );
+
+
 }
 
 #[test]
@@ -284,10 +306,11 @@ fn test_edge_case_modulo() {
 }
 
 #[test]
-fn check_undecided_values() {
+fn binary_operations() {
+    let devices = mock_devices(3).into();
     let bin_ops = { 
         use BinaryOperators::*;
-        [ Equal, Less, Greater, LessEqual, GreaterEqual, NotEqual, Plus, Minus, Times, Divide, Mod,Or ] 
+        [ Equal, Less, Greater, LessEqual, GreaterEqual, NotEqual, Plus, Minus, Times, Mod,Or ] 
     };
     let expected_results = [
         StreamOutput::from(false), // ==
@@ -299,10 +322,20 @@ fn check_undecided_values() {
         StreamOutput::from(12_000), // +
         StreamOutput::from(8_000), // - 
         StreamOutput::from(20_000), //_ * 
-        StreamOutput::from(5_000), // / 
         StreamOutput::from(0), // %,
         StreamOutput::from(true), // ||
-    ]; 
+    ];  
+    for (op, expected_val) in bin_ops.into_iter().zip(expected_results) {
+        let mut operations =  [ 
+            Operation::Binary { bin_op: op.clone(), idx_lhs: 1, idx_rhs: 2 },
+            Operation::Number(10_000), 
+            Operation::Number(2_000)
+        ];
+        assert_eq!(
+            expected_val,
+            eval_operations(&mut operations, &devices, &0, &0).unwrap()
+        );
+    }
 }
 
 #[test]

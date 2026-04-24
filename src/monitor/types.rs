@@ -1,4 +1,4 @@
-use std::{error::Error, ops::{Add, Div, Mul, Not, Sub}};
+use std::{error::Error, ops::{Add, Div, Mul, Neg, Not, Sub}};
 
 use crate::{errors, program::operations::{BinaryOperators, UnaryOperators}};
 
@@ -167,16 +167,11 @@ impl<'a> StreamOutput<'a> {
         self
     }
 
-    pub fn un_op(mut self, un_op: &UnaryOperators) -> Self {
-        self.value = match (self.value, un_op) {
-            (StackContent::Verdict(verdict), UnaryOperators::Not) => StackContent::Verdict(verdict.not()),
-            (StackContent::Number(v), UnaryOperators::Negative) => StackContent::Number(-v),
-            (StackContent::Number(v), UnaryOperators::Not) => StackContent::Verdict(v == 0),
-            (StackContent::Verdict(_), UnaryOperators::Negative) |
-            (StackContent::String(_), UnaryOperators::Not) |
-            (StackContent::String(_), UnaryOperators::Negative) => unreachable!(),
-        };
-        self
+    pub fn un_op(self, un_op: &UnaryOperators) -> Self {
+        match un_op {
+            UnaryOperators::Not => !self,
+            UnaryOperators::Negative => -self,
+        }
     }
 
     pub fn mul_op(mut self, other: StreamOutput) -> Self {
@@ -300,6 +295,7 @@ impl Decidedability {
 }
 
 
+
 impl From<i128> for StreamOutput<'_> {
     fn from(value: i128) -> Self {
         Self { value: StackContent::Number(value), decided: Decidedability::Decided }
@@ -321,7 +317,7 @@ impl From<bool> for StreamOutput<'_> {
 impl<'a> Not for StreamOutput<'a> {
     type Output = StreamOutput<'a>;
     fn not(mut self) -> Self::Output {
-        self.value = match self.value {
+        self.value = match self.value.to_ver() {
             StackContent::Verdict(verdict) => StackContent::Verdict(!verdict),
             _ => unreachable!()
         };
@@ -329,21 +325,19 @@ impl<'a> Not for StreamOutput<'a> {
     }
 }
 
-
-impl<'a> Mul for StreamOutput<'a> {
+impl<'a> Neg for StreamOutput<'a> {
     type Output = StreamOutput<'a>;
-
-    fn mul(mut self, rhs: Self) -> Self::Output {
-        let value = match (self.get_value(),rhs.get_value()){
-            (StackContent::Number(val1), StackContent::Number(val2)) => StackContent::Number(val1 * val2),
+ 
+    fn neg(mut self) -> Self::Output {
+        self.value = match self.value.to_num() {
+            StackContent::Number(num) => StackContent::Number(-num),
             _ => unreachable!()
         };
-        
-        self.value = value;
-        self.decided = self.decided.greatest_lower_bound(&rhs.decided);
         self
     }
 }
+
+
 
 impl<'a> Add for StreamOutput<'a> {
     type Output = StreamOutput<'a>;
@@ -395,4 +389,3 @@ impl<'a> Div for StreamOutput<'a> {
         self
     }
 }
-
