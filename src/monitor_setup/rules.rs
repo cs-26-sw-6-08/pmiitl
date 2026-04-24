@@ -1,9 +1,7 @@
 
 use std::error::Error;
 use crate::{
-    errors,
-    monitor_setup::operation_types::{LTL, Operation, AggregateType}, 
-    program::{expressions::Expr,function_types::FunctionType}, utils::vec_helper_funcs::ExtVec
+    errors, monitor::types::Verdict, monitor_setup::operation_types::{AggregateType, ExprLTL, Operation}, program::{expressions::Expr,function_types::FunctionType}, utils::vec_helper_funcs::ExtVec
 };
 use crate::program::operations::BinaryOperators::*;
 
@@ -22,7 +20,7 @@ impl Expr {
         Ok(match self {
             Expr::Number(c) => (streams.with(Operation::Number(*c)), key+1),
             Expr::String(str) => (streams.with(Operation::String(str.to_owned())),key+1),
-            Expr::CurrentTime => (streams.with(Operation::CurrentTime),key+1),
+            Expr::CurrentTime => (streams.with(Operation::SpawnTime),key+1),
             Expr::Member { access_type } => (streams.with(Operation::Member(access_type.clone())), key+1),
             Expr::Always { interval: None, not: false, expr } => {
                 let (new_streams, new_key) = expr.compile_expression_helper(Vec::new(), key+1)?;
@@ -36,8 +34,8 @@ impl Expr {
                     idx: key+1, 
                     not: *not, 
                     ltl_type: match self {
-                        Expr::Always { .. } => LTL::Always,
-                        _ => LTL::Eventually(false)
+                        Expr::Always { .. } => ExprLTL::Always,
+                        _ => ExprLTL::Eventually(Vec::new())
                     }
                 }).chain(new_streams), new_key)
             },

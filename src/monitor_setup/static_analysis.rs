@@ -1,7 +1,7 @@
-use crate::{monitor::streams::OutputStream, monitor_setup::operation_types::Operation};
+use crate::{monitor::streams::PropertyStream, monitor_setup::operation_types::Operation};
 
 
-impl OutputStream {
+impl PropertyStream {
     pub fn static_analysis(self) -> Self {
         self
         .find_time_funcs_bounds()
@@ -30,7 +30,7 @@ fn update_bounds(mut operations: Vec<Operation>, idx: usize, bounds: Option<(i12
         Operation::String(_) | 
         Operation::Number(_) | 
         Operation::Member(_) | 
-        Operation::CurrentTime => (Vec::new(), bounds),
+        Operation::SpawnTime => (Vec::new(), bounds),
         
         Operation::TimeFunction { idx, bound, .. } => {
             //Update the bounds for sumtime and avgtime

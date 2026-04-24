@@ -1,12 +1,12 @@
-use crate::{monitor::streams::OutputStream, monitor_setup::operation_types::{AggregateType, LTL, Operation}, utils::test_helper_func::operations_vec_with_sumtime};
+use crate::{monitor::streams::PropertyStream, monitor_setup::operation_types::{AggregateType, ExprLTL, Operation, PropLTL}, utils::test_helper_func::operations_vec_with_sumtime};
 
 //(LTL, Vec<Operation>, Option<(i128, i128)>)
 
 #[test]
 fn time_bound_test() {
     let operations = operations_vec_with_sumtime();
-    let stream = OutputStream::from((
-        LTL::Always,
+    let stream = PropertyStream::from((
+        PropLTL::Always,
         operations.clone(),
         Some((5, 10))
     )).static_analysis();
@@ -23,8 +23,8 @@ fn time_bound_test() {
         Operation::TimeFunction { idx: 7, function_type: AggregateType::Sum, history: Vec::with_capacity(505), bound: Some((505, 1010)) }
     );
 
-    let stream = OutputStream::from((
-        LTL::Always,
+    let stream = PropertyStream::from((
+        PropLTL::Always,
         operations.clone(),
         None
     )).static_analysis();
@@ -44,8 +44,8 @@ fn time_bound_test() {
     let mut operations_without_bound = operations.clone();
     operations_without_bound[1] = Operation::LTLAlwaysUnbounded { idx: 2 };
 
-    let stream = OutputStream::from((
-        LTL::Always,
+    let stream = PropertyStream::from((
+        PropLTL::Always,
         operations_without_bound,
         None
     )).static_analysis();

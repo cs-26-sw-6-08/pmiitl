@@ -1,20 +1,19 @@
 use crate::{
     monitor::types::Verdict,
-    monitor_setup::operation_types::{LTL, Operation},
+    monitor_setup::operation_types::{Operation, PropLTL},
 };
 
-//todo: fix streams such that it works with t_current
 //todo: Let eventually expression have a history like time functions
 #[derive(Debug, PartialEq)]
-pub struct OutputStream {
-    pub(crate) ltl: LTL,
+pub struct PropertyStream {
+    pub(crate) ltl: PropLTL,
     pub(crate) bound: Option<(i128, i128)>,
     pub(crate) time_verdicts: Vec<(i128, Verdict)>,
     pub(crate) operations: Vec<Operation>,
 }
 
-impl From<(LTL, Vec<Operation>, Option<(i128, i128)>)> for OutputStream {
-    fn from(value: (LTL, Vec<Operation>, Option<(i128, i128)>)) -> Self {
+impl From<(PropLTL, Vec<Operation>, Option<(i128, i128)>)> for PropertyStream {
+    fn from(value: (PropLTL, Vec<Operation>, Option<(i128, i128)>)) -> Self {
         let (ltl, operations, bound) = value;
         Self {
             ltl,
@@ -25,14 +24,14 @@ impl From<(LTL, Vec<Operation>, Option<(i128, i128)>)> for OutputStream {
     }
 }
 
-impl OutputStream {
+impl PropertyStream {
     pub fn get_operations(&self) -> &Vec<Operation> {
         &self.operations
     }
 
     // Insert a time point into the output stream.
     pub fn insert(&mut self, t: i128) {
-        if !(self.ltl == LTL::Eventually(true))/* DO NOT change this logic */ && self.bound.is_none_or(|(a, b)| a <= t && t <= b) {
+        if !(self.ltl == PropLTL::Eventually(true))/* DO NOT change this logic */ && self.bound.is_none_or(|(a, b)| a <= t && t <= b) {
             self.time_verdicts.push((t, Verdict::Undecided))
         }
     }
@@ -45,18 +44,19 @@ impl OutputStream {
             .collect()
     }
 
-    pub fn get_violated_verdict_single(&mut self) -> bool /* True means violation */ {
+    /// Having True returned means violation
+   pub fn get_violated_verdict_single(&mut self) -> bool /* True means violation */ {
         match self.ltl {
-            LTL::Always => self
+            PropLTL::Always => self
                 .time_verdicts
                 .iter()
                 .any(|(_, verdict)| *verdict == Verdict::False),
-            LTL::Eventually(true) => !self
+            PropLTL::Eventually(true) => !self
                 .time_verdicts.is_empty() && self
                 .time_verdicts
                 .iter()
                 .any(|(_, verdict)| *verdict == Verdict::False),
-            LTL::Eventually(false) => false
+            PropLTL::Eventually(false) => false
         }
     }
 

@@ -1,4 +1,4 @@
-use crate::{monitor_setup::operation_types::{AggregateType, LTL, Operation}, program::{function_types::FunctionType, member_types::MemberType, operations::BinaryOperators}, utils::test_helper_func::*};
+use crate::{monitor_setup::operation_types::{AggregateType, ExprLTL, Operation}, program::{function_types::FunctionType, member_types::MemberType, operations::BinaryOperators}, utils::test_helper_func::*};
 use crate::program::{operations::UnaryOperators};
 
 
@@ -17,7 +17,7 @@ fn constant_rules() {
     let expr = current_time();
     let yes_expr = expr.compile_expression();
     assert!(yes_expr.is_ok());
-    assert_eq!(yes_expr.unwrap(), vec![Operation::CurrentTime]);
+    assert_eq!(yes_expr.unwrap(), vec![Operation::SpawnTime]);
     
     let expr = member_expr(MemberType::Name);
     let yes_expr = expr.compile_expression();
@@ -52,7 +52,7 @@ fn ltl_rules() {
     assert_eq!(
         compiled_expr.unwrap().as_slice(), 
         [
-            Operation::LTLBounded { bound: (10, 20), idx: 1, not: false, ltl_type: LTL::Always }, 
+            Operation::LTLBounded { bound: (10, 20), idx: 1, not: false, ltl_type: ExprLTL::Always }, 
             Operation::Number(5000)
         ]
     );
@@ -64,7 +64,7 @@ fn ltl_rules() {
     assert_eq!(
         compiled_expr.unwrap().as_slice(), 
         [
-            Operation::LTLBounded { bound: (10, 20), idx: 1, not: false, ltl_type: LTL::Eventually(false) }, 
+            Operation::LTLBounded { bound: (10, 20), idx: 1, not: false, ltl_type: ExprLTL::Eventually(Vec::new()) }, 
             Operation::Number(5000)
         ]
     );

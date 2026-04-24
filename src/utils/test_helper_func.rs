@@ -1,4 +1,4 @@
-use crate::{monitor::streams::{IoTDevice}, monitor_setup::operation_types::{AggregateType, LTL, Operation}, program::{expressions::Expr, function_types::FunctionType, member_types::MemberType, operations::{BinaryOperators, UnaryOperators}, units::Unit}};
+use crate::{monitor::streams::IoTDevice, monitor_setup::operation_types::{AggregateType, ExprLTL, Operation}, program::{expressions::Expr, function_types::FunctionType, member_types::MemberType, operations::{BinaryOperators, UnaryOperators}, units::Unit}};
 
 pub fn binary_expr(lhs: Expr, rhs: Expr, operator: BinaryOperators) -> Expr {
     Expr::BinaryOperations {
@@ -83,11 +83,11 @@ pub fn eventually_interval_expr(interval: Expr, expr: Expr) -> Expr {
 pub fn operations_vec_with_sumtime() -> Vec<Operation> {
     [
         Operation::Binary { bin_op: BinaryOperators::Less, idx_lhs: 1, idx_rhs: 5 },
-        Operation::LTLBounded { bound: (25, 40), idx: 2, not: false, ltl_type: LTL::Always },
+        Operation::LTLBounded { bound: (25, 40), idx: 2, not: false, ltl_type: ExprLTL::Always },
         Operation::TimeFunction { idx: 3, function_type: AggregateType::Sum, history: Vec::new(), bound: None },
         Operation::AggregateFunction { idx: 4, function_type: AggregateType::Sum },
         Operation::Member(MemberType::Power),
-        Operation::LTLBounded { bound: (500, 1000), idx: 6, not: false, ltl_type: LTL::Always },
+        Operation::LTLBounded { bound: (500, 1000), idx: 6, not: false, ltl_type: ExprLTL::Always },
         Operation::TimeFunction { idx: 7, function_type: AggregateType::Sum, history: Vec::new(), bound: None },
         Operation::AggregateFunction { idx: 8, function_type: AggregateType::Sum },
         Operation::Number(1)

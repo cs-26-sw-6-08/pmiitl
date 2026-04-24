@@ -1,25 +1,26 @@
 use crate::{
     errors,
     monitor::{
-        streams::{IoTDevice, IoTStream, OutputStream},
-        types::{StackContent, StackValue, Verdict},
+        streams::{IoTDevice, IoTStream, PropertyStream},
+        types::{StackContent, StreamOutput, Verdict},
     },
-    monitor_setup::operation_types::{AggregateType, HistoryValue, LTL, Operation},
+    monitor_setup::operation_types::{AggregateType, ExprLTL, HistoryValue, Operation, PropLTL},
     program::{member_types::MemberType, operations::BinaryOperators},
     utils::vec_helper_funcs::ExtVec,
 };
 use std::{error::Error};
 
-impl OutputStream {
+impl PropertyStream {
     // Calculate the verdict for the output stream.
     pub fn update(&mut self, t_current: i128, devices: &IoTStream) -> Result<(), Box<dyn Error>> {
         for (t_spawn, ver) in self.time_verdicts.iter_mut() {
             let res = eval_operations(&mut self.operations, devices, &*t_spawn, &t_current);
 
             match &mut self.ltl {
-                LTL::Always => {
+                PropLTL::Always => {
                     let res = res?;
                     let res_val = res.get_value().get_verdict().unwrap(); //TODO: unwrap
+                    println!("{t_spawn}, {res_val}");
                     //Set verdict
                     if !res_val {
                     // if !res_val && res.is_decided() {
@@ -28,14 +29,14 @@ impl OutputStream {
                         *ver = Verdict::True;
                     }
                 }
-                LTL::Eventually(_) => {
+                PropLTL::Eventually(last) => {
                     let res = res?;
                     let res_value = res.get_value().get_verdict().unwrap(); //TODO: unwrap
                     if res_value && res.is_decided() {
-                        self.ltl = LTL::Eventually(true);
+                        *last = true;
                         *ver = Verdict::True;
                     } else if self.bound.is_some_and(|(_, b)| b <= t_current) {
-                        self.ltl = LTL::Eventually(true);
+                        *last = true;
                         *ver = Verdict::False;
                     } else if !res_value && res.is_decided() {
                         *ver = Verdict::False;
@@ -70,11 +71,11 @@ pub(crate) fn eval_operations<'a>(
     devices: &'a IoTStream,
     t_spawn: &i128,
     t_current: &i128,
-) -> Result<StackValue<'a>, Box<dyn Error>> {
+) -> Result<StreamOutput<'a>, Box<dyn Error>> {
     use StepType::*;
 
     let mut worklist_stack: Vec<(usize, StepType)> = Vec::with_capacity(50);
-    let mut value_stack: Vec<StackValue> = Vec::with_capacity(50);
+    let mut value_stack: Vec<StreamOutput> = Vec::with_capacity(50);
     let mut device_stack: Vec<DeviceStack> = Vec::with_capacity(50);
     let mut device_pointer: Option<&IoTDevice> = None;
 
@@ -87,23 +88,18 @@ pub(crate) fn eval_operations<'a>(
             // Base cases
             (Operation::Number(val), _) => value_stack.push((*val).into()),
             (Operation::String(str), _) => value_stack.push((&*str).into()),
-            (Operation::CurrentTime, _) => value_stack.push((*t_spawn * 1_000).into()),
+            (Operation::SpawnTime, _) => value_stack.push((*t_spawn * 1_000).into()),
             (Operation::Member(mem_type), _) => {
                 value_stack.push(match mem_type {
                     MemberType::Power =>  device_pointer.ok_or(errors::Error::DevicePointer)?.power.into(),
-                    MemberType::Name =>  StackValue::from(device_pointer.map(|d| &d.name).ok_or(errors::Error::DevicePointer)?),
+                    MemberType::Name =>  StreamOutput::from(device_pointer.map(|d| &d.name).ok_or(errors::Error::DevicePointer)?),
                 });
             }
             // BinOp / UnOp
             (Operation::Binary { idx_lhs, .. }, Deepen) => {
                 worklist_stack.extend([(cur_idx, ReducePartial), (*idx_lhs, Deepen)]);
             }
-            (
-                Operation::Binary {
-                    bin_op, idx_rhs, ..
-                },
-                ReducePartial,
-            ) => {
+            ( Operation::Binary { bin_op, idx_rhs, .. }, ReducePartial) => {
                 //If the binary operation is an 'or' and returned true, then the rest shouldn't be evaluated
                 // Read as: 'or' -> last_val.is_false
                 if !matches!(bin_op, BinaryOperators::Or)
@@ -128,7 +124,7 @@ pub(crate) fn eval_operations<'a>(
             }
 
             // Aggregate Functions
-            (Operation::AggregateFunction { idx, .. }, Deepen) => {
+            (Operation::AggregateFunction { .. }, Deepen) => {
                 worklist_stack.extend([(cur_idx, ReducePartial)]);
 
                 //Put devices on device stack and pop the first
@@ -229,7 +225,7 @@ pub(crate) fn eval_operations<'a>(
             ) => {
                 let val = value_stack.pop_or_err()?.get_value().get_num()?;
                 let val = time_function_reduce_step(val, *t_spawn, *bound, history);
-                let val: StackValue =
+                let val: StreamOutput =
                     function_type_computation(function_type, val, *t_spawn, *t_current).into();
                 value_stack.push(val.to_undecided());
             }
@@ -249,12 +245,13 @@ pub(crate) fn eval_operations<'a>(
                     }
                     //Bound has not been entered yet
                     (false, true) => value_stack.push(
-                        StackValue::from(true).to_undecided()
+                        StreamOutput::from(true).to_undecided()
                     ),
                     //Bound has been passed
+                    //todo change logic here
                     (true, false) => value_stack.push(match ltl_type {
-                        LTL::Always | LTL::Eventually(true) => true.into(),
-                        LTL::Eventually(false) => false.into(),
+                        ExprLTL::Eventually(_) => false.into(),
+                        _ => true.into(),
                     }),
                     _ => unreachable!(),
                 }

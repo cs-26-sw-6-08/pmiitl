@@ -1,28 +1,28 @@
-use crate::{monitor::{operation_eval::eval_operations, streams::IoTStream, types::StackValue}, monitor_setup::operation_types::{AggregateType, LTL, Operation}, program::{member_types::MemberType, operations::{BinaryOperators, UnaryOperators}}, utils::test_helper_func::mock_devices};
+use crate::{monitor::{operation_eval::eval_operations, streams::IoTStream, types::{StreamOutput, Verdict}}, monitor_setup::operation_types::{AggregateType, ExprLTL, Operation}, program::{member_types::MemberType, operations::{BinaryOperators, UnaryOperators}}, utils::test_helper_func::mock_devices};
 
 #[test]
 fn test_constants() {
     let mut operations = [
         Operation::Number(4000),
         Operation::String("christian".into()),
-        Operation::CurrentTime,
+        Operation::SpawnTime,
     ];
     let (spawn_t, cur_t) = (0, 1);
     let devices = mock_devices(1).into();
     assert_eq!(
-        StackValue::from(4000),    
+        StreamOutput::from(4000),    
         eval_operations(&mut operations[0..1], &devices, &spawn_t, &cur_t).unwrap()
     );
     assert_eq!(
-        StackValue::from(&"christian".into()),    
+        StreamOutput::from(&"christian".into()),    
         eval_operations(&mut operations[1..2], &devices, &spawn_t, &cur_t).unwrap()
     );
     assert_eq!(
-        StackValue::from(0),    
+        StreamOutput::from(0),    
         eval_operations(&mut operations[2..3], &devices, &spawn_t, &cur_t).unwrap()
     );
     assert_eq!(
-        StackValue::from(1000),    
+        StreamOutput::from(1000),    
         eval_operations(&mut operations[2..3], &devices, &1, &cur_t).unwrap()
     )
 }
@@ -52,23 +52,23 @@ fn aggregate_functions() {
      }).collect::<Vec<_>>().into(); 
 
     assert_eq!(
-        StackValue::from(30),    
+        StreamOutput::from(30),    
         eval_operations(&mut sum, &devices, &spawn_t, &cur_t).unwrap()
     );
     assert_eq!(
-        StackValue::from(20),    
+        StreamOutput::from(20),    
         eval_operations(&mut sum, &mock_devices(2).into(), &spawn_t, &cur_t).unwrap()
     );
     assert_eq!(
-        StackValue::from(10),    
+        StreamOutput::from(10),    
         eval_operations(&mut avg, &devices, &spawn_t, &cur_t).unwrap()
     );
     assert_eq!(
-        StackValue::from(false),    
+        StreamOutput::from(false),    
         eval_operations(&mut foreach, &devices, &spawn_t, &cur_t).unwrap()
     );
     assert_eq!(
-        StackValue::from(true),    
+        StreamOutput::from(true),    
         eval_operations(&mut foreach, &devices_power_all_10, &spawn_t, &cur_t).unwrap()
     );
 }
@@ -78,16 +78,16 @@ fn ltl_expressions_always_unbounded() {
     let mut always_unb = [
         Operation::LTLAlwaysUnbounded { idx: 1 }, 
         Operation::Binary { bin_op: BinaryOperators::NotEqual, idx_lhs: 2, idx_rhs: 3 },
-        Operation::CurrentTime, 
+        Operation::SpawnTime, 
         Operation::Number(10000)
     ];
     let devices: IoTStream = mock_devices(3).into();
     //Should be false for all times, when t != 10
     assert!(
-        (0..10000).filter(|n| *n != 10).all(|t_spawn| eval_operations(&mut always_unb, &devices, &t_spawn, &t_spawn).unwrap() == StackValue::from(true) )
+        (0..10000).filter(|n| *n != 10).all(|t_spawn| eval_operations(&mut always_unb, &devices, &t_spawn, &t_spawn).unwrap() == StreamOutput::from(true) )
     );
     assert_eq!(
-        StackValue::from(false),
+        StreamOutput::from(false),
         eval_operations(&mut always_unb, &devices, &10, &10).unwrap()
     );
 }
@@ -97,45 +97,40 @@ fn ltl_expressions_bounded_ltl() {
     //1,2,3,4
     let ops = [
          Operation::Binary { bin_op: BinaryOperators::NotEqual, idx_lhs: 2, idx_rhs: 3 },
-        Operation::CurrentTime, 
+        Operation::SpawnTime, 
         Operation::Number(2000)
     ];
     let mut always = [
-        Operation::LTLBounded { bound: (1,4), idx: 1, not: false, ltl_type: LTL::Always }, 
+        Operation::LTLBounded { bound: (1,4), idx: 1, not: false, ltl_type: ExprLTL::Always }, 
     ].into_iter().chain(ops.clone()).collect::<Vec<_>>();
     
     let mut eventually = [
-        Operation::LTLBounded { bound: (1,4), idx: 1, not: false, ltl_type: LTL::Eventually(false) }, 
+        Operation::LTLBounded { bound: (1,4), idx: 1, not: false, ltl_type: ExprLTL::Eventually(Vec::new()) }, 
     ].into_iter().chain(ops.clone()).collect::<Vec<_>>();
     let devices: IoTStream = mock_devices(3).into();
 
     assert_eq!(
-        StackValue::from(true).to_undecided(),
+        StreamOutput::from(true).to_undecided(),
         eval_operations(&mut always, &devices, &0, &1).unwrap()
     );
     assert_eq!(
-        StackValue::from(true).to_undecided(),
+        StreamOutput::from(true).to_undecided(),
         eval_operations(&mut always, &devices, &2, &2).unwrap()
     );
     assert_eq!(
-        StackValue::from(false).to_undecided(),
+        StreamOutput::from(false).to_undecided(),
         eval_operations(&mut always, &devices, &2, &3).unwrap()
     );
     assert_eq!(
-        StackValue::from(true),
+        StreamOutput::from(true),
         eval_operations(&mut always, &devices, &3, &8).unwrap()
     );
     assert_eq!(
-        StackValue::from(false).to_undecided(),
+        StreamOutput::from(true).to_undecided(),
         eval_operations(&mut eventually, &devices, &2, &2).unwrap()
     );
     assert_eq!(
-        StackValue::from(false).to_undecided(),
-        eval_operations(&mut eventually, &devices, &2, &2).unwrap()
-    );
-    //todo: Make it such that this doesn't give false (Aka fix current time rule)
-    assert_eq!(
-        StackValue::from(false),
+        StreamOutput::from(false),
         eval_operations(&mut eventually, &devices, &2, &7).unwrap()
     );    
 }
@@ -148,16 +143,16 @@ fn time_functions_unbounded() {
         Operation::AggregateFunction { idx: 2, function_type: AggregateType::Sum }, 
         Operation::Number(1_000)
     ];
-    let eval_res = (0..=2).try_fold(StackValue::from(0), |_, t_c| {
+    let eval_res = (0..=2).try_fold(StreamOutput::from(0), |_, t_c| {
          eval_operations(&mut sumtime_unbounded, &devices, &0, &t_c)
     });
     assert_eq!(
-        StackValue::from(15_000).to_undecided(),
+        StreamOutput::from(15_000).to_undecided(),
         eval_res.unwrap()
     );
     (3..100).for_each(|val| {
         assert_eq!(
-            StackValue::from(val*5000 + 5000).to_undecided(),
+            StreamOutput::from(val*5000 + 5000).to_undecided(),
             eval_operations(&mut sumtime_unbounded, &devices, &0, &val).unwrap()
         )
     });
@@ -167,7 +162,7 @@ fn time_functions_unbounded() {
         if let Operation::TimeFunction { history, .. } = &sumtime_unbounded[0] { history.len() } else { 0 }
     );
     assert_eq!(
-        StackValue::from(5_000).to_undecided(),
+        StreamOutput::from(5_000).to_undecided(),
         eval_operations(&mut sumtime_unbounded, &devices, &4, &4).unwrap()
     );
     //Test length of history array
@@ -180,16 +175,16 @@ fn time_functions_unbounded() {
         Operation::AggregateFunction { idx: 2, function_type: AggregateType::Sum }, 
         Operation::Number(1_000)
     ];
-    let eval_res = (0..=2).try_fold(StackValue::from(0), |_, t_c| {
+    let eval_res = (0..=2).try_fold(StreamOutput::from(0), |_, t_c| {
          eval_operations(&mut avg_time, &devices, &0, &t_c)
     });
     assert_eq!(
-        StackValue::from(15_000/3).to_undecided(),
+        StreamOutput::from(15_000/3).to_undecided(),
         eval_res.unwrap()
     );
     (3..100).for_each(|val| {
         assert_eq!(
-            StackValue::from((val*5000 + 5000)/(val+1)).to_undecided(),
+            StreamOutput::from((val*5000 + 5000)/(val+1)).to_undecided(),
             eval_operations(&mut avg_time, &devices, &0, &val).unwrap()
         )
     });
@@ -205,13 +200,13 @@ fn time_functions_bounded() {
         Operation::Number(1_000)
     ];
     //check whether value become decided when out of bounds
-    let eval_res = (0..=6).try_fold(StackValue::from(0), |_, t_c| {
+    let eval_res = (0..=6).try_fold(StreamOutput::from(0), |_, t_c| {
          eval_operations(&mut sumtime_bounded, &devices, &0, &t_c)
     });
-    assert_eq!( StackValue::from(30_000), eval_res.unwrap() );
+    assert_eq!( StreamOutput::from(30_000), eval_res.unwrap() );
 
     //Check whether history array stops growing
-    let _ = (0..=100).try_fold(StackValue::from(0), |_, t_c|
+    let _ = (0..=100).try_fold(StreamOutput::from(0), |_, t_c|
         eval_operations(&mut sumtime_bounded, &devices, &t_c, &t_c)
     );
     assert_eq!(
@@ -228,18 +223,18 @@ fn binary_operations_test() {
         [ Equal, Less, Greater, LessEqual, GreaterEqual, NotEqual, Plus, Minus, Times, Divide, Mod,Or ] 
     };
     let expected_results = [
-        StackValue::from(false), // ==
-        StackValue::from(false), //<
-        StackValue::from(true), //>
-        StackValue::from(false), //<=
-        StackValue::from(true), //>=
-        StackValue::from(true), //_ !=
-        StackValue::from(12_000), // +
-        StackValue::from(8_000), // - 
-        StackValue::from(20_000), //_ * 
-        StackValue::from(5_000), // / 
-        StackValue::from(0), // %,
-        StackValue::from(true), // ||
+        StreamOutput::from(false), // ==
+        StreamOutput::from(false), //<
+        StreamOutput::from(true), //>
+        StreamOutput::from(false), //<=
+        StreamOutput::from(true), //>=
+        StreamOutput::from(true), //_ !=
+        StreamOutput::from(12_000), // +
+        StreamOutput::from(8_000), // - 
+        StreamOutput::from(20_000), //_ * 
+        StreamOutput::from(5_000), // / 
+        StreamOutput::from(0), // %,
+        StreamOutput::from(true), // ||
     ];  
     for (op, expected_val) in bin_ops.into_iter().zip(expected_results) {
         let mut operations =  [ 
@@ -267,11 +262,11 @@ fn unary_operations_test() {
         Operation::Number(1_000), 
     ];
     assert_eq!(
-        StackValue::from(-10_000),
+        StreamOutput::from(-10_000),
         eval_operations(&mut negate_ops, &devices, &0, &0).unwrap()
     );
      assert_eq!(
-        StackValue::from(false),
+        StreamOutput::from(false),
         eval_operations(&mut not_ops, &devices, &0, &0).unwrap()
     );
 }

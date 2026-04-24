@@ -1,6 +1,6 @@
 use rv_iot::{
-    monitor::streams::OutputStream,
-    monitor_setup::operation_types::{AggregateType, LTL, Operation},
+    monitor::{streams::PropertyStream, types::Verdict},
+    monitor_setup::operation_types::{AggregateType, Operation, PropLTL},
     program::{
         Program,
         expressions::SpannedExpr,
@@ -313,8 +313,8 @@ fn test8() {
     assert!(program.compile_properties().is_ok());
 
     let expected_env = [
-        OutputStream::from((
-            LTL::Eventually(false),
+        PropertyStream::from((
+            PropLTL::Eventually(false),
             vec![
                 Operation::Foreach { idx: 1 },
                 Operation::Binary {
@@ -333,8 +333,8 @@ fn test8() {
             ],
             Some((5, 10)),
         )),
-        OutputStream::from((
-            LTL::Always,
+        PropertyStream::from((
+            PropLTL::Always,
             vec![
                 Operation::Binary {
                     bin_op: BinaryOperators::Less,

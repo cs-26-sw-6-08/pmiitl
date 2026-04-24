@@ -64,13 +64,13 @@ pub struct Device {
 }
 
 #[derive(Debug, PartialEq, Clone)]
-pub struct StackValue<'a> {
+pub struct StreamOutput<'a> {
     pub(crate) value: StackContent<'a>, 
     pub(crate) decided: Decidedability 
 }
 
 
-impl<'a> StackValue<'a> {
+impl<'a> StreamOutput<'a> {
     pub fn get_value(&self) -> &StackContent<'a> {
         &self.value
     }
@@ -194,7 +194,7 @@ impl<'a> StackValue<'a> {
         self
     }
 
-    pub fn mul_op(self, other: StackValue) -> Self {
+    pub fn mul_op(self, other: StreamOutput) -> Self {
         let StackContent::Number(m) = self.get_value() else {panic!("Expected a number")};
         let StackContent::Number(n) = other.get_value() else {panic!("Expected a number")};
 
@@ -203,10 +203,10 @@ impl<'a> StackValue<'a> {
 
         let int = n*m_int;
         let frac = (n*m_frac) / 1000;
-        StackValue::from(int + frac)
+        StreamOutput::from(int + frac)
     }
 
-    pub fn div_op(self, other: StackValue) -> Self {    
+    pub fn div_op(self, other: StreamOutput) -> Self {    
         let StackContent::Number(m) = self.get_value() else {panic!("Expected a number")};
         let StackContent::Number(n) = other.get_value() else {panic!("Expected a number")};
 
@@ -215,7 +215,7 @@ impl<'a> StackValue<'a> {
 
         let int = n.checked_div(m_int).unwrap_or(0);
         let frac = n.checked_div(m_frac).unwrap_or(0);
-        StackValue::from(int + frac)
+        StreamOutput::from(int + frac)
     }
 
     pub fn bin_op(self, rhs: Self, bin_op: &BinaryOperators) -> Self {
@@ -279,26 +279,26 @@ impl Decidedability {
 }
 
 
-impl From<i128> for StackValue<'_> {
+impl From<i128> for StreamOutput<'_> {
     fn from(value: i128) -> Self {
         Self { value: StackContent::Number(value), decided: Decidedability::Decided }
     }
 }
 
-impl<'a> From<&'a String> for StackValue<'a> {
+impl<'a> From<&'a String> for StreamOutput<'a> {
     fn from(value: &'a String) -> Self {
         Self { value: StackContent::String(value), decided: Decidedability::Decided }
     }
 }
 
-impl From<bool> for StackValue<'_> {
+impl From<bool> for StreamOutput<'_> {
     fn from(value: bool) -> Self {
         Self { value: StackContent::Verdict(value), decided: Decidedability::Decided }
     }
 }
 
-impl<'a> Not for StackValue<'a> {
-    type Output = StackValue<'a>;
+impl<'a> Not for StreamOutput<'a> {
+    type Output = StreamOutput<'a>;
     fn not(mut self) -> Self::Output {
         self.value = match self.value {
             StackContent::Verdict(verdict) => StackContent::Verdict(!verdict),
@@ -309,8 +309,8 @@ impl<'a> Not for StackValue<'a> {
 }
 
 
-impl<'a> Mul for StackValue<'a> {
-    type Output = StackValue<'a>;
+impl<'a> Mul for StreamOutput<'a> {
+    type Output = StreamOutput<'a>;
 
     fn mul(mut self, rhs: Self) -> Self::Output {
         let value = match (self.get_value(),rhs.get_value()){
@@ -324,8 +324,8 @@ impl<'a> Mul for StackValue<'a> {
     }
 }
 
-impl<'a> Add for StackValue<'a> {
-    type Output = StackValue<'a>;
+impl<'a> Add for StreamOutput<'a> {
+    type Output = StreamOutput<'a>;
 
     fn add(mut self, rhs: Self) -> Self::Output {
         let value = match (self.get_value(),rhs.get_value()){
@@ -342,8 +342,8 @@ impl<'a> Add for StackValue<'a> {
     }
 }
 
-impl<'a> Sub for StackValue<'a> {
-    type Output = StackValue<'a>;
+impl<'a> Sub for StreamOutput<'a> {
+    type Output = StreamOutput<'a>;
 
     fn sub(mut self, rhs: Self) -> Self::Output {
         let value = match (self.get_value(),rhs.get_value()){
@@ -360,8 +360,8 @@ impl<'a> Sub for StackValue<'a> {
     }
 }
 
-impl<'a> Div for StackValue<'a> {
-    type Output = StackValue<'a>;
+impl<'a> Div for StreamOutput<'a> {
+    type Output = StreamOutput<'a>;
 
     fn div(mut self, rhs: Self) -> Self::Output {
         let value = match (self.get_value(),rhs.get_value()){
