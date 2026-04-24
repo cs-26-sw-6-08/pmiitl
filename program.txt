@@ -1,8 +1,7 @@
 
 //always t%24s= 0s -> always[0s,24s]sumtime(1) <= 24s;
 
-eventually[0s,2s] 0s;
 //always eventually[2s,5s] t!=2s;
 
-//always eventually[1s,1s] 1;
+always sumtime((name=fridge) * power) < 250Ws;
 
