@@ -1,7 +1,6 @@
 use std::error::Error;
 
 use hime_redist::{ast::AstNode, errors::ParseErrorDataTrait};
-use reqwest::Client;
 
 use crate::{errors, grammar::cfg, monitor::streams::PropertyStream, program::expressions::SpannedExpr};
 pub mod expressions;
@@ -19,7 +18,6 @@ pub struct Program {
 }
 
 impl Program {
-
     pub fn new(programstr: &str) -> Result<Self, Box<dyn Error>>{
         let parsed = cfg::parse_string(programstr.to_lowercase());
         let mut exprs : Vec<SpannedExpr> = Vec::new();

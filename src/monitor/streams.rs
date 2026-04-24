@@ -3,7 +3,6 @@ use crate::{
     monitor_setup::operation_types::{Operation, PropLTL},
 };
 
-//todo: Let eventually expression have a history like time functions
 #[derive(Debug, PartialEq)]
 pub struct PropertyStream {
     pub(crate) ltl: PropLTL,

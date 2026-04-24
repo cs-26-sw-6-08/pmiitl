@@ -93,27 +93,22 @@ impl<'a> StreamOutput<'a> {
     }
 
 
-    //todo: Code for this has been changed, make test to ensure this actually works
     pub fn modulo(mut self, rhs: Self) -> Self {
-        self.value = match (self.get_value(), rhs.get_value()){
+        self.value = match (self.get_value().to_num(), rhs.get_value().to_num()){
             (StackContent::Number(val1), StackContent::Number(val2)) => 
                 // Rust does not have a correct mathmatical mod function, therefore this calculation is used instead:
                 // https://stackoverflow.com/a/31210691
-                StackContent::Number(((val1.checked_rem(*val2).unwrap_or(0)) + val2).checked_rem(*val2).unwrap_or(0)),
+                StackContent::Number(((val1.checked_rem(val2).unwrap_or(0)) + val2).checked_rem(val2).unwrap_or(0)),
             _ => unreachable!()
         };
 
-        self.decided = self.decided.greatest_lower_bound(&rhs.decided); //todo: also make test for all these
+        self.decided = self.decided.greatest_lower_bound(&rhs.decided);
         self
     }
 
     pub fn equals(mut self, rhs: Self) -> Self {
-        let value = match (self.get_value(),rhs.get_value()){
+        let value = match (self.get_value().to_num(),rhs.get_value().to_num()){
             (StackContent::Number(val1), StackContent::Number(val2)) => StackContent::Verdict(val1 == val2),
-            (StackContent::Verdict(val1), StackContent::Verdict(val2)) => StackContent::Verdict(val1 == val2),
-            (StackContent::String(val1), StackContent::String(val2)) => StackContent::Verdict(val1 == val2),
-            (StackContent::Verdict(v1), StackContent::Number(v2)) | 
-            (StackContent::Number(v2), StackContent::Verdict(v1)) => StackContent::Verdict(*v1 == (*v2 != 0)),
             _ => unreachable!()
         };
         
@@ -123,12 +118,8 @@ impl<'a> StreamOutput<'a> {
     }
 
     pub fn not_equals(mut self, rhs: Self) -> Self {
-        let value = match (self.get_value(),rhs.get_value()){
+        let value = match (self.get_value().to_num(),rhs.get_value().to_num()){
             (StackContent::Number(val1), StackContent::Number(val2)) => StackContent::Verdict(val1 != val2),
-            (StackContent::Verdict(val1), StackContent::Verdict(val2)) => StackContent::Verdict(val1 != val2),
-            (StackContent::String(val1), StackContent::String(val2)) => StackContent::Verdict(val1 != val2),
-            (StackContent::Verdict(v1), StackContent::Number(v2)) | 
-            (StackContent::Number(v2), StackContent::Verdict(v1)) => StackContent::Verdict(*v1 != (*v2 != 0)),
             _ => unreachable!(),
         };
         
@@ -138,13 +129,9 @@ impl<'a> StreamOutput<'a> {
     }
 
     pub fn and(mut self, rhs: Self) -> Self {
-        self.value = match (self.get_value(), rhs.get_value()) {
+        self.value = match (self.get_value().to_ver(), rhs.get_value().to_ver()) {
             (StackContent::Verdict(v1), StackContent::Verdict(v2)) => 
-                StackContent::Verdict(*v1 && *v2),
-            (StackContent::Number(v1), StackContent::Verdict(v2)) |
-            (StackContent::Verdict(v2), StackContent::Number(v1))
-             => StackContent::Verdict(*v1 != 0 && *v2),
-             (StackContent::Number(v2), StackContent::Number(v1)) => StackContent::Verdict(*v1 != 0 && *v2 != 0),
+                StackContent::Verdict(v1 && v2),
              _ => unreachable!()
                      };
         self.decided = self.decided.greatest_lower_bound(&rhs.decided);
@@ -152,13 +139,9 @@ impl<'a> StreamOutput<'a> {
     }
 
     pub fn or(mut self, rhs: Self) -> Self {
-        self.value = match (self.get_value(), rhs.get_value()) {
+        self.value = match (self.get_value().to_ver(), rhs.get_value().to_ver()) {
             (StackContent::Verdict(v1), StackContent::Verdict(v2)) => 
-                StackContent::Verdict(*v1 || *v2),
-            (StackContent::Number(v1), StackContent::Verdict(v2)) | 
-            (StackContent::Verdict(v2), StackContent::Number(v1))
-            => StackContent::Verdict((*v1 != 0) || *v2),
-            (StackContent::Number(v2), StackContent::Number(v1)) => StackContent::Verdict(*v1 != 0 || *v2 != 0),
+                StackContent::Verdict(v1 || v2),
             _ => unreachable!()
         };
         self.decided = self.decided.greatest_lower_bound(&rhs.decided);
@@ -166,9 +149,8 @@ impl<'a> StreamOutput<'a> {
     }
 
     pub fn less_than(mut self, rhs: Self) -> Self {
-        self.value = match (self.get_value(), rhs.get_value()) {
-            (StackContent::Number(v1), StackContent::Number(v2)) => 
-                StackContent::Verdict(v1 < v2),
+        self.value = match (self.get_value().to_num(), rhs.get_value().to_num()) {
+            (StackContent::Number(v1), StackContent::Number(v2)) => StackContent::Verdict(v1 < v2),
             _ => unreachable!()
         };
         self.decided = self.decided.greatest_lower_bound(&rhs.decided);
@@ -176,7 +158,7 @@ impl<'a> StreamOutput<'a> {
     }
 
     pub fn less_equal(mut self, rhs: Self) -> Self {
-         self.value = match (self.get_value(), rhs.get_value()) {
+         self.value = match (self.get_value().to_num(), rhs.get_value().to_num()) {
             (StackContent::Number(v1), StackContent::Number(v2)) => 
                 StackContent::Verdict(v1 <= v2),
                 _ => unreachable!()
@@ -193,21 +175,19 @@ impl<'a> StreamOutput<'a> {
             (StackContent::Verdict(_), UnaryOperators::Negative) |
             (StackContent::String(_), UnaryOperators::Not) |
             (StackContent::String(_), UnaryOperators::Negative) => unreachable!(),
-                    };
+        };
         self
     }
 
     pub fn mul_op(mut self, other: StreamOutput) -> Self {
-        let m = match self.get_value() {
+        let m = match self.get_value().to_num() {
             StackContent::Number(m) => m,
-            StackContent::Verdict(m) => &(*m as i128 * 1000),
-            _ => panic!("Expected a number or a boolean")
+            _ => unreachable!()
         };
 
-        let n = match other.get_value() {
-            StackContent::Number(n) => n,
-            StackContent::Verdict(n) => &(*n as i128 * 1000),
-            _ => panic!("Expected a number or a boolean")
+        let n = match other.get_value().to_num() {
+            StackContent::Number(m) => m,
+            _ => unreachable!()
         };
 
         let m_int = m / 1000;
@@ -222,16 +202,14 @@ impl<'a> StreamOutput<'a> {
     }
 
     pub fn div_op(mut self, other: StreamOutput) -> Self {    
-        let m = match self.get_value() {
+        let m = match self.get_value().to_num() {
             StackContent::Number(m) => m,
-            StackContent::Verdict(m) => &(*m as i128 * 1000),
-            _ => panic!("Expected a number or a boolean")
+            _ => unreachable!()
         };
 
-        let n = match other.get_value() {
-            StackContent::Number(n) => n,
-            StackContent::Verdict(n) => &(*n as i128 * 1000),
-            _ => panic!("Expected a number or a boolean")
+        let n = match other.get_value().to_num() {
+            StackContent::Number(m) => m,
+            _ => unreachable!()
         };
 
         let m_int = m / 1000;
@@ -279,6 +257,22 @@ impl StackContent<'_> {
             StackContent::Verdict(verdict) => Ok(*verdict),
             StackContent::Number(v) => Ok(*v != 0),
             _ => Err(errors::Error::ValueStackVal.into())
+        }
+    }
+
+    pub fn to_ver(&self) -> Self {
+        match self {
+            StackContent::Verdict(_) => self.clone(),
+            StackContent::Number(v) => Self::Verdict(*v != 0),
+            StackContent::String(_) => panic!("Got a String, Expected Number or Boolean"),
+        }
+    }
+
+    pub fn to_num(&self) -> Self {
+        match self {
+            StackContent::Verdict(v1) => Self::Number(if *v1 { 1_000 } else { 0 }),
+            StackContent::Number(_) => self.clone(),
+            StackContent::String(_) => panic!("Got a String, Expected Number or Boolean"),
         }
     }
 

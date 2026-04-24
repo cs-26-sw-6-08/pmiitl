@@ -123,7 +123,6 @@ fn always_false_bound() {
     let result = run_x_monitor_steps(streams, &device_stream, 0, 10);
     
     for (idx, value) in result {
-        println!("idx: {idx}, {value:#?}");
         if idx <= 5 {
             assert!(value[0].1);
         } else {
@@ -541,7 +540,6 @@ fn time_behaviour_test() {
     let device_stream = single_device_stream();
     let streams = &mut program.environment.unwrap();
     let result = run_x_monitor_steps(streams, &device_stream, 0, 100);
-    println!("{:#?}",result);
     for (idx, value) in result {
         if idx == 24 || idx == 48 || idx == 72 || idx == 96{
             assert!(value[0].1);

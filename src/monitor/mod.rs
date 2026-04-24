@@ -27,8 +27,6 @@ impl Program {
 
         let mut t = 0;
         
-        println!("{:#?}", streams);
-
         loop {
             if !speed{
                 interval.tick().await;
@@ -43,7 +41,6 @@ impl Program {
             }
 
             let devices: IoTStream = ( instrumentation.fetch_device_states().await? ).into();
-            println!("{:?}", devices);
 
             async {
                 for el in Self::monitor_logic(streams, &t, &devices) {
@@ -75,7 +72,7 @@ impl Program {
                     
                     // SDI update
                     output_stream.insert(t); 
-                    println!("{output_stream:#?}");
+
                     // Calculate the new state of the streams
                     output_stream.update(t, device_stream)?; 
 

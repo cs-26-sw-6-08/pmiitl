@@ -225,9 +225,66 @@ fn time_functions_bounded() {
     );
 }
 
+
+/// This testcase is expected to return undecided because the eventually element returns false and is therefore undecided 
 #[test]
 fn binary_operations_test() {
     let devices = mock_devices(3).into();
+    let bin_ops = { 
+        use BinaryOperators::*;
+        [ Equal, Less, Greater, LessEqual, GreaterEqual, NotEqual, Plus, Minus, Times, Mod,Or ] 
+    };
+    let expected_results = [
+        StreamOutput::from(false).to_undecided(), // ==
+        StreamOutput::from(false).to_undecided(), //<
+        StreamOutput::from(true).to_undecided(), //>
+        StreamOutput::from(false).to_undecided(), //<=
+        StreamOutput::from(true).to_undecided(), //>=
+        StreamOutput::from(true).to_undecided(), //_ !=
+        StreamOutput::from(10_000).to_undecided(), // +
+        StreamOutput::from(10_000).to_undecided(), // - 
+        StreamOutput::from(0).to_undecided(), //_ * 
+        StreamOutput::from(0).to_undecided(), // %,
+        StreamOutput::from(true).to_undecided(), // ||
+    ];  
+    for (op, expected_val) in bin_ops.into_iter().zip(expected_results) {
+        let mut operations =  [ 
+            Operation::Binary { bin_op: op.clone(), idx_lhs: 1, idx_rhs: 2 },
+            Operation::Number(10_000), 
+            Operation::LTLBounded { bound: (0, 1000), idx: 3, not: false, ltl_type: ExprLTL::Eventually(Vec::new()) },
+            Operation::Number(0)
+        ];
+        assert_eq!(
+            expected_val,
+            eval_operations(&mut operations, &devices, &0, &0).unwrap()
+        );
+    }
+}
+
+#[test]
+fn test_edge_case_modulo() {
+    let devices = mock_devices(1).into();
+    let mut modulo = [
+        Operation::Binary { bin_op: BinaryOperators::Mod, idx_lhs: 1, idx_rhs: 2 },
+        Operation::Number(10_000),
+        Operation::Number(6_000)
+    ];
+    assert_eq!(
+        StreamOutput::from(4_000),
+        eval_operations(&mut modulo, &devices, &0, &0).unwrap()
+    );
+    //change the order of  10 and 6;
+    modulo[1] = Operation::Number(6_000);
+    modulo[2] = Operation::Number(10_000);
+
+     assert_eq!(
+        StreamOutput::from(6_000),
+        eval_operations(&mut modulo, &devices, &0, &0).unwrap()
+    );
+}
+
+#[test]
+fn check_undecided_values() {
     let bin_ops = { 
         use BinaryOperators::*;
         [ Equal, Less, Greater, LessEqual, GreaterEqual, NotEqual, Plus, Minus, Times, Divide, Mod,Or ] 
@@ -245,18 +302,7 @@ fn binary_operations_test() {
         StreamOutput::from(5_000), // / 
         StreamOutput::from(0), // %,
         StreamOutput::from(true), // ||
-    ];  
-    for (op, expected_val) in bin_ops.into_iter().zip(expected_results) {
-        let mut operations =  [ 
-            Operation::Binary { bin_op: op, idx_lhs: 1, idx_rhs: 2 },
-            Operation::Number(10_000), 
-            Operation::Number(2_000)
-        ];
-        assert_eq!(
-            expected_val,
-            eval_operations(&mut operations, &devices, &0, &0).unwrap()
-        );
-    }
+    ]; 
 }
 
 #[test]

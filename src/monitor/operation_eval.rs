@@ -19,8 +19,7 @@ impl PropertyStream {
             match &mut self.ltl {
                 PropLTL::Always => {
                     let res = res?;
-                    let res_val = res.get_value().get_verdict().unwrap(); //TODO: unwrap
-                    println!("{t_spawn}, {res_val}");
+                    let res_val = res.get_value().get_verdict()?;
                     //Set verdict
                     if !res_val {
                     // if !res_val && res.is_decided() {
@@ -31,7 +30,7 @@ impl PropertyStream {
                 }
                 PropLTL::Eventually(last) => {
                     let res = res?;
-                    let res_value = res.get_value().get_verdict().unwrap(); //TODO: unwrap
+                    let res_value = res.get_value().get_verdict()?;
                     if res_value && res.is_decided() {
                         *last = true;
                         *ver = Verdict::True;

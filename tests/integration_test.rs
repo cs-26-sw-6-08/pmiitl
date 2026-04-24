@@ -372,4 +372,7 @@ fn test8() {
     assert_eq!(program.environment.unwrap().as_slice(), expected_env);
 }
 
-//todo: make integration test for monitor
+/*
+    Because of the functionality of running the monitor, 
+    this is tested within streams_test
+*/
