@@ -1,4 +1,4 @@
-use std::{error::Error, ops::{Add, Div, Mul, Neg, Not, Sub}};
+use std::{error::Error, ops::{Add, Div, Neg, Not, Sub}};
 
 use crate::{errors, program::operations::{BinaryOperators, UnaryOperators}};
 
