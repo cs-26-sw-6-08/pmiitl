@@ -1,6 +1,7 @@
 use std::error::Error;
 
 use hime_redist::{ast::AstNode, errors::ParseErrorDataTrait};
+use reqwest::Client;
 
 use crate::{errors, grammar::cfg, monitor::streams::OutputStream, program::expressions::SpannedExpr};
 pub mod expressions;

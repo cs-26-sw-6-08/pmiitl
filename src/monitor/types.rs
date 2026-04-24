@@ -93,14 +93,17 @@ impl<'a> StackValue<'a> {
     }
 
 
+    //todo: Code for this has been changed, make test to ensure this actually works
     pub fn modulo(mut self, rhs: Self) -> Self {
-        let value = match (self.get_value(),rhs.get_value()){
+        self.value = match (self.get_value(), rhs.get_value()){
             (StackContent::Number(val1), StackContent::Number(val2)) => 
-                StackContent::Number((val1 % val2)*1000),
+                // Rust does not have a correct mathmatical mod function, therefore this calculation is used instead:
+                // https://stackoverflow.com/a/31210691
+                StackContent::Number(((val1.checked_rem(*val2).unwrap_or(0)) + val2).checked_rem(*val2).unwrap_or(0)),
             _ => unreachable!()
         };
-        self.value = value;
-        self.decided = self.decided.greatest_lower_bound(&rhs.decided);
+
+        self.decided = self.decided.greatest_lower_bound(&rhs.decided); //todo: also make test for all these
         self
     }
 
@@ -194,28 +197,52 @@ impl<'a> StackValue<'a> {
         self
     }
 
-    pub fn mul_op(self, other: StackValue) -> Self {
-        let StackContent::Number(m) = self.get_value() else {panic!("Expected a number")};
-        let StackContent::Number(n) = other.get_value() else {panic!("Expected a number")};
+    pub fn mul_op(mut self, other: StackValue) -> Self {
+        let m = match self.get_value() {
+            StackContent::Number(m) => m,
+            StackContent::Verdict(m) => &(*m as i128 * 1000),
+            _ => panic!("Expected a number or a boolean")
+        };
+
+        let n = match other.get_value() {
+            StackContent::Number(n) => n,
+            StackContent::Verdict(n) => &(*n as i128 * 1000),
+            _ => panic!("Expected a number or a boolean")
+        };
 
         let m_int = m / 1000;
         let m_frac = m % 1000;
 
         let int = n*m_int;
         let frac = (n*m_frac) / 1000;
-        StackValue::from(int + frac)
+        self.value = StackContent::Number(int + frac);
+
+        self.decided = self.decided.greatest_lower_bound(&other.decided);
+        self
     }
 
-    pub fn div_op(self, other: StackValue) -> Self {    
-        let StackContent::Number(m) = self.get_value() else {panic!("Expected a number")};
-        let StackContent::Number(n) = other.get_value() else {panic!("Expected a number")};
+    pub fn div_op(mut self, other: StackValue) -> Self {    
+        let m = match self.get_value() {
+            StackContent::Number(m) => m,
+            StackContent::Verdict(m) => &(*m as i128 * 1000),
+            _ => panic!("Expected a number or a boolean")
+        };
+
+        let n = match other.get_value() {
+            StackContent::Number(n) => n,
+            StackContent::Verdict(n) => &(*n as i128 * 1000),
+            _ => panic!("Expected a number or a boolean")
+        };
 
         let m_int = m / 1000;
         let m_frac = m % 1000;
 
         let int = n.checked_div(m_int).unwrap_or(0);
         let frac = n.checked_div(m_frac).unwrap_or(0);
-        StackValue::from(int + frac)
+        self.value = StackContent::Number(int + frac);
+
+        self.decided = self.decided.greatest_lower_bound(&other.decided);
+        self
     }
 
     pub fn bin_op(self, rhs: Self, bin_op: &BinaryOperators) -> Self {

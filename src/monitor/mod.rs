@@ -1,6 +1,7 @@
 pub mod streams;
 pub mod types;
 pub mod operation_eval;
+pub mod instrumentation;
 
 #[cfg(test)]
 mod streams_test;
@@ -8,7 +9,7 @@ mod streams_test;
 mod operation_eval_test;
 
 use std::error::Error;
-use crate::{errors, monitor::streams::{IoTStream, OutputStream}, program::Program};
+use crate::{errors, monitor::{instrumentation::Instrumentation, streams::{IoTStream, OutputStream}}, program::Program};
 use tokio::time::{Duration, interval};
 use std::time::Instant;
 
@@ -19,23 +20,12 @@ use colored::Colorize;
 type MonitorElement = Result<(usize, bool), Box<dyn Error>>;
 
 impl Program {
-    pub async fn monitor(&mut self, time_interval: i128, speed: bool) -> Result<(), Box<dyn Error>> {
+    pub async fn monitor(&mut self, instrumentation: Instrumentation, time_interval: i128, speed: bool) -> Result<(), Box<dyn Error>> {
         
         let Some(streams) = &mut self.environment else { return Err(errors::Error::EnvironmentNotPresent.into()); };
         let mut interval = interval(Duration::from_millis(time_interval as u64));
 
         let mut t = 0;
-        
-        let temp_iot_stream: IoTStream = (
-            vec![
-                ("Roomba".into(), 55_000).into(),
-                // ("Christian".into(), 25_000).into(),
-                // ("Roomba".into(), 5_000).into(),
-                // ("Roomba".into(), 5_000).into(),
-                // ("Roomba".into(), 5_000).into(),
-                //("christian".into(), 5, true).into(),
-            ]
-        ).into();
         
         println!("{:#?}", streams);
 
@@ -51,9 +41,12 @@ impl Program {
                 #[cfg(not(debug_assertions))]
                 println!("--- Interval {}", format!("[{}, {}]",t,t+999).blue().bold());
             }
-            //todo: await devices
+
+            let devices: IoTStream = ( instrumentation.fetch_device_states().await? ).into();
+            println!("{:?}", devices);
+
             async {
-                for el in Self::monitor_logic(streams, &t, &temp_iot_stream) {
+                for el in Self::monitor_logic(streams, &t, &devices) {
                     let (prop_num, _ )=  el?; 
                     let msg = format!("Prop {} violated", prop_num + 1);
                     println!("\t{} at time: {}", msg.red().bold().underline(), format!("{}s",t).red().bold());
