@@ -107,8 +107,12 @@ impl<'a> StreamOutput<'a> {
     }
 
     pub fn equals(mut self, rhs: Self) -> Self {
-        let value = match (self.get_value().to_num(),rhs.get_value().to_num()){
+        let value = match (self.get_value(),rhs.get_value()){
             (StackContent::Number(val1), StackContent::Number(val2)) => StackContent::Verdict(val1 == val2),
+            (StackContent::Verdict(val1), StackContent::Verdict(val2)) => StackContent::Verdict(val1 == val2),
+            (StackContent::Verdict(val1), StackContent::Number(val2)) |
+            (StackContent::Number(val2), StackContent::Verdict(val1)) => StackContent::Verdict(if *val1 { 1000 == *val2 } else { 0 == *val2 }),
+            (StackContent::String(val1), StackContent::String(val2)) => StackContent::Verdict(val1 == val2),
             _ => unreachable!()
         };
         
@@ -118,9 +122,13 @@ impl<'a> StreamOutput<'a> {
     }
 
     pub fn not_equals(mut self, rhs: Self) -> Self {
-        let value = match (self.get_value().to_num(),rhs.get_value().to_num()){
+        let value = match (self.get_value(),rhs.get_value()){
             (StackContent::Number(val1), StackContent::Number(val2)) => StackContent::Verdict(val1 != val2),
-            _ => unreachable!(),
+            (StackContent::Verdict(val1), StackContent::Verdict(val2)) => StackContent::Verdict(val1 != val2),
+            (StackContent::Verdict(val1), StackContent::Number(val2)) |
+            (StackContent::Number(val2), StackContent::Verdict(val1)) => StackContent::Verdict(if *val1 { 1000 != *val2 } else { 0 != *val2 }),
+            (StackContent::String(val1), StackContent::String(val2)) => StackContent::Verdict(val1 != val2),
+            _ => unreachable!()
         };
         
         self.value = value;

@@ -39,7 +39,7 @@ grammar cfg
     ExprA  -> ExprA '+'^ ExprA1 | ExprA '-'^ ExprA1 | ExprA1^;
     ExprA1 -> ExprA1 '*'^ ExprA2 | ExprA1 '/'^ ExprA2 | ExprA1 '%'^ ExprA2 | ExprA2^;
     ExprA2 -> '('! ExprA^ ')'! | ExprA3^;
-    ExprA3 -> (NUMBER TIMEUNIT)^;
+    ExprA3 -> (NUMBER TIMEUNIT)^ | NUMBER^;
 
     
     Expr   -> '!'? ('always' | 'eventually')^ Interval? Expr| ExprV1 '->'^ Expr | ExprV1^;
