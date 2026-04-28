@@ -40,7 +40,7 @@ impl Program {
                 println!("--- Interval {}", format!("[{}, {}]",t,t+999).blue().bold());
             }
 
-            let devices: IoTStream = ( instrumentation.fetch_device_states().await? ).into();
+            let devices: IoTStream = ( instrumentation.fetch_device_states().await ).into();
 
             async {
                 for el in Self::monitor_logic(streams, &t, &devices) {

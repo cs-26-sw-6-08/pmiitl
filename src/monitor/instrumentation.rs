@@ -31,15 +31,17 @@ impl Instrumentation {
         })
     }
 
-    pub async fn fetch_device_states(&self) -> Result<Vec<IoTDevice>, Box<dyn Error>> {
+    pub async fn fetch_device_states(&self) -> Vec<IoTDevice> {
         let resp = self.client
             .get(format!("{}/api/states", self.base_url))
             .send()
-            .await?
-            .json::<Vec<HomeAssistantEntity>>()
-            .await?;
+            .await;
+        if resp.is_err() { return Vec::new() }
+        let decoded = 
+            resp.unwrap().json::<Vec<HomeAssistantEntity>>()
+            .await.unwrap_or(Vec::new());
 
-        let filtered_response = resp
+        let filtered_response = decoded
             .iter()
             .filter_map(|entity| {
                 if entity.entity_id.contains("sensor.") //It should only filter for sensors
@@ -65,7 +67,7 @@ impl Instrumentation {
             })
             .collect();
 
-        Ok(filtered_response)
+        filtered_response
     }
 }
 
