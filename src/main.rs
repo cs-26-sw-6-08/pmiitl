@@ -21,6 +21,7 @@ async fn main() {
     dotenv().ok();
     let base_url = std::env::var("BASE_URL").expect("BASE_URL not defined in .env");
     let token = std::env::var("TOKEN").expect("TOKEN not defined in .env");
+    let webhook_url = std::env::var("WEBHOOK_URL").expect("WEBHOOK_URL not defined in .env");
 
     let instrumentation = match Instrumentation::new(&base_url, &token) {
         Ok(instrumentation) => instrumentation,
@@ -57,7 +58,7 @@ async fn main() {
         return error_print(format!("{}",err));
     }
     
-    if let Err(err) = program.monitor(instrumentation, 1_000, false).await {
+    if let Err(err) = program.monitor(instrumentation, 1_000, false, webhook_url).await {
         return error_print(format!("{}",err));
     }
 }

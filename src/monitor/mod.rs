@@ -2,14 +2,15 @@ pub mod streams;
 pub mod types;
 pub mod operation_eval;
 pub mod instrumentation;
+pub mod discord_logger;
 
 #[cfg(test)]
 mod streams_test;
 #[cfg(test)]
 mod operation_eval_test;
 
-use std::error::Error;
-use crate::{errors, monitor::{instrumentation::Instrumentation, streams::{IoTStream, PropertyStream}}, program::Program};
+use std::{error::Error, sync::Arc};
+use crate::{errors, monitor::{discord_logger::DiscordLogger, instrumentation::Instrumentation, streams::{IoTStream, PropertyStream}}, program::Program};
 use tokio::time::{Duration, interval};
 use std::time::Instant;
 
@@ -20,10 +21,14 @@ use colored::Colorize;
 type MonitorElement = Result<(usize, bool), Box<dyn Error>>;
 
 impl Program {
-    pub async fn monitor(&mut self, instrumentation: Instrumentation, time_interval: i128, speed: bool) -> Result<(), Box<dyn Error>> {
+    pub async fn monitor(&mut self, instrumentation: Instrumentation, time_interval: i128, speed: bool, webhook_url: String) -> Result<(), Box<dyn Error>> {
         
         let Some(streams) = &mut self.environment else { return Err(errors::Error::EnvironmentNotPresent.into()); };
         let mut interval = interval(Duration::from_millis(time_interval as u64));
+
+        //Evaluation (Spawn Discord Webhook Sender)
+        let logger = Arc::new(DiscordLogger::new(webhook_url, Duration::from_secs(60)));
+        logger.clone().start_sending();
 
         let mut t = 0;
         
@@ -47,6 +52,7 @@ impl Program {
                     let (prop_num, _ )=  el?; 
                     let msg = format!("Prop {} violated", prop_num + 1);
                     println!("\t{} at time: {}", msg.red().bold().underline(), format!("{}s",t).red().bold());
+                    logger.add_violation(prop_num + 1, t);
                 }
                 t += time_interval / 1000;
                 
