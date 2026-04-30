@@ -54,7 +54,7 @@ grammar cfg
 
     
 
-    Function  -> Aggregate^'('!FunctionExpr')'! | 'sumtime'^'('!FunctionExpr')'! | 'avgtime'^'('!FunctionExpr')'! 
+    Function  -> Aggregate^'['!ExprA']'!'('!FunctionExpr')'! | 'sumtime'^'['!ExprA']'!'('!FunctionExpr')'! | 'avgtime'^'['!ExprA']'!'('!FunctionExpr')'! 
                  | 'counttime'^'('!FunctionExpr')'! | 'foreach'^'('!FunctionExpr')'!;
     Aggregate -> 'sum'^ | 'avg'^ | 'count'^;
   

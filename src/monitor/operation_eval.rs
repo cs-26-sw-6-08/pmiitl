@@ -198,6 +198,7 @@ pub(crate) fn eval_operations<'a>(
             ) => {
                 //If bound has already been exceeded we aren't interested in calculating further
                 match bound {
+                    
                     //The difference between t_c and t_s is the time the bound has been active.
                     //If it exceeds the end (b) (added 1 because of it the num being inclusive), then it shouldn't evaluate the expression and it is decided (or untainted)
                     Some((a, b)) if (*t_current - *t_spawn) == *b + 1 => {
@@ -225,6 +226,7 @@ pub(crate) fn eval_operations<'a>(
                 Reduce,
             ) => {
                 let val = value_stack.pop_or_err()?.get_value().get_num()?;
+                todo!();
                 let val = time_function_reduce_step(val, *t_spawn, *bound, history);
                 let val: StreamOutput = function_type_computation(function_type, val, *t_spawn, *t_current).into();
                 value_stack.push(val.to_undecided());

@@ -36,7 +36,7 @@ impl Expr {
                 operand.monitorability_check()?;
                 Ok(())
             },
-            Expr::Function { aggregate_type:_, expr } => {
+            Expr::Function { aggregate_type:_, expr, bound: _ } => {
                 expr.monitorability_check()?;
                 Ok(())
             },

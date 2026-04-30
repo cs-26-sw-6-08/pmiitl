@@ -1,8 +1,2 @@
-always sum(power) <= 2000w;
-always (t%24h=0s) -> always[0h,24h] sumtime(power) < 10kwh;
-always count(name=fridge);
-always (t%24h=0s) -> always[15.5h,23h] foreach(avgtime(power)<500w);
-!eventually foreach(power <= 0w);
-!eventually avg(power) > 1000w;
-always sum((name=dryer)*power) < 500w;
+always sumtime[2s*s](t) > 5s;
 
