@@ -77,8 +77,10 @@ pub(crate) fn eval_operations<'a>(
     let mut value_stack: Vec<StreamOutput> = Vec::with_capacity(50);
     let mut device_stack: Vec<DeviceStack> = Vec::with_capacity(50);
     let mut device_pointer: Option<&IoTDevice> = None;
+    let mut time_offset_stack: Vec<i128> = Vec::with_capacity(50);
 
     worklist_stack.push((0usize, StepType::Deepen));
+    time_offset_stack.push(*t_spawn);
 
     while let Some((cur_idx, step_type)) = worklist_stack.pop() {
         let cur_op = &mut operations[cur_idx] as *mut Operation;
