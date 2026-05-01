@@ -82,8 +82,9 @@ impl Expr {
                 FunctionType::Sumtime | FunctionType::Avgtime => {
                     let wrap_function = Expr::Function { aggregate_type: FunctionType::Sum, expr: expr.clone(), bound: None };
                     let (new_streams, new_key) = wrap_function.compile_expression_helper(Vec::new(), key + 1)?;
-                    // TODO is this right???
                     let Some(bound) = bound else { return Err(errors::Error::InvalidFunctionIntervalExpr.into()) };
+                    println!("Made it here");
+                    println!("{bound:#?}");
                     (
                         streams.with( Operation::TimeFunction { 
                             function_type:  match aggregate_type {

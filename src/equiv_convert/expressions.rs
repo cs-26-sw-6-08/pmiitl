@@ -113,11 +113,14 @@ impl Expr {
                         b.equiv_convert()?;
                     }
                     Ok(())
-                }
-                _ => {
+                },
+                FunctionType::Avgtime | FunctionType::Sumtime | FunctionType::Sum | FunctionType::Avg | FunctionType::Foreach => {
+                    if let Some(b) = bound {
+                        b.equiv_convert()?;
+                    }
                     expr.equiv_convert()?;
                     Ok(())
-                }
+                },
             },
             Expr::Interval { start, end } => {
                 start.equiv_convert()?;

@@ -1,5 +1,5 @@
 use rv_iot::{
-    monitor::{streams::PropertyStream},
+    monitor::streams::PropertyStream,
     monitor_setup::operation_types::{AggregateType, Operation, PropLTL},
     program::{
         Program,
@@ -9,16 +9,14 @@ use rv_iot::{
         operations::{BinaryOperators, UnaryOperators},
     },
     utils::test_helper_func::{
-        always_expr, always_interval_expr, binary_expr, current_time, custom_number_expr,
-        eventually_interval_expr, function_expr, interval_expr, member_expr, number_expr,
-        string_expr, unary_expr,
+        always_expr, always_interval_expr, binary_expr, current_time, custom_number_expr, eventually_interval_expr, function_expr, interval_expr, member_expr, number_expr, string_expr, unary_expr
     },
 };
 
 #[test]
 fn test1() {
     let mut program =
-        Program::new("always (t % 24h = 0s) -> always[0h,24h] sumtime(power) < 10 kWh;")
+        Program::new("always (t % 24h = 0s) -> always[0h,24h] sumtime[5s](power) < 10 kWh;")
             .unwrap();
 
     assert!(program.unit_convert().is_ok());
@@ -47,7 +45,8 @@ fn test1() {
                     binary_expr(
                         function_expr(
                             FunctionType::Sumtime,
-                            member_expr(MemberType::Power)
+                            member_expr(MemberType::Power), 
+                            Some(custom_number_expr(5_000))
                         ),
                         custom_number_expr(36_000_000_000),
                         BinaryOperators::Less,
@@ -82,7 +81,7 @@ fn test2() {
                             member_expr(MemberType::Power),
                             custom_number_expr(0),
                             BinaryOperators::NotEqual,
-                        ),
+                        ),None
                     ),
                     number_expr(),
                     BinaryOperators::Greater,
@@ -117,7 +116,7 @@ fn test3() {
                         unary_expr(binary_expr(member_expr(MemberType::Power),custom_number_expr(1_000),BinaryOperators::Divide), UnaryOperators::Not),
                     ),
                     BinaryOperators::Or,
-                ),
+                ),None
             )),
         }],
         environment: None,
@@ -159,7 +158,7 @@ fn test4() {
                     ),
                     custom_number_expr(0),
                     BinaryOperators::NotEqual,
-                ),
+                ),None
             )),
         }],
         environment: None,
@@ -191,6 +190,7 @@ fn test5() {
                                 custom_number_expr(0),
                                 BinaryOperators::NotEqual,
                             ),
+                            None
                         ),
                         number_expr(),
                         BinaryOperators::GreaterEqual,
@@ -207,6 +207,7 @@ fn test5() {
                                 custom_number_expr(0),
                                 BinaryOperators::NotEqual,
                             ),
+                            None
                         ),
                         number_expr(),
                         BinaryOperators::Less,
@@ -241,6 +242,7 @@ fn test6() {
                         member_expr(MemberType::Power),
                         BinaryOperators::Times,
                     ),
+                    None
                 ),
                 custom_number_expr(100_000),
                 BinaryOperators::LessEqual,
@@ -302,7 +304,7 @@ fn test7() {
 fn test8() {
     let mut program = Program::new(
         "eventually[5s,10s] foreach( 1 -> power > 5 W);
-        always sumtime(power * (name = Roomba)) < 200Ws;",
+        always sumtime[5s + 5s + 5s * 1](power * (name = Roomba)) < 200Ws;",
     )
     .unwrap();
 
@@ -345,7 +347,7 @@ fn test8() {
                     idx: 2,
                     function_type: AggregateType::Sum,
                     history: Vec::new(),
-                    bound: None,
+                    bound: 15,
                 },
                 Operation::AggregateFunction {
                     idx: 3,

@@ -78,11 +78,11 @@ fn number() {
 
 #[test]
 fn function() {
-    let mut expr = function_expr(FunctionType::Sum, unit_expr(Unit::Minutes));
+    let mut expr = function_expr(FunctionType::Sum, unit_expr(Unit::Minutes), None);
     expr.unit_convert();
     assert_eq!(
         expr,
-        function_expr(FunctionType::Sum, custom_unit_expr(5_000 * 60, Unit::Seconds))
+        function_expr(FunctionType::Sum, custom_unit_expr(5_000 * 60, Unit::Seconds), None)
     );
 }
 

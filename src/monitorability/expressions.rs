@@ -15,17 +15,11 @@ impl Expr {
                 expr.monitorability_check()?;
                 Ok(())
             },
-            Expr::Eventually { interval, not, expr } => {
+            Expr::Eventually { interval, .. } => {
                 if interval.is_some() {
                     return Ok(());
                 }
-                // !eventually is violation monitorable due to the equivalence !eventually p => always !p. 
-                // We do not want to monitor eventually alone
-                if !*not {
-                    return Err(errors::Error::Unmonitorable(self.clone()).into());
-                }
-                expr.monitorability_check()?;
-                Ok(())
+                Err(errors::Error::Unmonitorable(self.clone()).into())
             },
             Expr::BinaryOperations { lhs, rhs, operator: _ } => {
                 lhs.monitorability_check()?;

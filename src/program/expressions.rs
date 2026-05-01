@@ -230,8 +230,7 @@ impl Expr {
     }
 
     pub fn get_bound_time_function(&self) -> Result<i128, Box<dyn Error>> {
-        let Expr::Function{ aggregate_type:_, expr:_, bound: Some(b) } = self else { return Err(errors::Error::InvalidFunctionIntervalExpr.into()) };
-        let Expr::Number(b) = b.as_ref() else { return Err(errors::Error::InvalidFunctionIntervalExpr.into()) };
+        let Expr::Number(b) = self else { return Err(errors::Error::InvalidFunctionIntervalExpr.into()) };
         Ok(*b)
     }
 
