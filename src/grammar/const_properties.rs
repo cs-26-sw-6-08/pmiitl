@@ -16,6 +16,8 @@ r#"Program
             |       +-> NUMBER = 24
             +-> < = <
                 +-> sumtime = sumtime
+                |   +-> TIMEUNIT = s
+                |   |   +-> NUMBER = 5
                 |   +-> * = *
                 |       +-> NUMBER = 1
                 |       +-> power = power
