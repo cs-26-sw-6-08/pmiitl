@@ -101,11 +101,14 @@ pub(crate) fn eval_operations<'a>(
             }
             (Operation::Binary { bin_op, idx_rhs, .. }, ReducePartial) => {
                 //If the binary operation is an 'or' and returned true, then the rest shouldn't be evaluated
-                // Read as: 'or' -> last_val.is_false
+                // Read as: 'or' -> last_val.is_false && last_val.is_decided
                 if !matches!(bin_op, BinaryOperators::Or)
                     || !value_stack
                         .last()
-                        .is_some_and(|val| matches!(*val.get_value(), StackContent::Verdict(true)))
+                        .is_some_and(|val| 
+                            matches!(*val.get_value(), StackContent::Verdict(true))
+                            && val.is_decided()
+                        )
                 {
                     worklist_stack.extend([(cur_idx, Reduce), (*idx_rhs, Deepen)]);
                 }
@@ -200,7 +203,6 @@ pub(crate) fn eval_operations<'a>(
                 match bound {
                     //The difference between t_c and t_s is the time the bound has been active.
                     //If it exceeds the end (b) (added 1 because of it the num being inclusive), then it shouldn't evaluate the expression and it is decided (or untainted)
-                    //todo Check correctness
                     b if (*t_current - t_lower) == *b + 1 => {
                         let prev_val = history[(t_spawn % (*b + 1)) as usize].value;
                         value_stack.push(
