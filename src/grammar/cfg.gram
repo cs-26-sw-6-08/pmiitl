@@ -54,8 +54,8 @@ grammar cfg
 
     
 
-    Function  -> Aggregate^'('!FunctionExpr')'! | 'sumtime'^'('!FunctionExpr')'! | 'avgtime'^'('!FunctionExpr')'! 
-                 | 'counttime'^'('!FunctionExpr')'! | 'foreach'^'('!FunctionExpr')'!;
+    Function  -> Aggregate^'('!FunctionExpr')'! | 'sumtime'^'['!ExprA']'!'('!FunctionExpr')'! | 'avgtime'^'['!ExprA']'!'('!FunctionExpr')'! 
+                 | 'counttime'^'['!ExprA']'!'('!FunctionExpr')'! | 'foreach'^'('!FunctionExpr')'!;
     Aggregate -> 'sum'^ | 'avg'^ | 'count'^;
   
     //Member is only allowed inside a Function, however all other types of expressions should also be available.

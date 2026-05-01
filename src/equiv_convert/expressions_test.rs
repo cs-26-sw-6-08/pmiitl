@@ -5,16 +5,17 @@ use crate::utils::test_helper_func::{always_expr, always_negated_expr, always_in
 
 #[test]
 fn count(){
-    let mut expr = function_expr(FunctionType::Count, number_expr());
+    let mut expr = function_expr(FunctionType::Count, number_expr(), None);
     assert!(expr.equiv_convert().is_ok());
-    assert_eq!(expr, function_expr(FunctionType::Sum, custom_number_expr(1000)));
+    assert_eq!(expr, function_expr(FunctionType::Sum, custom_number_expr(1000), None));
 }
 
 #[test]
 fn counttime(){
-    let mut expr = function_expr(FunctionType::Counttime, number_expr());
+    let bound = Some(custom_number_expr(10_000));
+    let mut expr = function_expr(FunctionType::Counttime, number_expr(), bound.clone());
     assert!(expr.equiv_convert().is_ok());
-    assert_eq!(expr, function_expr(FunctionType::Sumtime, custom_number_expr(1000)));
+    assert_eq!(expr, function_expr(FunctionType::Sumtime, custom_number_expr(1000), bound));
 }
 
 #[test]

@@ -53,6 +53,7 @@ pub enum Expr {
     Function {
         aggregate_type: FunctionType,
         expr: Box<Expr>,
+        bound: Option<Box<Expr>>,
     },
 }
 
@@ -183,7 +184,7 @@ impl Expr {
                 })?)?;
                 Expr::Member { access_type }
             }
-            "sum" | "avg" | "count" | "sumtime" | "avgtime" | "counttime" | "foreach" => {
+            "sum" | "avg" | "count" | "foreach" => {
                 let aggregate_type = FunctionType::new(node.get_value().ok_or_else(|| {
                     errors::Error::ASTNodeValueInvalid(node.get_symbol().name.into())
                 })?)?;
@@ -191,6 +192,19 @@ impl Expr {
                 Expr::Function {
                     aggregate_type,
                     expr,
+                    bound: None,
+                }
+            }, 
+            "sumtime" | "avgtime" | "counttime" => {
+                let aggregate_type = FunctionType::new(node.get_value().ok_or_else(|| {
+                    errors::Error::ASTNodeValueInvalid(node.get_symbol().name.into())
+                })?)?;
+                let bound = Some(Expr::new(node.child(0))?.into());
+                let expr = Expr::new(node.child(1))?.into();
+                Expr::Function {
+                    aggregate_type,
+                    expr,
+                    bound
                 }
             }
             _ => {
@@ -215,6 +229,11 @@ impl Expr {
         Ok((*start, *end))
     }
 
+    pub fn get_bound_time_function(&self) -> Result<i128, Box<dyn Error>> {
+        let Expr::Number(b) = self else { return Err(errors::Error::InvalidFunctionIntervalExpr.into()) };
+        Ok(*b)
+    }
+
     
 }
 
@@ -231,7 +250,13 @@ impl Display for Expr {
             Expr::BinaryOperations { lhs, rhs, operator } => write!(f, "Binaryoperation({}, {}, {})", lhs, operator, rhs ),
             Expr::UnaryOperations { operand, operator } => write!(f, "Unaryoperation({}, {})", operator, operand),
             Expr::Member { access_type } => write!(f, "Member({})", access_type),
-            Expr::Function { aggregate_type, expr } => write!(f, "Function({}, {})", aggregate_type, expr),
+            Expr::Function { aggregate_type, expr, bound } => {
+                match bound {
+                    Some(bound) => write!(f, "Time Function({}, {}, {})", aggregate_type, expr, bound),
+                    None => write!(f, "Non-time Function({}, {})", aggregate_type, expr)
+                }
+            }
+
         }
     }
 }

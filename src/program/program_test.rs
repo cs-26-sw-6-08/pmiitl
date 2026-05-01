@@ -211,7 +211,7 @@ fn sum() {
     let program = Program::new("always sum(5) > 1;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        always_expr(binary_expr(function_expr(FunctionType::Sum, number_expr()), custom_number_expr(1_000), BinaryOperators::Greater))
+        always_expr(binary_expr(function_expr(FunctionType::Sum, number_expr(), None), custom_number_expr(1_000), BinaryOperators::Greater))
     );
 }
 
@@ -220,7 +220,7 @@ fn avg() {
     let program = Program::new("always avg(5) > 1;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        always_expr(binary_expr(function_expr(FunctionType::Avg, number_expr()), custom_number_expr(1_000), BinaryOperators::Greater))
+        always_expr(binary_expr(function_expr(FunctionType::Avg, number_expr(), None), custom_number_expr(1_000), BinaryOperators::Greater))
     );
 }
 
@@ -229,33 +229,36 @@ fn count() {
     let program = Program::new("always count(5) > 1;").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        always_expr(binary_expr(function_expr(FunctionType::Count, number_expr()), custom_number_expr(1_000), BinaryOperators::Greater))
+        always_expr(binary_expr(function_expr(FunctionType::Count, number_expr(), None), custom_number_expr(1_000), BinaryOperators::Greater))
     );
 }
 
 #[test]
 fn sumtime() {
-    let program = Program::new("always sumtime(5) > 1;").unwrap();
+    let program = Program::new("always sumtime[10s](5) > 1;").unwrap();
+    let bound = Some(custom_unit_expr(10_000, Unit::Seconds));
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        always_expr(binary_expr(function_expr(FunctionType::Sumtime, number_expr()), custom_number_expr(1_000), BinaryOperators::Greater))
+        always_expr(binary_expr(function_expr(FunctionType::Sumtime, number_expr(), bound), custom_number_expr(1_000), BinaryOperators::Greater))
     );
 }
 
 #[test]
 fn avgtime() {
-    let program = Program::new("always avgtime(5) > 1;").unwrap();
+    let program = Program::new("always avgtime[10s](5) > 1;").unwrap();
+    let bound = Some(custom_unit_expr(10_000, Unit::Seconds));
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        always_expr(binary_expr(function_expr(FunctionType::Avgtime, number_expr()), custom_number_expr(1_000), BinaryOperators::Greater)));
+        always_expr(binary_expr(function_expr(FunctionType::Avgtime, number_expr(), bound), custom_number_expr(1_000), BinaryOperators::Greater)));
 }
 
 #[test]
 fn counttime() {
-    let program = Program::new("always counttime(5) > 1;").unwrap();
+    let program = Program::new("always counttime[10s](5) > 1;").unwrap();
+    let bound = Some(custom_unit_expr(10_000, Unit::Seconds));
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        always_expr(binary_expr(function_expr(FunctionType::Counttime, number_expr()), custom_number_expr(1_000), BinaryOperators::Greater)));
+        always_expr(binary_expr(function_expr(FunctionType::Counttime, number_expr(), bound), custom_number_expr(1_000), BinaryOperators::Greater)));
 }
 
 #[test]
@@ -263,7 +266,7 @@ fn foreach() {
     let program = Program::new("always foreach(5);").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr,
-        always_expr(function_expr(FunctionType::Foreach, number_expr()))
+        always_expr(function_expr(FunctionType::Foreach, number_expr(), None))
     );
 }
 
@@ -281,6 +284,6 @@ fn string() {
     let program = Program::new("always count(name=christian);").unwrap();
     assert_eq!(
         program.expressions.first().unwrap().expr, 
-        always_expr(function_expr(FunctionType::Count, binary_expr(member_expr(MemberType::Name), string_expr(), BinaryOperators::Equal)))
+        always_expr(function_expr(FunctionType::Count, binary_expr(member_expr(MemberType::Name), string_expr(), BinaryOperators::Equal), None))
     );
 }

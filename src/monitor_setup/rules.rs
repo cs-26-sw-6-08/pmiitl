@@ -59,7 +59,7 @@ impl Expr {
                 let (new_streams, new_key) = operand.compile_expression_helper(Vec::new(), key+1)?;
                 (streams.with(Operation::Unary { un_op: operator.clone(), idx: key+1 }).chain(new_streams), new_key)
             },
-            Expr::Function { aggregate_type, expr } => match aggregate_type {
+            Expr::Function { aggregate_type, expr, bound } => match aggregate_type {
                 FunctionType::Foreach => {
                     let (new_streams, new_key) = expr.compile_expression_helper(Vec::new(), key + 1)?;
                     (streams.with(
@@ -80,8 +80,11 @@ impl Expr {
                     ).chain(new_streams), new_key)
                 },
                 FunctionType::Sumtime | FunctionType::Avgtime => {
-                    let wrap_function = Expr::Function { aggregate_type: FunctionType::Sum, expr: expr.clone() };
+                    let wrap_function = Expr::Function { aggregate_type: FunctionType::Sum, expr: expr.clone(), bound: None };
                     let (new_streams, new_key) = wrap_function.compile_expression_helper(Vec::new(), key + 1)?;
+                    let Some(bound) = bound else { return Err(errors::Error::InvalidFunctionIntervalExpr.into()) };
+                    println!("Made it here");
+                    println!("{bound:#?}");
                     (
                         streams.with( Operation::TimeFunction { 
                             function_type:  match aggregate_type {
@@ -90,7 +93,7 @@ impl Expr {
                             }, 
                             history: Vec::with_capacity(1), 
                             idx: key + 1,
-                            bound: None
+                            bound: bound.get_bound_time_function().map(|b| b/1000)?,
                         }).chain(new_streams), 
                         new_key
                     )

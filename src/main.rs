@@ -38,6 +38,8 @@ async fn main() {
         Err(err) => return error_print(format!("{}",err))
     };
 
+    println!("{}", format!("{:#?}", program).green());
+
     if let Err(err) = program.unit_convert() {
         return error_print(format!("{}",err));
     };

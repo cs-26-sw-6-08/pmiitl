@@ -525,7 +525,7 @@ fn time_behaviour_test() {
                 idx: 10,
                 function_type: AggregateType::Sum,
                 history: Vec::new(),
-                bound: Some((0,24,),),
+                bound: 24,
             },
             AggregateFunction {
                 idx: 11,
@@ -550,7 +550,7 @@ fn time_behaviour_test() {
     // Test for violation at 23_000
     //Reset the property and set number as 23
     streams[0].operations[12] = Operation::Number(23_000);
-    streams[0].operations[9] = Operation::TimeFunction { idx: 10, function_type: AggregateType::Sum, history: Vec::new(), bound: Some((0,24,),),};
+    streams[0].operations[9] = Operation::TimeFunction { idx: 10, function_type: AggregateType::Sum, history: Vec::new(), bound: 24,};
     streams[0].time_verdicts.clear();
     let result = run_x_monitor_steps(streams, &device_stream, 0, 100);
     for (idx, value) in result {
@@ -563,7 +563,7 @@ fn time_behaviour_test() {
 
     // Test no violation
     streams[0].operations[12] = Operation::Number(25_000);
-    streams[0].operations[9] = Operation::TimeFunction { idx: 10, function_type: AggregateType::Sum, history: Vec::new(), bound: Some((0,24,),),};
+    streams[0].operations[9] = Operation::TimeFunction { idx: 10, function_type: AggregateType::Sum, history: Vec::new(), bound: 24,};
     streams[0].time_verdicts.clear();
     let result = run_x_monitor_steps(streams, &device_stream, 0, 100);
     
@@ -624,10 +624,68 @@ fn eventually_expr_time_true() {
     let streams = &mut program.environment.unwrap();
     let result = run_x_monitor_steps(streams, &device_stream, 0, 100);
     
-
-    for idx in (0..100).filter(|&num| !(4..7).contains(&num) ) {
+    for idx in (0..100).filter(|&num| !(2..5).contains(&num) ) {
         let value = result.get(&idx).unwrap();
         assert!(value.is_empty());
     }
 }
 
+#[test]
+fn always_always_always(){
+    let operations = {
+        use Operation::*;
+        vec![
+            Binary {
+                    bin_op: BinaryOperators::Or,
+                    idx_lhs: 1,
+                    idx_rhs: 5,
+                },
+                Unary {
+                    un_op: UnaryOperators::Not,
+                    idx: 2,
+                },
+                Binary {
+                    bin_op: BinaryOperators::Equal,
+                    idx_lhs: 3,
+                    idx_rhs: 4,
+                },
+                SpawnTime,
+                Number(
+                    0,
+                ),
+                LTLBounded {
+                    bound: (
+                        6,
+                        6,
+                    ),
+                    idx: 6,
+                    not: false,
+                    ltl_type: ExprLTL::Always,
+                },
+                LTLBounded {
+                    bound: (
+                        9,
+                        9,
+                    ),
+                    idx: 7,
+                    not: false,
+                    ltl_type: ExprLTL::Always,
+                },
+                Number(
+                    0,
+                ),
+        ]};
+        
+    let program = always_prop_helper(operations, None);
+    let device_stream = single_device_stream();
+    let streams = &mut program.environment.unwrap();
+    let result = run_x_monitor_steps(streams, &device_stream, 0, 100);
+
+    for (idx, value) in result {
+        if idx != 15{
+            assert!(value.is_empty());
+        } else {
+            assert!(value[0].1);
+        }
+    }
+}

@@ -1,9 +1,8 @@
 always sum(power) <= 2670W;
-always (t % 24h = 0s) -> always[0h, 24h - 1s] sumtime(power) < 6kWh;
+always (t % 24h = 0s) -> sumtime[24h-1s](power) < 6kWh;
 always count(name = fridge);
-always (t % 24h = 0s) -> always[0h, 24h - 1s] (avgtime(power) < 200W | t % 24h < (24h - 1s));
-always (t % 24h = 0s) -> always[0h, 24h - 1s] (counttime(always sum(power) <= 2670W) < 1h);
+always (t % 24h = 0s) -> (avgtime[24h - 1s](power) < 200W);
+always (t % 24h = 0s) -> (counttime[24h-1s](always sum(power) <= 2670W) < 1h);
 !eventually foreach(power <= 0W);
 always sum((name = dryer) * power) < 400W;
-always ((t % 24h * 7) = 0s) -> always [0h, 24h * 7 - 1s] sumtime(power) < 36kWh;
-
+always ((t % 24h * 7) = 0s) -> (sumtime[24h*7 - 1s](power) < 36kWh);

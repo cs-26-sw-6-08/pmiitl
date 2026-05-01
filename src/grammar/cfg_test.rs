@@ -29,11 +29,12 @@ fn tree_to_str<'a>(node: AstNode<'_, '_, 'a>, crossings: Vec<bool>) -> String {
 #[test]
 fn property1() {
     let actual: String = tree_to_str(
-        cfg::parse_string("always (t % 24h = 0) -> always[0h,24h] sumtime(1 * power) <10 kWh;".to_lowercase())
+        cfg::parse_string("always (t % 24h = 0) -> always[0h,24h] sumtime[5s](1 * power) <10 kWh;".to_lowercase())
             .get_ast()
             .get_root(),
         Vec::<bool>::new(),
     );
+    println!("{actual}");
     assert_eq!(actual, const_properties::PROPERTY1.to_string());
 }
 

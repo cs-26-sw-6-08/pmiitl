@@ -138,8 +138,20 @@ impl Expr {
             Expr::Function {
                 aggregate_type,
                 expr,
+                bound,
             } => {
                 let expr_type = expr.unit_check()?;
+                match aggregate_type {
+                    FunctionType::Sumtime | FunctionType::Avgtime | FunctionType::Counttime => {
+                        let bound_unwraped = bound.as_ref().ok_or(errors::Error::InvalidFunctionIntervalExpr)?;
+                        let boun_type = bound_unwraped.unit_check()?;
+                        if boun_type != Type::Seconds {
+                            return Err(errors::Error::InvalidFunctionIntervalExpr.into());
+                        }
+                    },
+                    FunctionType::Sum | FunctionType::Avg | FunctionType::Count | FunctionType::Foreach => ()
+                }
+                
                 match aggregate_type {
                     FunctionType::Sum | FunctionType::Avg => match expr_type {
                         Type::String => Err(errors::Error::IncorrectType(self.clone(), Type::String).into()),
@@ -167,6 +179,7 @@ impl Expr {
                         _ => Ok(Type::Number),
                     }
                 }
+
             }
         }
     }
