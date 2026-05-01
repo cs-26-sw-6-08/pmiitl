@@ -46,8 +46,8 @@ pub fn member_expr(access_type: MemberType) -> Expr {
     Expr::Member { access_type }
 }
 
-pub fn function_expr(aggregate_type: FunctionType, expr: Expr) -> Expr {
-    Expr::Function { aggregate_type, expr: expr.into() }
+pub fn function_expr(aggregate_type: FunctionType, expr: Expr, bound: Option<Expr> ) -> Expr {
+    Expr::Function { aggregate_type, expr: expr.into(), bound: bound.map(|v| v.into()) }
 }
 
 pub fn interval_expr(unit1: Expr, unit2: Expr) -> Expr {
@@ -84,11 +84,11 @@ pub fn operations_vec_with_sumtime() -> Vec<Operation> {
     [
         Operation::Binary { bin_op: BinaryOperators::Less, idx_lhs: 1, idx_rhs: 5 },
         Operation::LTLBounded { bound: (25, 40), idx: 2, not: false, ltl_type: ExprLTL::Always },
-        Operation::TimeFunction { idx: 3, function_type: AggregateType::Sum, history: Vec::new(), bound: None },
+        Operation::TimeFunction { idx: 3, function_type: AggregateType::Sum, history: Vec::new(), bound: 1000 },
         Operation::AggregateFunction { idx: 4, function_type: AggregateType::Sum },
         Operation::Member(MemberType::Power),
         Operation::LTLBounded { bound: (500, 1000), idx: 6, not: false, ltl_type: ExprLTL::Always },
-        Operation::TimeFunction { idx: 7, function_type: AggregateType::Sum, history: Vec::new(), bound: None },
+        Operation::TimeFunction { idx: 7, function_type: AggregateType::Sum, history: Vec::new(), bound: 1000 },
         Operation::AggregateFunction { idx: 8, function_type: AggregateType::Sum },
         Operation::Number(1)
     ].into()

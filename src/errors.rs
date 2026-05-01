@@ -24,10 +24,12 @@ pub enum Error {
     #[error("Property at line {0} is not monitorable")]
     UnmonitorableLine(usize),
 
-    #[error("Invalid Interval Expression")]
+    #[error("Invalid MIITL Interval Expression")]
     InvalidIntervalExpr,
     #[error("Invalid Expression for compilation")]
     InvalidCompileExpr,
+    #[error("Invalid Function Interval Expression")]
+    InvalidFunctionIntervalExpr,
 
     #[error("Value Stack error: Not enough values in stack")]
     ValueStackPop,

@@ -97,6 +97,7 @@ impl Expr {
             Expr::Function {
                 aggregate_type,
                 expr,
+                bound,
             } => match aggregate_type {
                 FunctionType::Count => { 
                     *aggregate_type = FunctionType::Sum;
@@ -108,12 +109,18 @@ impl Expr {
                     *aggregate_type = FunctionType::Sumtime;
                     *expr =  Expr::BinaryOperations { lhs: expr.clone(), rhs: Expr::Number(0).into(), operator: BinaryOperators::NotEqual }.into();
                     expr.equiv_convert()?;
+                    if let Some(b) = bound {
+                        b.equiv_convert()?;
+                    }
                     Ok(())
-                }
-                _ => {
+                },
+                FunctionType::Avgtime | FunctionType::Sumtime | FunctionType::Sum | FunctionType::Avg | FunctionType::Foreach => {
+                    if let Some(b) = bound {
+                        b.equiv_convert()?;
+                    }
                     expr.equiv_convert()?;
                     Ok(())
-                }
+                },
             },
             Expr::Interval { start, end } => {
                 start.equiv_convert()?;

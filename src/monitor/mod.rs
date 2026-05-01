@@ -35,8 +35,8 @@ impl Program {
             let start = Instant::now();
             #[cfg(debug_assertions)]
             println!("--- Interval {:<4}", format!("{}",t).blue().bold());
+            #[cfg(not(debug_assertions))]
             if t % 1000 == 0 {
-                #[cfg(not(debug_assertions))]
                 println!("--- Interval {}", format!("[{}, {}]",t,t+999).blue().bold());
             }
 
