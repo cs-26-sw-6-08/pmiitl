@@ -130,8 +130,8 @@ fn function_rules() {
         match cur_type.clone(){
             FunctionType::Sum => assert_eq!(yes_expr.unwrap(), vec![Operation::AggregateFunction { idx: 1, function_type: AggregateType::Sum }, Operation::Number(10_000)]),
             FunctionType::Avg => assert_eq!(yes_expr.unwrap(), vec![Operation::AggregateFunction { idx: 1, function_type: AggregateType::Avg }, Operation::Number(10_000)]),
-            FunctionType::Sumtime => assert_eq!(yes_expr.unwrap(), vec![Operation::TimeFunction { idx: 1, function_type: AggregateType::Sum, history: Vec::new(), bound: None }, Operation::AggregateFunction { idx: 2, function_type: AggregateType::Sum }, Operation::Number(10_000)]),
-            FunctionType::Avgtime => assert_eq!(yes_expr.unwrap(), vec![Operation::TimeFunction { idx: 1, function_type: AggregateType::Avg, history: Vec::new(), bound: None }, Operation::AggregateFunction { idx: 2, function_type: AggregateType::Sum }, Operation::Number(10_000)]),
+            FunctionType::Sumtime => assert_eq!(yes_expr.unwrap(), vec![Operation::TimeFunction { idx: 1, function_type: AggregateType::Sum, history: Vec::new(), bound: 100 }, Operation::AggregateFunction { idx: 2, function_type: AggregateType::Sum }, Operation::Number(10_000)]),
+            FunctionType::Avgtime => assert_eq!(yes_expr.unwrap(), vec![Operation::TimeFunction { idx: 1, function_type: AggregateType::Avg, history: Vec::new(), bound: 100 }, Operation::AggregateFunction { idx: 2, function_type: AggregateType::Sum }, Operation::Number(10_000)]),
             FunctionType::Foreach => assert_eq!(yes_expr.unwrap(), vec![Operation::Foreach { idx: 1 }, Operation::Number(10_000)]),
             _ => unreachable!()
         }
@@ -168,7 +168,7 @@ fn large_expr() {
         large_expr.compile_expression().unwrap(),
         [
             Operation::Binary { bin_op: BinaryOperators::Less, idx_lhs: 1, idx_rhs: 8 },
-            Operation::TimeFunction { idx: 2, function_type: AggregateType::Sum, history: Vec::new(), bound: None },
+            Operation::TimeFunction { idx: 2, function_type: AggregateType::Sum, history: Vec::new(), bound: 100 },
             Operation::AggregateFunction { idx: 3, function_type: AggregateType::Sum },
             Operation::Binary { bin_op: BinaryOperators::Times, idx_lhs: 4, idx_rhs: 5 },
             Operation::Member(MemberType::Power),

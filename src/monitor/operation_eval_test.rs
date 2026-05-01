@@ -149,7 +149,7 @@ fn ltl_expressions_bounded() {
 fn time_functions_unbounded() {
     let devices = mock_devices(5).into();
     let mut sumtime_unbounded = [
-        Operation::TimeFunction { idx: 1, function_type: AggregateType::Sum, history: Vec::new(), bound: None },
+        Operation::TimeFunction { idx: 1, function_type: AggregateType::Sum, history: Vec::new(), bound: 100 },
         Operation::AggregateFunction { idx: 2, function_type: AggregateType::Sum }, 
         Operation::Number(1_000)
     ];
@@ -181,7 +181,7 @@ fn time_functions_unbounded() {
         if let Operation::TimeFunction { history, .. } = &sumtime_unbounded[0] { history.len() } else { 0 }
     );
     let mut avg_time = [
-        Operation::TimeFunction { idx: 1, function_type: AggregateType::Avg, history: Vec::new(), bound: None },
+        Operation::TimeFunction { idx: 1, function_type: AggregateType::Avg, history: Vec::new(), bound: 100 },
         Operation::AggregateFunction { idx: 2, function_type: AggregateType::Sum }, 
         Operation::Number(1_000)
     ];
@@ -205,7 +205,7 @@ fn time_functions_unbounded() {
 fn time_functions_bounded() {
     let devices = mock_devices(5).into();
     let mut sumtime_bounded = [
-        Operation::TimeFunction { idx: 1, function_type: AggregateType::Sum, history: Vec::new(), bound: Some((0,5)) },
+        Operation::TimeFunction { idx: 1, function_type: AggregateType::Sum, history: Vec::new(), bound: 5 },
         Operation::AggregateFunction { idx: 2, function_type: AggregateType::Sum }, 
         Operation::Number(1_000)
     ];

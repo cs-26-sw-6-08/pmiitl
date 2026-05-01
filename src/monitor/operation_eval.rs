@@ -201,8 +201,10 @@ pub(crate) fn eval_operations<'a>(
                     
                     //The difference between t_c and t_s is the time the bound has been active.
                     //If it exceeds the end (b) (added 1 because of it the num being inclusive), then it shouldn't evaluate the expression and it is decided (or untainted)
-                    Some((a, b)) if (*t_current - *t_spawn) == *b + 1 => {
-                        let prev_val = history[(t_spawn % (*b - *a + 1)) as usize].value;
+                    
+                    //todo Check correctness
+                    b if (*t_current - *t_spawn) == *b + 1 => {
+                        let prev_val = history[(t_spawn % (*b + 1)) as usize].value;
                         value_stack.push(
                             function_type_computation(
                                 function_type,
@@ -226,7 +228,6 @@ pub(crate) fn eval_operations<'a>(
                 Reduce,
             ) => {
                 let val = value_stack.pop_or_err()?.get_value().get_num()?;
-                todo!();
                 let val = time_function_reduce_step(val, *t_spawn, *bound, history);
                 let val: StreamOutput = function_type_computation(function_type, val, *t_spawn, *t_current).into();
                 value_stack.push(val.to_undecided());
@@ -340,15 +341,11 @@ fn function_type_computation(
 fn time_function_reduce_step(
     newest_val: i128,
     t_spawn: i128,
-    bound: Option<(i128, i128)>,
+    max_bound: i128,
     history_vec: &mut Vec<HistoryValue<i128>>,
 ) -> i128 {
     //Which idx should be overwritten
-    let arr_idx = if let Some((a, b)) = bound {
-        (t_spawn % (b - a + 1)) as usize
-    } else {
-        t_spawn as usize
-    };
+    let arr_idx = (t_spawn % (max_bound +  1)) as usize;
 
     //Sum up the value according to the history and update history accordingly
     match history_vec.get_mut(arr_idx) {

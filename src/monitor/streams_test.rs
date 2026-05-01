@@ -525,7 +525,7 @@ fn time_behaviour_test() {
                 idx: 10,
                 function_type: AggregateType::Sum,
                 history: Vec::new(),
-                bound: Some((0,24,),),
+                bound: 24,
             },
             AggregateFunction {
                 idx: 11,
@@ -550,7 +550,7 @@ fn time_behaviour_test() {
     // Test for violation at 23_000
     //Reset the property and set number as 23
     streams[0].operations[12] = Operation::Number(23_000);
-    streams[0].operations[9] = Operation::TimeFunction { idx: 10, function_type: AggregateType::Sum, history: Vec::new(), bound: Some((0,24,),),};
+    streams[0].operations[9] = Operation::TimeFunction { idx: 10, function_type: AggregateType::Sum, history: Vec::new(), bound: 24,};
     streams[0].time_verdicts.clear();
     let result = run_x_monitor_steps(streams, &device_stream, 0, 100);
     for (idx, value) in result {
@@ -563,7 +563,7 @@ fn time_behaviour_test() {
 
     // Test no violation
     streams[0].operations[12] = Operation::Number(25_000);
-    streams[0].operations[9] = Operation::TimeFunction { idx: 10, function_type: AggregateType::Sum, history: Vec::new(), bound: Some((0,24,),),};
+    streams[0].operations[9] = Operation::TimeFunction { idx: 10, function_type: AggregateType::Sum, history: Vec::new(), bound: 24,};
     streams[0].time_verdicts.clear();
     let result = run_x_monitor_steps(streams, &device_stream, 0, 100);
     
