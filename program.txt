@@ -1,2 +1,2 @@
-always sumtime[2s*s](t) > 5s;
+always sumtime[1s](t) = t;
 

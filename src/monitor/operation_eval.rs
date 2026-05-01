@@ -77,10 +77,9 @@ pub(crate) fn eval_operations<'a>(
     let mut value_stack: Vec<StreamOutput> = Vec::with_capacity(50);
     let mut device_stack: Vec<DeviceStack> = Vec::with_capacity(50);
     let mut device_pointer: Option<&IoTDevice> = None;
-    let mut time_offset_stack: Vec<i128> = Vec::with_capacity(50);
+    let mut time_offset_stack: Vec<(i128, i128)> = Vec::with_capacity(50);
 
     worklist_stack.push((0usize, StepType::Deepen));
-    time_offset_stack.push(*t_spawn);
 
     while let Some((cur_idx, step_type)) = worklist_stack.pop() {
         let cur_op = &mut operations[cur_idx] as *mut Operation;
@@ -89,7 +88,7 @@ pub(crate) fn eval_operations<'a>(
             // Base cases
             (Operation::Number(val), _) => value_stack.push((*val).into()),
             (Operation::String(str), _) => value_stack.push((&*str).into()),
-            (Operation::SpawnTime, _) => value_stack.push((*t_spawn * 1_000).into()),
+            (Operation::SpawnTime, _) => value_stack.push((time_offset_stack.last().map(|(ts,_)| ts).unwrap_or(t_spawn) * 1_000).into()),
             (Operation::Member(mem_type), _) => {
                 value_stack.push(match mem_type {
                     MemberType::Power =>  device_pointer.ok_or(errors::Error::DevicePointer)?.power.into(),
@@ -100,7 +99,7 @@ pub(crate) fn eval_operations<'a>(
             (Operation::Binary { idx_lhs, .. }, Deepen) => {
                 worklist_stack.extend([(cur_idx, ReducePartial), (*idx_lhs, Deepen)]);
             }
-            ( Operation::Binary { bin_op, idx_rhs, .. }, ReducePartial) => {
+            (Operation::Binary { bin_op, idx_rhs, .. }, ReducePartial) => {
                 //If the binary operation is an 'or' and returned true, then the rest shouldn't be evaluated
                 // Read as: 'or' -> last_val.is_false
                 if !matches!(bin_op, BinaryOperators::Or)
@@ -247,6 +246,7 @@ pub(crate) fn eval_operations<'a>(
                     //Within Bound For Always
                     (true, true, ExprLTL::Always) => worklist_stack.extend([(cur_idx, Reduce), (*idx, Deepen)]),
                     //Bound has been passed For always
+                    // TODO: Den skal ændres, så den ikke bare blindt siger push true
                     (true, false, ExprLTL::Always) => value_stack.push(true.into()),
                     
                     //Within Bound For Eventually
@@ -260,6 +260,7 @@ pub(crate) fn eval_operations<'a>(
                         }
                     },
                     //Bound has been passed For Eventually
+                    // TODO: Den skal ændres, så den ikke bare blindt siger push true
                     (true, false, ExprLTL::Eventually(his)) => {
                         let his_idx = (*t_spawn % (*b - *a + 1)) as usize;
                         match his.get(his_idx) {
