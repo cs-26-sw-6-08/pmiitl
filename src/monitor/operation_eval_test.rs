@@ -103,7 +103,7 @@ fn ltl_expressions_bounded() {
     let mut always = [
         Operation::LTLBounded { bound: (1,4), idx: 1, not: false, ltl_type: ExprLTL::Always }, 
     ].into_iter().chain(ops.clone()).collect::<Vec<_>>();
-    
+    // [][1,4] t=2
     let mut eventually = [
         Operation::LTLBounded { bound: (1,4), idx: 1, not: false, ltl_type: ExprLTL::Eventually(Vec::new()) }, 
     ].into_iter().chain(ops.clone()).collect::<Vec<_>>();
@@ -118,7 +118,7 @@ fn ltl_expressions_bounded() {
         eval_operations(&mut always, &devices, &2, &2).unwrap()
     );
     assert_eq!(
-        StreamOutput::from(false).to_undecided(),
+        StreamOutput::from(true).to_undecided(),
         eval_operations(&mut always, &devices, &2, &3).unwrap()
     );
     assert_eq!(
@@ -131,17 +131,17 @@ fn ltl_expressions_bounded() {
     );
     //Within bound -> Should be undecided
     assert_eq!(
-        StreamOutput::from(false).to_undecided(),
-        eval_operations(&mut eventually, &devices, &2, &5).unwrap()
+        StreamOutput::from(false),
+        eval_operations(&mut eventually, &devices, &1, &5).unwrap()
     );
     //Outside bound --> Should be decided
     assert_eq!(
         StreamOutput::from(false),
-        eval_operations(&mut eventually, &devices, &2, &6).unwrap()
+        eval_operations(&mut eventually, &devices, &1, &6).unwrap()
     );
     assert_eq!(
         StreamOutput::from(false),
-        eval_operations(&mut eventually, &devices, &2, &7).unwrap()
+        eval_operations(&mut eventually, &devices, &1, &7).unwrap()
     );
 }
 
