@@ -26,6 +26,7 @@ impl Program {
         let mut interval = interval(Duration::from_millis(time_interval as u64));
 
         let mut t = 0;
+        // panic!();
         
         loop {
             if !speed{
@@ -40,7 +41,21 @@ impl Program {
                 println!("--- Interval {}", format!("[{}, {}]",t,t+999).blue().bold());
             }
 
-            let devices: IoTStream = ( instrumentation.fetch_device_states().await? ).into();
+            // let devices: IoTStream = ( instrumentation.fetch_device_states().await? ).into();
+            let devices: IoTStream = vec![("Christian".into(),9).into(),("Christian".into(),9).into(),("Christian".into(),9).into(),("Christian".into(),9).into(),("Christian".into(),9).into(),("Christian".into(),9).into(),("Christian".into(),9).into()].into();
+            // println!("\n\n{:#?}\n\n", streams[0].operations[12]);
+            // let sumtime_stream = streams[0].operations[12].clone();
+            // match sumtime_stream {
+            //     crate::monitor_setup::operation_types::Operation::TimeFunction { idx, function_type, history, bound } => {
+            //         if history.len() > 3 {
+            //             println!("\n\n{}\n\n", format!("{:#?}",history.clone()).blue());
+            //             println!("{t:#?}");
+            //             println!("{:#?}", history.len());
+            //             panic!()
+            //         }
+            //     },
+            //     _ => (),
+            // }
 
             async {
                 for el in Self::monitor_logic(streams, &t, &devices) {

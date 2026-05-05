@@ -58,8 +58,10 @@ async fn main() {
     if let Err(err) = program.compile_properties() {
         return error_print(format!("{}",err));
     }
+
+    println!("{:#?}",program.environment);
     
-    if let Err(err) = program.monitor(instrumentation, 1_000, false).await {
+    if let Err(err) = program.monitor(instrumentation, 1_000, true   ).await {
         return error_print(format!("{}",err));
     }
 }
