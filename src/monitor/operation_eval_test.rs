@@ -184,17 +184,23 @@ fn time_functions_unbounded() {
         Operation::TimeFunction { idx: 1, function_type: AggregateType::Avg, history: Vec::new(), bound: 100 },
         Operation::AggregateFunction { idx: 2, function_type: AggregateType::Sum }, 
         Operation::Number(1_000)
-    ];
-    let eval_res = (0..=2).try_fold(StreamOutput::from(0), |_, t_c| {
+    ];;
+    let eval_res = (0..=100).try_fold(StreamOutput::from(0), |_, t_c| {
          eval_operations(&mut avg_time, &devices, &0, &t_c)
     });
     assert_eq!(
         StreamOutput::from(15_000/3).to_undecided(),
         eval_res.unwrap()
     );
-    (3..100).for_each(|val| {
+
+    let mut avg_time = [
+        Operation::TimeFunction { idx: 1, function_type: AggregateType::Avg, history: Vec::new(), bound: 100 },
+        Operation::AggregateFunction { idx: 2, function_type: AggregateType::Sum }, 
+        Operation::Number(1_000)
+    ];;
+    (0..100).for_each(|val| {
         assert_eq!(
-            StreamOutput::from((val*5000 + 5000)/(val+1)).to_undecided(),
+            StreamOutput::from((val*5000 + 5000)/(100+1)).to_undecided(),
             eval_operations(&mut avg_time, &devices, &0, &val).unwrap()
         )
     });

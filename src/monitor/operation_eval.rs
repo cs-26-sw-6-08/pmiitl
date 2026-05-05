@@ -209,8 +209,7 @@ pub(crate) fn eval_operations<'a>(
                             function_type_computation(
                                 function_type,
                                 prev_val,
-                                t_lower,
-                                *t_current - 1,
+                                *b
                             )
                             .into(),
                         );
@@ -229,7 +228,7 @@ pub(crate) fn eval_operations<'a>(
             ) => {
                 let val = value_stack.pop_or_err()?.get_value().get_num()?;
                 let val = time_function_reduce_step(val, *t_spawn, *bound, history);
-                let val: StreamOutput = function_type_computation(function_type, val, *t_spawn, *t_current).into();
+                let val: StreamOutput = function_type_computation(function_type, val, *bound).into();
                 value_stack.push(val.to_undecided());
             }
 
@@ -344,12 +343,11 @@ pub(crate) fn eval_operations<'a>(
 fn function_type_computation(
     function_type: &AggregateType,
     cur_val: i128,
-    t_spawn: i128,
-    t_current: i128,
+    range: i128
 ) -> i128 {
     match function_type {
         AggregateType::Sum => cur_val,
-        AggregateType::Avg => cur_val / (t_current - t_spawn + 1),
+        AggregateType::Avg => cur_val / (range + 1),
     }
 }
 
