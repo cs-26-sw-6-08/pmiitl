@@ -23,6 +23,8 @@ pub enum Error {
     Unmonitorable(Expr),
     #[error("Property at line {0} is not monitorable")]
     UnmonitorableLine(usize),
+    #[error("Only the foreach tempoeral expression is allowed within aggregate functions")]
+    OnlyForeachTemporalExpressionAllowed,
 
     #[error("Invalid MIITL Interval Expression")]
     InvalidIntervalExpr,
