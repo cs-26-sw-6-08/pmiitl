@@ -51,8 +51,8 @@ impl Expr {
             Expr::UnaryOperations { operand, .. } => {
                 operand.contains_disallowed_temporal_expressions()
             },
-            Expr::Function { aggregate_type, .. } => {
-                aggregate_type.ne(&FunctionType::Foreach)
+            Expr::Function { aggregate_type, expr, .. } => {
+                aggregate_type.ne(&FunctionType::Foreach) || expr.contains_disallowed_temporal_expressions()
             },
             _ => false,
         }
