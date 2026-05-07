@@ -6,55 +6,50 @@ use crate::program::function_types::FunctionType;
 
 impl Expr {
     pub fn monitorability_check(&self) -> Result<(), Box<dyn Error>> {
+        self.internal_monitorability_check(false)
+    }
+
+    fn internal_monitorability_check(&self, inside_temporal_aggregate: bool) -> Result<(), Box<dyn Error>> {
         match self {
             Expr::Number(_) | Expr::String(_) | Expr::CurrentTime | Expr::Member { access_type:_ } => Ok(()),
             Expr::Interval { start: _, end: _ } => Ok(()),
             Expr::Always { interval, not: false, expr } => {
-                if interval.is_some() {
+                if inside_temporal_aggregate {
+                    return Err(errors::Error::OnlyForeachTemporalExpressionAllowed.into())
+                } else if interval.is_some() {
                     return Ok(());
                 }
-                expr.monitorability_check()?;
+                expr.internal_monitorability_check(inside_temporal_aggregate)?;
                 Ok(())
             },
             Expr::Eventually { interval, .. } => {
-                if interval.is_some() {
+                 if inside_temporal_aggregate {
+                    return Err(errors::Error::OnlyForeachTemporalExpressionAllowed.into())
+                } else if interval.is_some() {
                     return Ok(());
                 }
                 Err(errors::Error::Unmonitorable(self.clone()).into())
             },
-            Expr::BinaryOperations { lhs, rhs, operator: _ } => {
-                lhs.monitorability_check()?;
-                rhs.monitorability_check()?;
+            Expr::BinaryOperations { lhs, rhs, .. } => {
+                lhs.internal_monitorability_check(inside_temporal_aggregate)?;
+                rhs.internal_monitorability_check(inside_temporal_aggregate)?;
                 Ok(())
             },
             Expr::UnaryOperations { operand, operator:_ } => {
-                operand.monitorability_check()?;
+                operand.internal_monitorability_check(inside_temporal_aggregate)?;
                 Ok(())
             },
             Expr::Function { aggregate_type, expr, bound: _ } => {
-                if aggregate_type.ne(&FunctionType::Foreach) && expr.contains_disallowed_temporal_expressions() {
+                if (aggregate_type.eq(&FunctionType::Sumtime) || aggregate_type.eq(&FunctionType::Avgtime) || aggregate_type.eq(&FunctionType::Counttime)) && inside_temporal_aggregate {
                         return Err(errors::Error::OnlyForeachTemporalExpressionAllowed.into())
+                } else if aggregate_type.ne(&FunctionType::Foreach) {
+                    expr.internal_monitorability_check(true)?;
+                } else {
+                    expr.internal_monitorability_check(inside_temporal_aggregate)?;
                 }
-                expr.monitorability_check()?;
                 Ok(())
             },
             _ => Err(errors::Error::Unmonitorable(self.clone()).into())
-        }
-    }
-
-    fn contains_disallowed_temporal_expressions(&self) -> bool {
-        match self {
-            Expr::Always { .. } | Expr::Eventually { .. } => true,
-            Expr::BinaryOperations { lhs, rhs, .. } => {
-                lhs.contains_disallowed_temporal_expressions() || rhs.contains_disallowed_temporal_expressions()
-            },
-            Expr::UnaryOperations { operand, .. } => {
-                operand.contains_disallowed_temporal_expressions()
-            },
-            Expr::Function { aggregate_type, expr, .. } => {
-                aggregate_type.ne(&FunctionType::Foreach) || expr.contains_disallowed_temporal_expressions()
-            },
-            _ => false,
         }
     }
 }
