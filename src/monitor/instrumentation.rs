@@ -41,7 +41,7 @@ impl Instrumentation {
             resp.unwrap().json::<Vec<HomeAssistantEntity>>()
             .await.unwrap_or(Vec::new());
 
-        let filtered_response = decoded
+        decoded
             .iter()
             .filter_map(|entity| {
                 if entity.entity_id.contains("sensor.") //It should only filter for sensors
@@ -65,9 +65,7 @@ impl Instrumentation {
                     None
                 }
             })
-            .collect();
-
-        filtered_response
+            .collect()
     }
 }
 

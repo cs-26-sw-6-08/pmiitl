@@ -1,2 +1,1 @@
 always sumtime[1s](t) = t;
-

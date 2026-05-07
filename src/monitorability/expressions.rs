@@ -2,6 +2,7 @@ use std::error::Error;
 
 use crate::program::expressions::Expr;
 use crate::errors;
+use crate::program::function_types::FunctionType;
 
 impl Expr {
     pub fn monitorability_check(&self) -> Result<(), Box<dyn Error>> {
@@ -30,11 +31,30 @@ impl Expr {
                 operand.monitorability_check()?;
                 Ok(())
             },
-            Expr::Function { aggregate_type:_, expr, bound: _ } => {
+            Expr::Function { aggregate_type, expr, bound: _ } => {
+                if aggregate_type.ne(&FunctionType::Foreach) && expr.contains_disallowed_temporal_expressions() {
+                        return Err(errors::Error::OnlyForeachTemporalExpressionAllowed.into())
+                }
                 expr.monitorability_check()?;
                 Ok(())
             },
             _ => Err(errors::Error::Unmonitorable(self.clone()).into())
+        }
+    }
+
+    fn contains_disallowed_temporal_expressions(&self) -> bool {
+        match self {
+            Expr::Always { .. } | Expr::Eventually { .. } => true,
+            Expr::BinaryOperations { lhs, rhs, .. } => {
+                lhs.contains_disallowed_temporal_expressions() || rhs.contains_disallowed_temporal_expressions()
+            },
+            Expr::UnaryOperations { operand, .. } => {
+                operand.contains_disallowed_temporal_expressions()
+            },
+            Expr::Function { aggregate_type, expr, .. } => {
+                aggregate_type.ne(&FunctionType::Foreach) || expr.contains_disallowed_temporal_expressions()
+            },
+            _ => false,
         }
     }
 }
