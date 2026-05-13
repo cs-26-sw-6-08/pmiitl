@@ -13,20 +13,19 @@ impl Expr {
         match self {
             Expr::Number(_) | Expr::String(_) | Expr::CurrentTime | Expr::Member { access_type:_ } => Ok(()),
             Expr::Interval { start: _, end: _ } => Ok(()),
-            Expr::Always { interval, not: false, expr } => {
+            Expr::Always { not: false, expr, .. } => {
                 if inside_temporal_aggregate {
                     return Err(errors::Error::OnlyForeachTemporalExpressionAllowed.into())
-                } else if interval.is_some() {
-                    return Ok(());
                 }
                 expr.internal_monitorability_check(inside_temporal_aggregate)?;
                 Ok(())
             },
-            Expr::Eventually { interval, .. } => {
+            Expr::Eventually { interval, expr, .. } => {
                  if inside_temporal_aggregate {
                     return Err(errors::Error::OnlyForeachTemporalExpressionAllowed.into())
                 } else if interval.is_some() {
-                    return Ok(());
+                    expr.internal_monitorability_check(inside_temporal_aggregate)?;
+                    return Ok(())
                 }
                 Err(errors::Error::Unmonitorable(self.clone()).into())
             },

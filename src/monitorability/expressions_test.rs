@@ -12,12 +12,12 @@ fn should_pass(){
     assert!(eventually_interval_expr(interval_expr(number_expr(), number_expr()),number_expr()).monitorability_check().is_ok());
     // Always eventually interval = success
     assert!(always_expr(eventually_interval_expr(interval_expr(number_expr(), number_expr()), number_expr())).monitorability_check().is_ok());
-    // Always interval eventually = success
-    assert!(always_interval_expr(interval_expr(number_expr(), number_expr()), eventually_expr(number_expr())).monitorability_check().is_ok());
+    // Always interval eventually interval = success
+    assert!(always_interval_expr(interval_expr(number_expr(), number_expr()), eventually_interval_expr(interval_expr(number_expr(), number_expr()),number_expr())).monitorability_check().is_ok());
     // Eventually interval always = success
     assert!(eventually_interval_expr(interval_expr(number_expr(), number_expr()), always_expr(number_expr())).monitorability_check().is_ok());
-    // Eventually interval eventually = success
-    assert!(eventually_interval_expr(interval_expr(number_expr(), number_expr()), eventually_expr(number_expr())).monitorability_check().is_ok());
+    // Eventually interval eventually interval = success
+    assert!(eventually_interval_expr(interval_expr(number_expr(), number_expr()), eventually_interval_expr(interval_expr(number_expr(), number_expr()), number_expr())).monitorability_check().is_ok());
     // Always bool and always bool = success
     assert!(always_expr(binary_expr(number_expr(), always_expr(number_expr()), BinaryOperators::And)).monitorability_check().is_ok());
     // Always bool or always bool = success
