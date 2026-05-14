@@ -11,7 +11,7 @@ docker compose up
 #### Step 2 - Restore backup
 1. navigate to:
 ```sh
-https://localhost:8123
+http://localhost:8123
 ```
 2. Click to restore the backup
 3. Select the included `restore_backup.tar`
