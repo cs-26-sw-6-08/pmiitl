@@ -30,7 +30,7 @@ impl Program {
         #[cfg(not(debug_assertions))]
         {
             println!("-----------------------------------");
-            println!("Started Monitoring Home Assistant");
+            println!("Started monitoring Home Assistant");
             println!("Violations will be printed below:");
             println!("-----------------------------------");
         }
