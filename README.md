@@ -25,4 +25,4 @@ the monitor should now output violations occurring
 ```sh
 docker compose restart monitor
 ```
-3. the monitor should not output violations occurring
+3. the monitor should now output violations occurring
