@@ -21,8 +21,7 @@ homeassistant:
       trusted_networks:
         - 127.0.0.1
         - ::1
-        - 192.168.0.1/24
-        - 192.168.1.0/24
+        - 192.168.0.0/16
         - 10.27.0.0/16
       allow_bypass_login: true 
     - type: homeassistant
