@@ -14,7 +14,7 @@ docker compose up
 https://localhost:8123
 ```
 2. Click to restore the backup
-3. Select the included restore_backup.tar
+3. Select the included `restore_backup.tar`
 
 #### Step 3 - Monitoring
 the monitor should now output violations occurring
