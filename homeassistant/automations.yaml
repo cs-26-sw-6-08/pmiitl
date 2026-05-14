@@ -1,0 +1,640 @@
+- id: '1777274471810'
+  alias: hverdag lys tænd morgen
+  description: ''
+  triggers:
+  - trigger: time
+    at: 06:00:00
+    weekday:
+    - mon
+    - tue
+    - wed
+    - thu
+    - fri
+  conditions: []
+  actions:
+  - action: input_boolean.turn_on
+    metadata: {}
+    target:
+      entity_id:
+      - input_boolean.kitchen_light
+      - input_boolean.living_room_light
+      - input_boolean.living_room_lamp_plug
+    data: {}
+  - action: input_number.set_value
+    metadata: {}
+    target:
+      entity_id: input_number.kitchen_light_brightness
+    data:
+      value: 200
+  - action: input_number.set_value
+    metadata: {}
+    target:
+      entity_id: input_number.kitchen_light_color_temp
+    data:
+      value: 350
+  mode: single
+- id: '1777274535823'
+  alias: hverdag lys tænd aften
+  description: ''
+  triggers:
+  - trigger: time
+    at: '15:30:00'
+    weekday:
+    - mon
+    - tue
+    - wed
+    - thu
+    - fri
+  conditions: []
+  actions:
+  - action: input_boolean.turn_on
+    metadata: {}
+    target:
+      entity_id:
+      - input_boolean.kitchen_light
+      - input_boolean.living_room_light
+      - input_boolean.living_room_lamp_plug
+    data: {}
+  - action: input_number.set_value
+    metadata: {}
+    target:
+      entity_id:
+      - input_number.kitchen_light_brightness
+    data:
+      value: 255
+  - action: input_number.set_value
+    metadata: {}
+    target:
+      entity_id: input_number.kitchen_light_color_temp
+    data:
+      value: 153
+  mode: single
+- id: '1777274593968'
+  alias: hverdag lys sluk morgen
+  description: ''
+  triggers:
+  - trigger: time
+    at: 08:00:00
+    weekday:
+    - mon
+    - tue
+    - wed
+    - thu
+    - fri
+  conditions: []
+  actions:
+  - action: input_boolean.turn_off
+    metadata: {}
+    target:
+      entity_id:
+      - input_boolean.kitchen_light
+      - input_boolean.living_room_light
+      - input_boolean.living_room_lamp_plug
+    data: {}
+  mode: single
+- id: '1777274631940'
+  alias: hverdag lys sluk aften
+  description: ''
+  triggers:
+  - trigger: time
+    at: '23:00:00'
+    weekday:
+    - mon
+    - tue
+    - wed
+    - thu
+    - fri
+    - sat
+    - sun
+  conditions: []
+  actions:
+  - action: input_boolean.turn_off
+    metadata: {}
+    target:
+      entity_id:
+      - input_boolean.kitchen_light
+      - input_boolean.living_room_light
+      - input_boolean.living_room_lamp_plug
+    data: {}
+  mode: single
+- id: '1777274720424'
+  alias: weekend lys tænd
+  description: ''
+  triggers:
+  - trigger: time
+    at: 08:00:00
+    weekday:
+    - sat
+    - sun
+  conditions: []
+  actions:
+  - action: input_boolean.turn_on
+    metadata: {}
+    target:
+      entity_id:
+      - input_boolean.kitchen_light
+      - input_boolean.living_room_light
+      - input_boolean.living_room_lamp_plug
+    data: {}
+  - action: input_number.set_value
+    metadata: {}
+    target:
+      entity_id: input_number.kitchen_light_brightness
+    data:
+      value: 255
+  - action: input_number.set_value
+    metadata: {}
+    target:
+      entity_id: input_number.kitchen_light_color_temp
+    data:
+      value: 153
+  mode: single
+- id: '1777274983016'
+  alias: ovn tænd mandag, tirsdag, onsdag
+  description: ''
+  triggers:
+  - trigger: time
+    at: '18:00:00'
+    weekday:
+    - mon
+    - tue
+    - wed
+  conditions: []
+  actions:
+  - action: input_select.select_option
+    metadata: {}
+    target:
+      entity_id: input_select.kitchen_oven
+    data:
+      option: Convection
+  mode: single
+- id: '1777275034052'
+  alias: ovn tænd torsdag, fredag, lørdag
+  description: ''
+  triggers:
+  - trigger: time
+    at: '18:00:00'
+    weekday:
+    - thu
+    - fri
+    - sat
+  conditions: []
+  actions:
+  - action: input_select.select_option
+    metadata: {}
+    target:
+      entity_id: input_select.kitchen_oven
+    data:
+      option: Conventional Heat
+  mode: single
+- id: '1777275078258'
+  alias: ovn tænd søndag
+  description: ''
+  triggers:
+  - trigger: time
+    at: '18:00:00'
+    weekday:
+    - sun
+  conditions: []
+  actions:
+  - action: input_select.select_option
+    metadata: {}
+    target:
+      entity_id: input_select.kitchen_oven
+    data:
+      option: Grill
+  mode: single
+- id: '1777275162123'
+  alias: ovn sluk alle dage
+  description: ''
+  triggers:
+  - trigger: time
+    at: '19:00:00'
+    weekday:
+    - sun
+    - sat
+    - fri
+    - thu
+    - wed
+    - tue
+    - mon
+  conditions: []
+  actions:
+  - action: input_select.select_option
+    metadata: {}
+    target:
+      entity_id: input_select.kitchen_oven
+    data:
+      option: 'Off'
+  mode: single
+- id: '1777275296048'
+  alias: hverdag kitchen plug tænd morgen
+  description: ''
+  triggers:
+  - trigger: time
+    at: 06:30:00
+    weekday:
+    - mon
+    - tue
+    - wed
+    - thu
+    - fri
+  conditions: []
+  actions:
+  - action: input_boolean.turn_on
+    metadata: {}
+    target:
+      entity_id: input_boolean.kitchen_plug
+    data: {}
+  mode: single
+- id: '1777275347720'
+  alias: hverdag kitchen plug sluk
+  description: ''
+  triggers:
+  - trigger: time
+    at: 06:35:00
+    weekday:
+    - mon
+    - tue
+    - wed
+    - thu
+    - fri
+  conditions: []
+  actions:
+  - action: input_boolean.turn_off
+    metadata: {}
+    target:
+      entity_id: input_boolean.kitchen_plug
+    data: {}
+  mode: single
+- id: '1777275387188'
+  alias: weekend kitchen plug tænd
+  description: ''
+  triggers:
+  - trigger: time
+    at: 08:30:00
+    weekday:
+    - sat
+    - sun
+  conditions: []
+  actions:
+  - action: input_boolean.turn_on
+    metadata: {}
+    target:
+      entity_id: input_boolean.kitchen_plug
+    data: {}
+  mode: single
+- id: '1777275414875'
+  alias: weekend kitchen plug sluk
+  description: ''
+  triggers:
+  - trigger: time
+    at: 08:35:00
+  conditions: []
+  actions:
+  - action: input_boolean.turn_off
+    metadata: {}
+    target:
+      entity_id: input_boolean.kitchen_plug
+    data: {}
+  mode: single
+- id: '1777275524501'
+  alias: alle dage tv tænd
+  description: ''
+  triggers:
+  - trigger: time
+    at: '21:00:00'
+    weekday:
+    - mon
+    - tue
+    - wed
+    - thu
+    - fri
+    - sat
+    - sun
+  conditions: []
+  actions:
+  - action: input_boolean.turn_on
+    metadata: {}
+    target:
+      entity_id: input_boolean.living_room_television
+    data: {}
+  mode: single
+- id: '1777275609727'
+  alias: alle dage tv sluk
+  description: ''
+  triggers:
+  - trigger: time
+    at: '22:30:00'
+    weekday:
+    - mon
+    - tue
+    - wed
+    - thu
+    - fri
+    - sat
+    - sun
+  conditions: []
+  actions:
+  - action: input_boolean.turn_off
+    metadata: {}
+    target:
+      entity_id: input_boolean.living_room_television
+    data: {}
+  mode: single
+- id: '1777278198610'
+  alias: roomba start alle dage
+  description: ''
+  triggers:
+  - trigger: time
+    at: '16:00:00'
+    weekday:
+    - mon
+    - tue
+    - wed
+    - fri
+    - thu
+    - sat
+    - sun
+  conditions: []
+  actions:
+  - action: vacuum.start
+    metadata: {}
+    target:
+      entity_id: vacuum.living_room_roomba
+    data: {}
+  mode: single
+- id: '1777278246607'
+  alias: 'roomba stop alle dage '
+  description: ''
+  triggers:
+  - trigger: time
+    at: '17:00:00'
+    weekday:
+    - mon
+    - tue
+    - wed
+    - thu
+    - fri
+    - sat
+    - sun
+  conditions: []
+  actions:
+  - action: vacuum.return_to_base
+    metadata: {}
+    target:
+      entity_id: vacuum.living_room_roomba
+    data: {}
+  mode: single
+- id: '1777278482828'
+  alias: 'gulvarme tænd alle dage '
+  description: ''
+  triggers:
+  - trigger: time
+    at: 04:00:00
+    weekday:
+    - mon
+    - tue
+    - wed
+    - thu
+    - fri
+    - sat
+    - sun
+  conditions: []
+  actions:
+  - action: input_boolean.turn_on
+    metadata: {}
+    target:
+      entity_id: input_boolean.utility_floor_heating
+    data: {}
+  mode: single
+- id: '1777278520012'
+  alias: gulvarme sluk alle dage
+  description: ''
+  triggers:
+  - trigger: time
+    at: 05:00:00
+    weekday:
+    - mon
+    - tue
+    - wed
+    - thu
+    - fri
+    - sat
+    - sun
+  conditions: []
+  actions:
+  - action: input_boolean.turn_off
+    metadata: {}
+    target:
+      entity_id: input_boolean.utility_floor_heating
+    data: {}
+  mode: single
+- id: '1777278817018'
+  alias: 'opvask tænd mandag  '
+  description: ''
+  triggers:
+  - trigger: time
+    at: '20:30:00'
+    weekday:
+    - mon
+  conditions: []
+  actions:
+  - action: input_select.select_option
+    metadata: {}
+    target:
+      entity_id: input_select.kitchen_dishwasher
+    data:
+      option: Eco
+  mode: single
+- id: '1777278862035'
+  alias: opvask tænd søndag
+  description: ''
+  triggers:
+  - trigger: time
+    at: '20:30:00'
+    weekday:
+    - sun
+  conditions: []
+  actions:
+  - action: input_select.select_option
+    metadata: {}
+    target:
+      entity_id: input_select.kitchen_dishwasher
+    data:
+      option: Express
+  mode: single
+- id: '1777278908922'
+  alias: opvask tænd onsdag og fredag
+  description: ''
+  triggers:
+  - trigger: time
+    at: '20:30:00'
+    weekday:
+    - wed
+    - fri
+  conditions: []
+  actions:
+  - action: input_select.select_option
+    metadata: {}
+    target:
+      entity_id: input_select.kitchen_dishwasher
+    data:
+      option: Intensive
+  mode: single
+- id: '1777278976430'
+  alias: opvask sluk alle dage
+  description: ''
+  triggers:
+  - trigger: time
+    at: '21:30:00'
+    weekday:
+    - mon
+    - wed
+    - fri
+    - sun
+  conditions: []
+  actions:
+  - action: input_select.select_option
+    metadata: {}
+    target:
+      entity_id: input_select.kitchen_dishwasher
+    data:
+      option: 'Off'
+  mode: single
+- id: '1777279300087'
+  alias: vask tænd tirsdag
+  description: ''
+  triggers:
+  - trigger: time
+    at: '14:00:00'
+    weekday:
+    - tue
+  conditions: []
+  actions:
+  - action: input_select.select_option
+    metadata: {}
+    target:
+      entity_id: input_select.utility_washer
+    data:
+      option: Synthetics
+  mode: single
+- id: '1777279328322'
+  alias: vask sluk tirsdag
+  description: ''
+  triggers:
+  - trigger: time
+    at: '15:30:00'
+    weekday:
+    - tue
+  conditions: []
+  actions:
+  - action: input_select.select_option
+    metadata: {}
+    target:
+      entity_id: input_select.utility_washer
+    data:
+      option: 'Off'
+  mode: single
+- id: '1777279368653'
+  alias: vask tænd lørdag
+  description: ''
+  triggers:
+  - trigger: time
+    at: '14:00:00'
+    weekday:
+    - sat
+  conditions: []
+  actions:
+  - action: input_select.select_option
+    metadata: {}
+    target:
+      entity_id: input_select.utility_washer
+    data:
+      option: Cotton60
+  mode: single
+- id: '1777279402215'
+  alias: vask sluk lørdag
+  description: ''
+  triggers:
+  - trigger: time
+    at: '15:30:00'
+    weekday:
+    - sat
+  conditions: []
+  actions:
+  - action: input_select.select_option
+    metadata: {}
+    target:
+      entity_id: input_select.utility_washer
+    data:
+      option: 'Off'
+  mode: single
+- id: '1777279470040'
+  alias: tørretumbler tænd tirsdag
+  description: ''
+  triggers:
+  - trigger: time
+    at: '15:30:00'
+    weekday:
+    - tue
+  conditions: []
+  actions:
+  - action: input_select.select_option
+    metadata: {}
+    target:
+      entity_id: input_select.utility_dryer
+    data:
+      option: Synthetics
+  mode: single
+- id: '1777279504799'
+  alias: tørretumbler sluk tirsdag
+  description: ''
+  triggers:
+  - trigger: time
+    at: '17:00:00'
+    weekday:
+    - tue
+  conditions: []
+  actions:
+  - action: input_select.select_option
+    metadata: {}
+    target:
+      entity_id: input_select.utility_dryer
+    data:
+      option: 'Off'
+  mode: single
+- id: '1777279678473'
+  alias: tørretumbler tænd lørdag
+  description: ''
+  triggers:
+  - trigger: time
+    at: '15:30:00'
+    weekday:
+    - sat
+  conditions: []
+  actions:
+  - action: input_select.select_option
+    metadata: {}
+    target:
+      entity_id: input_select.utility_dryer
+    data:
+      option: Eco
+  mode: single
+- id: '1777279709261'
+  alias: tørretumbler sluk lørdag
+  description: ''
+  triggers:
+  - trigger: time
+    at: '17:00:00'
+    weekday:
+    - sat
+  conditions: []
+  actions:
+  - action: input_select.select_option
+    metadata: {}
+    target:
+      entity_id: input_select.utility_dryer
+    data:
+      option: 'Off'
+  mode: single
