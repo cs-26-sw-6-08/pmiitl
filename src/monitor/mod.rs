@@ -26,6 +26,12 @@ impl Program {
         let mut interval = interval(Duration::from_millis(time_interval as u64));
 
         let mut t = 0;
+
+        #[cfg(not(debug_assertions))]
+        println!("-----------------------------------");
+        println!("Started Monitoring Home Assistant");
+        println!("Violations will be printed below:");
+        println!("-----------------------------------");
         
         loop {
             if !speed{
