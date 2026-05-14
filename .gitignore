@@ -3,3 +3,4 @@
 /src/grammar/cfg_parser.bin
 /src/grammar/cfg.rs
 .env
+!homeassistant/**

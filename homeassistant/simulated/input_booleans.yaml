@@ -1,0 +1,24 @@
+kitchen_light:
+  icon: mdi:lightbulb
+
+kitchen_plug:
+  name: kitchen_plug
+  icon: mdi:power-plug
+
+living_room_light:
+  icon: mdi:lightbulb
+
+living_room_television:
+  name: television
+  icon: mdi:television-classic
+
+living_room_lamp_plug:
+  name: living_room_plug
+  icon: mdi:power-plug
+
+living_room_roomba_state:
+  icon: mdi:robot-vacuum
+
+utility_floor_heating:
+  name: floor_heating
+  icon: mdi:heating-coil
