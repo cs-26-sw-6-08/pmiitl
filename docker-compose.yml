@@ -1,24 +1,41 @@
+networks:
+  connected:
+    driver: bridge
+
 services:
   homeassistant:
     container_name: homeassistant
     image: "ghcr.io/home-assistant/home-assistant:stable"
     volumes:
-      - ./homeassistant:/config
       - /etc/localtime:/etc/localtime:ro
       - /run/dbus:/run/dbus:ro
     restart: unless-stopped
+    networks:
+      - connected
     privileged: true
     environment:
-      TZ: Europe/Copenhagen
+      - TZ=Europe/Copenhagen
+      - TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIwZTY0MTE4MDc1NTA0MGMzOWM1ZTgwOWY0NTZmNTQyZSIsImlhdCI6MTc3ODc1Nzk4NiwiZXhwIjoyMDk0MTE3OTg2fQ.ap4YmfZ1HmJ-Q6_T6Vx1eJhEP6awk23F6RA6NXo0tww
     ports:
       - 8123:8123
+    healthcheck:
+        test: ["CMD-SHELL", "curl -f -H \"Authorization: Bearer $$TOKEN\" http://localhost:8123/api/states"]
+        interval: 5s
+        timeout: 10s
+        retries: 5
+        start_period: 86400s
   monitor:
     container_name: monitor
     build:
       context: .
       target: final
     depends_on:
-      - homeassistant
+      homeassistant:
+        condition: service_healthy
+    volumes:
+      - ./program.txt:/program.txt
+    networks:
+      - connected
     environment:
-      - BASE_URL=http://localhost:8123
-      - TOKEN=USERAPITOKEN
+      - BASE_URL=http://homeassistant:8123
+      - TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiIwZTY0MTE4MDc1NTA0MGMzOWM1ZTgwOWY0NTZmNTQyZSIsImlhdCI6MTc3ODc1Nzk4NiwiZXhwIjoyMDk0MTE3OTg2fQ.ap4YmfZ1HmJ-Q6_T6Vx1eJhEP6awk23F6RA6NXo0tww

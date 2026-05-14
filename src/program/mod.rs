@@ -30,8 +30,6 @@ impl Program {
         let ast = parsed.get_ast();
         let root = ast.get_root();
 
-        print(root, Vec::new());
-
         for node in root.children(){
             exprs.push(SpannedExpr::new(node)?);
 
