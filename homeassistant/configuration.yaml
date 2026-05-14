@@ -15,6 +15,14 @@ input_number: !include simulated/input_numbers.yaml
 input_select: !include simulated/input_selects.yaml
 template: !include simulated/templates.yaml
 
+http:
+  use_x_forwarded_for: true
+  trusted_proxies:
+    - 127.0.0.1
+    - ::1
+    - 192.168.0.0/16
+    - 10.27.0.0/16
+
 homeassistant:
   auth_providers:
     - type: trusted_networks
