@@ -56,6 +56,8 @@ async fn main() {
     if let Err(err) = program.compile_properties() {
         return error_print(format!("{}",err));
     }
+
+    // println!("{:#?}", program.environment.unwrap()[0].operations);
     
     if let Err(err) = program.monitor(instrumentation, 1_000, false).await {
         return error_print(format!("{}",err));

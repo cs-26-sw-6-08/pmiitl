@@ -40,6 +40,13 @@ pub fn single_device_stream()->IoTStream{
         temp_iot_stream
 }
 
+pub fn empty_device_stream()->IoTStream{
+    let temp_iot_stream: IoTStream = (
+            vec![]
+        ).into();
+        temp_iot_stream
+}
+
 pub fn two_device_stream()->IoTStream{
     let temp_iot_stream: IoTStream = (
             vec![

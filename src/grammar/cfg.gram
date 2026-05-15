@@ -33,7 +33,7 @@ grammar cfg
   {
     Program  -> (MIITLStart';'!)+;
 
-    MIITLStart -> '!'? ('always' | 'eventually')^ Interval? Expr;
+    MIITLStart -> '!'? ('always')^ Interval? Expr;
 
     Interval -> '['!ExprA','!ExprA']'!;
     ExprA  -> ExprA '+'^ ExprA1 | ExprA '-'^ ExprA1 | ExprA1^;
