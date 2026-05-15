@@ -18,13 +18,16 @@ http://localhost:8123
 
 #### Step 4 - Monitoring
 The monitor will start automatically in the console after restoring the backup
+
 Violations of the properties will be written to the console
 
 #### Step 5 - Log in to Home Assistant
-username: demo
-password: demo
+username: `demo`
+
+password: `demo`
 
 When signed in, all demo devices' states can be modified in the dashboard
+
 Furthermore automations simulating the demo homes device states can be found/changed in:
 ```sh
 http://localhost:8123/config/automation/dashboard
