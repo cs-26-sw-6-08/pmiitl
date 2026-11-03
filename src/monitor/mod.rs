@@ -20,6 +20,7 @@ use std::error::Error;
 use std::time::Instant;
 use tokio::time::{Duration, interval};
 
+#[cfg(debug_assertions)]
 use colored::Colorize;
 
 /*
@@ -36,6 +37,7 @@ impl Program {
         instrumentation: Instrumentation,
         time_interval: i128,
         speed: bool,
+        mut on_violation: impl FnMut(usize, i128),
     ) -> Result<(), Box<dyn Error>> {
         let Some(streams) = &mut self.environment else {
             return Err(errors::Error::FieldNotPresent.into());
@@ -79,12 +81,7 @@ impl Program {
             async {
                 for el in Self::monitor_logic(streams, &t, &devices) {
                     let (prop_num, _) = el?;
-                    let msg = format!("Prop {} violated", prop_num + 1);
-                    println!(
-                        "\t{} at time: {}",
-                        msg.red().bold().underline(),
-                        format!("{}s", t).red().bold()
-                    );
+                    on_violation(prop_num, t);
                 }
                 t += time_interval / 1000;
 

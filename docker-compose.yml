@@ -29,11 +29,15 @@ services:
     build:
       context: .
       target: final
+    # Run as the host user so the frontend can save properties to the mounted program.txt
+    user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
     depends_on:
       homeassistant:
         condition: service_healthy
     volumes:
       - ./program.txt:/program.txt
+    ports:
+      - 3000:3000
     networks:
       - connected
     environment:
