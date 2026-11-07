@@ -8,11 +8,13 @@
   :root {
     --bg: #f6f7f9; --panel: #ffffff; --border: #d4d8de; --text: #1d2228; --muted: #6a7380;
     --accent: #2f6fde; --accent-hover: #2459b8; --error: #c4302b; --violation: #b35c00; --info: #2d7d46;
+    --ok: #5cb870;
   }
   @media (prefers-color-scheme: dark) {
     :root {
       --bg: #15181c; --panel: #1e2227; --border: #343a42; --text: #e3e6ea; --muted: #8b939e;
       --accent: #4a86f0; --accent-hover: #6b9cf3; --error: #f0605a; --violation: #f0a04a; --info: #5cc27e;
+      --ok: #a3e4b2;
     }
   }
   * { box-sizing: border-box; }
@@ -27,8 +29,8 @@
   section { display: flex; flex-direction: column; gap: 6px; min-height: 0; }
   #props-section { flex: 1 1 45%; }
   #output-section { flex: 1 1 55%; }
-  label { font-weight: 600; display: flex; justify-content: space-between; align-items: baseline; }
-  label small { font-weight: 400; color: var(--muted); }
+  label, .label { font-weight: 600; display: flex; justify-content: space-between; align-items: baseline; }
+  label small, .label small { font-weight: 400; color: var(--muted); }
   textarea, #output {
     flex: 1; width: 100%; min-height: 120px; margin: 0;
     background: var(--panel); color: var(--text);
@@ -40,7 +42,11 @@
   #output { overflow: auto; white-space: pre-wrap; word-break: break-word; }
   #output .info { color: var(--info); }
   #output .violation { color: var(--violation); }
+  #output .ok { color: var(--ok); }
+  #output.hide-ok .ok { display: none; }
   #output .error { color: var(--error); font-weight: 600; }
+  .label-right { display: flex; gap: 12px; align-items: baseline; }
+  .label .toggle { font-weight: 400; font-size: 13px; display: inline-flex; justify-content: flex-start; gap: 4px; align-items: center; cursor: pointer; }
   #output .empty { color: var(--muted); }
   footer { display: flex; gap: 12px; align-items: center; }
   button {
@@ -62,7 +68,12 @@
   </section>
 
   <section id="output-section">
-    <label>Violations &amp; errors <small id="conn"></small></label>
+    <div class="label">Violations &amp; errors
+      <span class="label-right">
+        <small id="conn"></small>
+        <label class="toggle"><input type="checkbox" id="show-ok"> Show timepoints with no violation</label>
+      </span>
+    </div>
     <div id="output" role="log" aria-live="polite"><span class="empty">No output yet.</span></div>
   </section>
 
@@ -77,6 +88,19 @@
   const pushBtn = document.getElementById('push');
   const status = document.getElementById('status');
   const conn = document.getElementById('conn');
+  const showOk = document.getElementById('show-ok');
+
+  // Display preference is per browser only; the server always sends the lines
+  function applyShowOk() {
+    output.classList.toggle('hide-ok', !showOk.checked);
+    output.scrollTop = output.scrollHeight;
+  }
+  try { showOk.checked = localStorage.getItem('showOk') === '1'; } catch (e) {}
+  showOk.addEventListener('change', () => {
+    try { localStorage.setItem('showOk', showOk.checked ? '1' : '0'); } catch (e) {}
+    applyShowOk();
+  });
+  applyShowOk();
 
   let generation = null;
   let next = 0;

@@ -38,6 +38,7 @@ impl Program {
         time_interval: i128,
         speed: bool,
         mut on_violation: impl FnMut(usize, i128),
+        mut on_no_violation: impl FnMut(i128),
     ) -> Result<(), Box<dyn Error>> {
         let Some(streams) = &mut self.environment else {
             return Err(errors::Error::FieldNotPresent.into());
@@ -79,9 +80,14 @@ impl Program {
             cur_idx = (cur_idx + 1) % size;
 
             async {
+                let mut violated = false;
                 for el in Self::monitor_logic(streams, &t, &devices) {
                     let (prop_num, _) = el?;
+                    violated = true;
                     on_violation(prop_num, t);
+                }
+                if !violated {
+                    on_no_violation(t);
                 }
                 t += time_interval / 1000;
 

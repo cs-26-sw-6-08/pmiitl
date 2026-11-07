@@ -40,6 +40,8 @@ pub fn compile(source: &str) -> Result<Program, Box<dyn Error>> {
 enum LineKind {
     Info,
     Violation,
+    /// A timepoint where no property was violated
+    Ok,
     Error,
 }
 
@@ -151,16 +153,22 @@ fn apply_properties(state: &SharedState, source: String, save: bool) -> Result<(
         };
 
         let result = program
-            .monitor(instrumentation, MONITOR_INTERVAL_MS, false, |prop_num, t| {
-                let text = match prop_lines.get(prop_num) {
-                    Some(line) => {
-                        format!("Prop {} (line {line}) violated at time: {t}s", prop_num + 1)
-                    }
-                    None => format!("Prop {} violated at time: {t}s", prop_num + 1),
-                };
-                println!("\t{text}");
-                push(LineKind::Violation, text);
-            })
+            .monitor(
+                instrumentation,
+                MONITOR_INTERVAL_MS,
+                false,
+                |prop_num, t| {
+                    let text = match prop_lines.get(prop_num) {
+                        Some(line) => {
+                            format!("Prop {} (line {line}) violated at time: {t}s", prop_num + 1)
+                        }
+                        None => format!("Prop {} violated at time: {t}s", prop_num + 1),
+                    };
+                    println!("\t{text}");
+                    push(LineKind::Violation, text);
+                },
+                |t| push(LineKind::Ok, format!("No violation at time: {t}s")),
+            )
             .await
             .map_err(|e| e.to_string());
 
