@@ -8,6 +8,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::monitor::streams::IoTDevice;
 
+#[derive(Clone)]
 pub struct Instrumentation {
     client: Client,
     base_url: String,

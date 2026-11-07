@@ -1,1 +1,2 @@
-always 0;
+always 1;
+always sum((fridge = name) * power) >= 40 w;

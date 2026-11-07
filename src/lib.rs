@@ -7,4 +7,5 @@ pub mod soundness;
 pub mod utils;
 pub mod monitor_setup;
 pub mod monitor;
+pub mod frontend;
 mod errors;

@@ -23,10 +23,15 @@ impl Program {
         let parsed = cfg::parse_string(programstr.to_lowercase());
         let mut exprs : Vec<SpannedExpr> = Vec::new();
         if !parsed.is_success() {
-            for error in parsed.errors.errors {
-                println!("{} at line: {} column: {}", error, error.get_position().line, error.get_position().column);
-            }
-            return Err(errors::Error::HimeParse.into())
+            // Report the first parse error with its position, so callers (CLI or frontend) can show it
+            return Err(match parsed.errors.errors.first() {
+                Some(error) => errors::Error::ProgramParse(
+                    error.to_string(),
+                    error.get_position().line,
+                    error.get_position().column,
+                ).into(),
+                None => errors::Error::HimeParse.into(),
+            });
         }
         let ast = parsed.get_ast();
         let root = ast.get_root();

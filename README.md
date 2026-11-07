@@ -17,9 +17,11 @@ http://localhost:8123
 3. Select the included `restore_backup.tar`
 
 #### Step 4 - Monitoring
-The monitor will start automatically in the console after restoring the backup
-
-Violations of the properties will be written to the console
+The monitor will start automatically after restoring the backup. Open the frontend at:
+```sh
+http://localhost:3000
+```
+Violations of the properties (and errors) are shown in the output box, and are also written to the console
 
 #### Step 5 - Log in to Home Assistant
 username: `demo`
@@ -35,9 +37,7 @@ http://localhost:8123/config/automation/dashboard
 or by navigating to Settings -> Automations & scenes
 
 #### Step 6 - Changing the monitored properties
-1. open `program.txt` and define using the specification language the properties you wish to monitor
-2. using a second terminal enter:
-```sh
-docker compose restart monitor
-```
-3. the monitor should now output violations occurring
+1. In the frontend at `http://localhost:3000`, edit the properties in the top box
+2. Press **Push properties & restart monitor** (or Ctrl+Enter)
+3. If the properties compile, the monitor restarts with them and they are saved to `program.txt`.
+   If not, the error is shown in the output box and the previous monitor keeps running
