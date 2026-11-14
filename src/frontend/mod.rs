@@ -11,7 +11,7 @@ use axum::{
     Json, Router,
     extract::{Query, State},
     response::Html,
-    routing::get,
+    routing::{get, post},
 };
 use serde::{Deserialize, Serialize};
 use tokio::task::JoinHandle;
@@ -69,6 +69,10 @@ impl Inner {
             let excess = self.lines.len() - MAX_LINES;
             self.lines.drain(..excess);
         }
+    }
+
+    fn running(&self) -> bool {
+        self.task.as_ref().is_some_and(|task| !task.is_finished())
     }
 }
 
@@ -146,8 +150,8 @@ fn apply_properties(state: &SharedState, source: String, save: bool) -> Result<(
         let mut program = program;
         let push = |kind: LineKind, text: String| {
             let mut inner = task_state.inner.lock().unwrap();
-            // Ignore output from a monitor that has been replaced
-            if inner.generation == generation {
+            // Ignore output from a monitor that has been replaced or stopped
+            if inner.generation == generation && inner.task.is_some() {
                 inner.push(kind, text);
             }
         };
@@ -208,6 +212,26 @@ async fn push_properties(
     }
 }
 
+/// Stops the running monitor (if any). Output is kept; pushing properties starts it again.
+async fn stop_monitor(State(state): State<SharedState>) -> Json<PushResponse> {
+    let mut inner = state.inner.lock().unwrap();
+    match inner.task.take() {
+        Some(task) => {
+            task.abort();
+            inner.push(LineKind::Info, "Monitor stopped".into());
+            println!("Monitor stopped");
+            Json(PushResponse {
+                ok: true,
+                error: None,
+            })
+        }
+        None => Json(PushResponse {
+            ok: false,
+            error: Some("The monitor is not running".into()),
+        }),
+    }
+}
+
 #[derive(Serialize)]
 struct PropertiesResponse {
     properties: String,
@@ -229,6 +253,7 @@ struct OutputQuery {
 #[derive(Serialize)]
 struct OutputResponse {
     generation: u64,
+    running: bool,
     /// Index to pass as `since` on the next poll
     next: usize,
     lines: Vec<Line>,
@@ -249,6 +274,7 @@ async fn get_output(
     let start = since.saturating_sub(first).min(inner.lines.len());
     Json(OutputResponse {
         generation: inner.generation,
+        running: inner.running(),
         next: inner.total,
         lines: inner.lines[start..].to_vec(),
     })
@@ -269,6 +295,7 @@ pub async fn serve(state: SharedState, addr: &str) -> Result<(), Box<dyn Error>>
         .route("/", get(index))
         .route("/api/properties", get(get_properties).post(push_properties))
         .route("/api/output", get(get_output))
+        .route("/api/stop", post(stop_monitor))
         .with_state(state);
 
     let listener = tokio::net::TcpListener::bind(addr).await?;
