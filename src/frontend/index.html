@@ -55,6 +55,9 @@
   }
   button:hover { background: var(--accent-hover); }
   button:disabled { opacity: .6; cursor: wait; }
+  #stop { flex: 0 0 auto; padding: 12px 24px; background: var(--error); }
+  #stop:hover { filter: brightness(1.1); }
+  #stop:disabled { opacity: .4; cursor: not-allowed; filter: none; }
   #status { color: var(--muted); min-width: 0; }
   #status.bad { color: var(--error); }
 </style>
@@ -79,6 +82,7 @@
 
   <footer>
     <button id="push">Push properties &amp; restart monitor</button>
+    <button id="stop" disabled>Stop monitor</button>
   </footer>
   <div id="status"></div>
 
@@ -86,6 +90,8 @@
   const props = document.getElementById('props');
   const output = document.getElementById('output');
   const pushBtn = document.getElementById('push');
+  const stopBtn = document.getElementById('stop');
+  let running = false;
   const status = document.getElementById('status');
   const conn = document.getElementById('conn');
   const showOk = document.getElementById('show-ok');
@@ -135,6 +141,8 @@
       }
       next = data.next;
       appendLines(data.lines);
+      running = data.running;
+      stopBtn.disabled = !running;
       conn.textContent = '';
     } catch (e) {
       conn.textContent = 'disconnected from monitor';
@@ -154,8 +162,12 @@
       const data = await res.json();
       if (data.ok) {
         setStatus('Monitor restarted.');
-      } else {
+        running = true;
+        stopBtn.disabled = false;
+      } else if (running) {
         setStatus('Compile failed. The previous monitor is still running.', true);
+      } else {
+        setStatus('Compile failed. The monitor is not running.', true);
       }
     } catch (e) {
       setStatus('Could not reach the monitor: ' + e, true);
@@ -164,7 +176,21 @@
     }
   }
 
+  async function stop() {
+    stopBtn.disabled = true;
+    try {
+      const res = await fetch('/api/stop', { method: 'POST' });
+      const data = await res.json();
+      running = false;
+      setStatus(data.ok ? 'Monitor stopped. Push properties to start it again.' : data.error, !data.ok);
+    } catch (e) {
+      setStatus('Could not reach the monitor: ' + e, true);
+      stopBtn.disabled = !running;
+    }
+  }
+
   pushBtn.addEventListener('click', push);
+  stopBtn.addEventListener('click', stop);
   props.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); push(); }
     if (e.key === 'Tab') {

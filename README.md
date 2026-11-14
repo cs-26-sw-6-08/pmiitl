@@ -41,3 +41,4 @@ or by navigating to Settings -> Automations & scenes
 2. Press **Push properties & restart monitor** (or Ctrl+Enter)
 3. If the properties compile, the monitor restarts with them and they are saved to `program.txt`.
    If not, the error is shown in the output box and the previous monitor keeps running
+4. Press **Stop monitor** to stop monitoring; pushing properties starts it again
