@@ -10,7 +10,8 @@ use std::{
 use axum::{
     Json, Router,
     extract::{Query, State},
-    response::Html,
+    http::header,
+    response::{Html, IntoResponse},
     routing::{get, post},
 };
 use serde::{Deserialize, Serialize};
@@ -19,6 +20,8 @@ use tokio::task::JoinHandle;
 use crate::{monitor::instrumentation::Instrumentation, program::Program};
 
 const INDEX_HTML: &str = include_str!("index.html");
+/// Bundled so operator ligatures (!=, >=, ->) look the same on every machine (SIL OFL, see fira-code-OFL.txt)
+const FIRA_CODE: &[u8] = include_bytes!("fira-code.woff2");
 const MONITOR_INTERVAL_MS: i128 = 1_000;
 /// Oldest output lines are dropped beyond this, so a long-running monitor can't grow memory unbounded
 const MAX_LINES: usize = 5_000;
@@ -284,6 +287,16 @@ async fn index() -> Html<&'static str> {
     Html(INDEX_HTML)
 }
 
+async fn font() -> impl IntoResponse {
+    (
+        [
+            (header::CONTENT_TYPE, "font/woff2"),
+            (header::CACHE_CONTROL, "public, max-age=604800"),
+        ],
+        FIRA_CODE,
+    )
+}
+
 /// Starts the monitor with the saved properties (if they compile) and serves the frontend.
 pub async fn serve(state: SharedState, addr: &str) -> Result<(), Box<dyn Error>> {
     let initial = state.inner.lock().unwrap().properties.clone();
@@ -293,6 +306,7 @@ pub async fn serve(state: SharedState, addr: &str) -> Result<(), Box<dyn Error>>
 
     let app = Router::new()
         .route("/", get(index))
+        .route("/fira-code.woff2", get(font))
         .route("/api/properties", get(get_properties).post(push_properties))
         .route("/api/output", get(get_output))
         .route("/api/stop", post(stop_monitor))
