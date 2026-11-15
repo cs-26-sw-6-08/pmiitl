@@ -5,6 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>PMIITL Monitor</title>
 <style>
+  /* Served by the monitor itself, so ligatures (!=, >=, ->) work without internet or installed fonts */
+  @font-face {
+    font-family: 'Fira Code'; src: url('/fira-code.woff2') format('woff2');
+    font-weight: 400; font-style: normal; font-display: swap;
+  }
   :root {
     --bg: #f6f7f9; --panel: #ffffff; --border: #d4d8de; --text: #1d2228; --muted: #6a7380;
     --accent: #2f6fde; --accent-hover: #2459b8; --error: #c4302b; --violation: #b35c00; --info: #2d7d46;
@@ -35,9 +40,21 @@
     flex: 1; width: 100%; min-height: 120px; margin: 0;
     background: var(--panel); color: var(--text);
     border: 1px solid var(--border); border-radius: 6px; padding: 10px;
-    font: 13px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font: 13px/1.5 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-variant-ligatures: contextual common-ligatures;
   }
   textarea { resize: none; tab-size: 4; }
+  .label-right .zoom { display: inline-flex; gap: 4px; align-items: center; }
+  .zoom button {
+    flex: none; width: 26px; height: 24px; padding: 0; font-size: 15px; line-height: 1;
+    color: var(--text); background: var(--panel); border: 1px solid var(--border); border-radius: 4px;
+  }
+  .zoom button:hover { background: var(--border); }
+  .zoom button:disabled { opacity: .4; cursor: not-allowed; }
+  .zoom #zoom-level {
+    width: auto; min-width: 46px; padding: 0 6px; font-size: 12px; font-weight: 400;
+    color: var(--muted); background: none; border-color: transparent;
+  }
   textarea:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
   #output { overflow: auto; white-space: pre-wrap; word-break: break-word; }
   #output .info { color: var(--info); }
@@ -66,7 +83,16 @@
   <h1>PMIITL Monitor</h1>
 
   <section id="props-section">
-    <label for="props">Properties <small>Ctrl+Enter to push</small></label>
+    <div class="label"><label for="props">Properties</label>
+      <span class="label-right">
+        <small>Ctrl+Enter to push</small>
+        <span class="zoom">
+          <button id="zoom-out" title="Smaller text" aria-label="Smaller text">−</button>
+          <button id="zoom-level" title="Reset text size">100%</button>
+          <button id="zoom-in" title="Larger text" aria-label="Larger text">+</button>
+        </span>
+      </span>
+    </div>
     <textarea id="props" spellcheck="false" placeholder="always ...;"></textarea>
   </section>
 
@@ -107,6 +133,31 @@
     applyShowOk();
   });
   applyShowOk();
+
+  // Properties text size, remembered per browser
+  const ZOOM_SIZES = [9, 10, 11, 12, 13, 14, 16, 18, 20, 22, 24, 28, 32];
+  const ZOOM_DEFAULT = ZOOM_SIZES.indexOf(13);
+  const zoomOut = document.getElementById('zoom-out');
+  const zoomIn = document.getElementById('zoom-in');
+  const zoomLevel = document.getElementById('zoom-level');
+  let zoom = ZOOM_DEFAULT;
+  try {
+    const saved = ZOOM_SIZES.indexOf(Number(localStorage.getItem('propsFontSize')));
+    if (saved >= 0) zoom = saved;
+  } catch (e) {}
+  function setZoom(i) {
+    zoom = Math.max(0, Math.min(ZOOM_SIZES.length - 1, i));
+    const px = ZOOM_SIZES[zoom];
+    props.style.fontSize = px + 'px';
+    zoomLevel.textContent = Math.round(px / 13 * 100) + '%';
+    zoomOut.disabled = zoom === 0;
+    zoomIn.disabled = zoom === ZOOM_SIZES.length - 1;
+    try { localStorage.setItem('propsFontSize', String(px)); } catch (e) {}
+  }
+  zoomOut.addEventListener('click', () => setZoom(zoom - 1));
+  zoomIn.addEventListener('click', () => setZoom(zoom + 1));
+  zoomLevel.addEventListener('click', () => setZoom(ZOOM_DEFAULT));
+  setZoom(zoom);
 
   let generation = null;
   let next = 0;

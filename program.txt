@@ -1,2 +1,8 @@
-always 1;
-always sum((fridge = name) * power) >= 40 w;
+// Property 1 (fridge on and temperature under 5c):
+always (count(name = fridge & power > 40w) != 0);
+
+// Property 2 (sumtime in a time range)
+//always (t % 5s = 0s) -> sumtime[4s](power) < 10000 ws;
+
+// Property 3 (no device uses too much power)
+always (t % 10s = 0s) -> always[5s:10s] (foreach(power < 1 kw));
